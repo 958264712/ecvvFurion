@@ -1,0 +1,133 @@
+﻿<script lang="ts" setup>
+import { ref, onMounted } from 'vue';
+import { ElMessage } from 'element-plus';
+import type { FormRules } from 'element-plus';
+import { addASINBasicData, updateASINBasicData } from '/@/api/modular/main/aSINBasicData';
+//父级传递来的参数
+var props = defineProps({
+	title: {
+		type: String,
+		default: '',
+	},
+});
+//父级传递来的函数，用于回调
+const emit = defineEmits(['reloadTable']);
+const ruleFormRef = ref();
+const isShowDialog = ref(false);
+const ruleForm = ref<any>({});
+//自行添加其他规则
+const rules = ref<FormRules>({});
+
+// 打开弹窗
+const openDialog = (row: any) => {
+	ruleForm.value = JSON.parse(JSON.stringify(row));
+	isShowDialog.value = true;
+};
+
+// 关闭弹窗
+const closeDialog = () => {
+	emit('reloadTable');
+	isShowDialog.value = false;
+};
+
+// 取消
+const cancel = () => {
+	isShowDialog.value = false;
+};
+
+// 提交
+const submit = async () => {
+	ruleFormRef.value.validate(async (isValid: boolean, fields?: any) => {
+		if (isValid) {
+			let values = ruleForm.value;
+			if (ruleForm.value.id != undefined && ruleForm.value.id > 0) {
+				await updateASINBasicData(values);
+			} else {
+				await addASINBasicData(values);
+			}
+			closeDialog();
+		} else {
+			ElMessage({
+				message: `表单有${Object.keys(fields).length}处验证失败，请修改后再提交`,
+				type: 'error',
+			});
+		}
+	});
+};
+
+// 页面加载时
+onMounted(async () => {});
+
+//将属性或者函数暴露给父组件
+defineExpose({ openDialog });
+</script>
+
+<template>
+	<div class="aSINBasicData-container">
+		<el-dialog v-model="isShowDialog" :title="props.title" :width="1000" draggable="">
+			<el-form :model="ruleForm" ref="ruleFormRef" size="default" label-width="100px" :rules="rules">
+				<el-row :gutter="35">
+					<el-form-item v-show="false">
+						<el-input v-model="ruleForm.id" />
+					</el-form-item>
+					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
+						<el-form-item label="ASIN" prop="aSIN">
+							<el-input v-model="ruleForm.asin" placeholder="请输入ASIN1" width="40%" clearable />
+						</el-form-item>
+					</el-col>
+					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
+						<el-form-item label="StoreSKU" prop="storeSKU">
+							<el-input v-model="ruleForm.storeSKU" placeholder="请输入店铺SKU" clearable />
+						</el-form-item>
+					</el-col>
+					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
+						<el-form-item label="ItemName" prop="goodsName">
+							<el-input v-model="ruleForm.goodsName" placeholder="请输入对应品名" clearable />
+						</el-form-item>
+					</el-col>
+					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
+						<el-form-item label="ERP-SKU" prop="erpSku">
+							<el-input v-model="ruleForm.erpSku" placeholder="请输入ERP-SKU" clearable />
+						</el-form-item>
+					</el-col>
+					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
+						<el-form-item label="Origin" prop="origin">
+							<el-input v-model="ruleForm.origin" placeholder="请输入Origin" clearable />
+						</el-form-item>
+					</el-col>
+					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
+						<el-form-item label="LowestPrice" prop="costPrice">
+							<el-input v-model="ruleForm.costPrice" placeholder="请输入CostPrice" clearable />
+						</el-form-item>
+					</el-col>
+					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
+						<el-form-item label="SaudiBottomPrice_R96EP" prop="saudiBottomPrice_R96EP">
+							<el-input v-model="ruleForm.saudiBottomPrice_R96EP" placeholder="请输入SaudiBottomPrice_R96EP" clearable />
+						</el-form-item>
+					</el-col>
+					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
+						<el-form-item label="SaudiBottomPrice_63FV3" prop="saudiBottomPrice_63FV3">
+							<el-input v-model="ruleForm.saudiBottomPrice_63FV3" placeholder="请输入SaudiBottomPrice_63FV3" clearable />
+						</el-form-item>
+					</el-col>
+					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
+						<el-form-item label="SaudiBottomPrice_YZ6VH" prop="saudiBottomPrice_YZ6VH">
+							<el-input v-model="ruleForm.saudiBottomPrice_YZ6VH" placeholder="请输入SaudiBottomPrice_YZ6VH" clearable />
+						</el-form-item>
+					</el-col>
+					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
+						<el-form-item label="SingleOrderQTY" prop="unit">
+							<el-input v-model="ruleForm.unit" placeholder="请输入单位" clearable />
+						</el-form-item>
+					</el-col>
+				</el-row>
+			</el-form>
+			<template #footer>
+				<span class="dialog-footer">
+					<el-button @click="cancel" size="default">取 消</el-button>
+					<el-button type="primary" @click="submit" size="default">确 定</el-button>
+				</span>
+			</template>
+		</el-dialog>
+	</div>
+</template>

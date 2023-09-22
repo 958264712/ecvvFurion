@@ -1,0 +1,23 @@
+import request from '/@/utils/request';
+
+/**
+ * 首页数据
+ *
+ */
+export function getData() {
+  return request({
+    url: '/api/oFSDubaiShipmentDetails/getHomeData',
+    method: 'get',
+  })
+}
+/**
+ * 多表导入
+ *
+ */
+export function Import(data?: any) {
+    return request({
+      url: `/api/oFSDubaiShipmentDetails/import`,
+      method: 'post',
+      data
+    })
+  }

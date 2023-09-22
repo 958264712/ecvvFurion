@@ -1,0 +1,12 @@
+import request from '/@/utils/request';
+enum Api {
+	collectionOrderInfoPage = '/api/collectionOrderInfo/page',
+}
+
+// 分页查询集货单页面
+export const collectionOrderInfoPage = (params?: any) =>
+	request({
+		url: Api.collectionOrderInfoPage,
+		method: 'get',
+		params: params,
+	});

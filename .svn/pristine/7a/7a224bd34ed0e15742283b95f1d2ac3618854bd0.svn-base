@@ -1,0 +1,81 @@
+<template>
+  <div>
+    <el-table
+      :data="tableData"
+      :header-cell-style="headerCellStyle"
+      :cell-class-name="cellClassName"
+      :border="false"
+      :show-header="true"
+      :show-summary="false"
+    >
+      <el-table-column label="Sku" prop="sku"></el-table-column>
+      <el-table-column label="PID" prop="pid"></el-table-column>
+      <el-table-column label="VID" prop="vid"></el-table-column>
+      <el-table-column label="类型" prop="type"></el-table-column>
+      <el-table-column label="时间" prop="time"></el-table-column>
+    </el-table>
+    <el-pagination
+      v-model:current-page="currentPage"
+      :page-size="pageSize"
+      :pager-count="7"
+      layout="prev, pager, next"
+      :total="total"
+      style="margin-top: 20px; text-align: right;"
+    ></el-pagination>
+  </div>
+</template>
+
+<script lang="ts">
+import { defineComponent, ref } from 'vue';
+import 'element-plus/theme-chalk/base.css';
+// import { getUsers, createUser, updateUser, deleteUser } from 'admin-net-requests';
+// import 'element-plus/theme-chalk/table.css';
+// import 'element-plus/theme-chalk/pagination.css';
+import { ElTable, ElTableColumn, ElPagination } from 'element-plus';
+
+interface TableItem {
+  sku: string;
+  pid: string;
+  vid: string;
+  type: string;
+  time: string;
+}
+
+export default defineComponent({
+  components: {
+    ElTable,
+    ElTableColumn,
+    ElPagination,
+  },
+  setup() {
+    const tableData = ref<TableItem[]>([
+      { sku: 'sku1', pid: 'pid1', vid: 'vid1', type: 'type1', time: 'time1' },
+      { sku: 'sku2', pid: 'pid2', vid: 'vid2', type: 'type2', time: 'time2' },
+      { sku: 'sku3', pid: 'pid3', vid: 'vid3', type: 'type3', time: 'time3' },
+      { sku: 'sku4', pid: 'pid4', vid: 'vid4', type: 'type4', time: 'time4' },
+      { sku: 'sku5', pid: 'pid5', vid: 'vid5', type: 'type5', time: 'time5' },
+    ]);
+    const headerCellStyle = { fontWeight: 'bold' };
+    const cellClassName = 'no-border';
+    const pageSize = 5;
+    const total = 5;
+    const currentPage = ref(1);
+
+    return {
+      tableData,
+      headerCellStyle,
+      cellClassName,
+      pageSize,
+      total,
+      currentPage,
+    };
+  },
+});
+</script>
+
+<style scoped>
+/* 自定义样式 */
+.no-border td {
+  border-bottom: none !important;
+}
+</style>

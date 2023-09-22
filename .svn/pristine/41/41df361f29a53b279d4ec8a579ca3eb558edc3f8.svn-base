@@ -1,0 +1,530 @@
+<template>
+	<div class="sys-menu-container">
+		<el-card shadow="hover" :body-style="{ paddingBottom: '0' }">
+			<el-row>
+				<el-form-item>
+					<el-button type="primary" icon="ele-Plus" @click="compile = !compile" style="margin-right: 20px"> {{ compile ? '退出编辑' : '编辑' }} </el-button>
+				</el-form-item>
+				<el-form-item>
+					<el-button-group>
+						<el-button type="primary" icon="ele-Search" @click="handleQuery"> 导出报关件 </el-button>
+						<el-button icon="ele-Refresh" @click="resetQuery"> 导出验货单 </el-button>
+						<el-button type="primary" icon="ele-Search" @click="handleQuery"> 导出外箱标签 </el-button>
+					</el-button-group>
+				</el-form-item>
+			</el-row>
+			<el-row style="display: flex; justify-content: space-around">
+				<el-form-item label="单据编号">
+					<el-input clearable="" :disabled="compile == 0" :placeholder="collectionOrderInfo.documentNo" />
+				</el-form-item>
+				<el-form-item label="货代名称">
+					<el-select v-model="state.queryParams.orgType" filterable clearable class="w100" :disabled="compile == 0">
+						<el-option v-for="item in state.orgTypeList" :key="item.value" :label="item.value" :value="item.code" />
+					</el-select>
+				</el-form-item>
+				<el-form-item label="目的地">
+					<el-input clearable="" :disabled="compile == 0" :placeholder="collectionOrderInfo.destination" />
+				</el-form-item>
+				<el-form-item label="截仓日期">
+					<el-date-picker type="date" :disabled="compile == 0" :placeholder="collectionOrderInfo.cutOffDate" style="width: 100%" />
+				</el-form-item>
+			</el-row>
+			<el-collapse v-model="activeNames" @change="handleChange">
+				<el-collapse-item name="1" >
+					<template #title>
+						<div class="titleForm">
+							展开
+						</div>
+					</template>
+					<el-form :model="collectionOrderInfo" ref="queryForm" :inline="true" label-width="auto">
+						<!-- <el-divider style="margin: 0 0 30px 0" /> -->
+						<el-row>
+							<el-col :span="8"
+								><div class="grid-content ep-bg-purple" />
+								<el-form-item
+									label="收货人"
+									prop="consigneeName"
+									style="width: 90%"
+									:rules="{
+										required: true,
+										message: '内容不能为空',
+										trigger: 'blur',
+									}"
+								>
+									<el-input :disabled="compile == 0" v-model="collectionOrderInfo.consigneeName" clearable="" placeholder="请输入收货人" />
+								</el-form-item>
+								<el-form-item label="美元汇率" style="width: 90%">
+									<el-input :disabled="compile == 0" v-model="collectionOrderInfo.exchangeRateUSD" clearable="" placeholder="请输入美元汇率" />
+								</el-form-item>
+								<el-form-item label="报关单号" style="width: 90%">
+									<el-input :disabled="compile == 0" v-model="collectionOrderInfo.customsDeclarationNo" clearable="" placeholder="请输入报关单号" />
+								</el-form-item>
+								<el-form-item label="状态" style="width: 90%">
+									<el-select :disabled="compile == 0" filterable clearable class="w100">
+										<el-option />
+									</el-select>
+								</el-form-item>
+								<el-form-item label="交仓地址" style="width: 90%">
+									<el-input :disabled="compile == 0" v-model="collectionOrderInfo.deliveryAddress" clearable="" placeholder="请输入交仓地址" />
+								</el-form-item>
+								<el-form-item label="实际到港日期" style="width: 90%">
+									<el-date-picker :disabled="compile == 0" v-model="collectionOrderInfo.actualArrivalDate" type="date" :placeholder="collectionOrderInfo.cutOffDate" />
+								</el-form-item>
+								<el-form-item label="国际物流支付方" style="width: 90%">
+									<el-select :disabled="compile == 0" filterable clearable class="w100">
+										<el-option />
+									</el-select>
+								</el-form-item>
+								<el-form-item label="备注" style="width: 90%">
+									<el-input :disabled="compile == 0" v-model="collectionOrderInfo.notes" type="textarea" placeholder="请输入备注" />
+								</el-form-item>
+							</el-col>
+							<el-col :span="8" style=""
+								><div class="grid-content ep-bg-purple" />
+								<el-form-item label="物流报价" style="width: 90%">
+									<el-input :disabled="compile == 0" v-model="collectionOrderInfo.logisticsPrice" clearable="" placeholder="请输入" />
+									<el-select :disabled="compile == 0" filterable clearable class="w100">
+										<el-option />
+									</el-select>
+								</el-form-item>
+								<el-form-item label="是否报关"> <el-switch :disabled="compile == 0" v-model="collectionOrderInfo.NeetCustoms" inline-prompt active-text="是" inactive-text="否" /><br /> </el-form-item>
+								<br />
+								<el-form-item label="运输方式" style="width: 90%">
+									<el-select :disabled="compile == 0" filterable clearable class="w100">
+										<el-option />
+									</el-select>
+								</el-form-item>
+								<el-form-item label="收件人" style="width: 90%">
+									<el-input :disabled="compile == 0" v-model="collectionOrderInfo.recipientName" clearable="" placeholder="请输入收件人" />
+								</el-form-item>
+								<el-form-item label="出发日期" style="width: 90%">
+									<el-date-picker :disabled="compile == 0" v-model="collectionOrderInfo.departureDate" type="date" :placeholder="collectionOrderInfo.cutOffDate" />
+								</el-form-item>
+								<el-form-item label="送仓日期" style="width: 90%">
+									<el-date-picker :disabled="compile == 0" v-model="collectionOrderInfo.deliveryDate" type="date" :placeholder="collectionOrderInfo.cutOffDate" />
+								</el-form-item>
+								<el-form-item label="创建日期" style="width: 90%">
+									<el-date-picker :disabled="compile == 0" v-model="collectionOrderInfo.orderCreatedDate" type="date" :placeholder="collectionOrderInfo.cutOffDate" />
+								</el-form-item>
+							</el-col>
+							<el-col :span="8"
+								><div class="grid-content ep-bg-purple" />
+								<el-form-item label="汇率" style="width: 90%">
+									<el-input :disabled="compile == 0" v-model="collectionOrderInfo.exchangeRate" clearable="" placeholder="请输入" />
+								</el-form-item>
+								<el-form-item label="报关费" style="width: 90%">
+									<el-input :disabled="compile == 0" v-model="collectionOrderInfo.totalCustomsDeclarationFee" clearable="" placeholder="请输入报关费" />
+								</el-form-item>
+								<el-form-item label="货代入仓号" style="width: 90%">
+									<el-input :disabled="compile == 0" v-model="collectionOrderInfo.inWareHouseNo" clearable="" placeholder="请输入货代入仓号" />
+								</el-form-item>
+								<el-form-item label="收件联系电话" style="width: 90%">
+									<el-input :disabled="compile == 0" v-model="collectionOrderInfo.recipientPhone" clearable="" placeholder="请输入收件联系电话" />
+								</el-form-item>
+								<el-form-item label="预计到港日期" style="width: 90%">
+									<el-date-picker :disabled="compile == 0" v-model="collectionOrderInfo.estimatedArrivalDate" type="date" :placeholder="collectionOrderInfo.cutOffDate" />
+								</el-form-item>
+								<el-form-item label="实际送仓日期" style="width: 90%">
+									<el-date-picker :disabled="compile == 0" v-model="collectionOrderInfo.actualDeliveryDate" type="date" :placeholder="collectionOrderInfo.cutOffDate" />
+								</el-form-item>
+								<el-form-item label="创建人" style="width: 90%">
+									<el-input :disabled="compile == 0" v-model="collectionOrderInfo.orderCreatedUser" clearable="" placeholder="请输入" />
+								</el-form-item>
+							</el-col>
+							<el-button style="margin: 0 auto">提交</el-button>
+						</el-row>
+					</el-form>
+				</el-collapse-item>
+			</el-collapse>
+		</el-card>
+
+		<el-card class="full-table" shadow="hover" style="margin-top: 8px">
+			<el-table :data="collectionGoodsInfolist" style="width: 100%">
+				<el-table-column fixed type="selection" width="35" />
+
+				<el-table-column fixed label="操作" width="100" align="center">
+					<template #default="scope">
+						<el-button size="small" text type="primary" ref="myButton" :disabled="false" @click="disabledfun(scope)">{{ scope.row.rowCompile ? '保存' : '编辑' }}</el-button>
+						<el-button size="small" text type="primary" @click="examine(scope.row.id)"> 删除 </el-button>
+					</template>
+				</el-table-column>
+
+				<el-table-column fixed prop="internalUniqueID" label="内部唯一识别码" :width="widths">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.internalUniqueID" @focus="widths = 300" @blur="widths = 150"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column fixed prop="internalProductName" label="内部品名" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.internalProductName"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="purchaser" label="采购员" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.purchaser"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="purchaseContractNo" label="采购合同号" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.purchaseContractNo"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="boxNo" label="ECVV箱单号" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.boxNo"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="supplier" label="供应商" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.supplier"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="brand" label="品牌" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.brand"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="state" label="产品图" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.state"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="customsName" label="报关品名" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.customsName"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="enProductName" label="英文名称" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.enProductName"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="material" label="材质" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.material"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="use" label="用途" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.use"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="customsDeclarationNo" label="报关型号" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.customsDeclarationNo"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="color" label="颜色" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.color"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="specification" label="规格" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.specification"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="plannedShipmentQuantity" label="报关数量" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.plannedShipmentQuantity"></el-input>
+					</template>
+				</el-table-column>
+
+				<el-table-column prop="cusUnit" label="报关单位" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.cusUnit"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="actualShipmentQuantity" label="集货数量" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.actualShipmentQuantity"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="commodityInspectionFee" label="迪拜仓库收货数量" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.commodityInspectionFee"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="unit" label="集货单位" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.unit"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="unitInfo" label="补充说明" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.unitInfo"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="quantityInBoxes" label="装箱个数" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.quantityInBoxes"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="packBoxesQuantity" label="装箱数" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.packBoxesQuantity"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="singleProductNetWeightKG" label="单个产品净重KG" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.singleProductNetWeightKG"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="singleProductLength" label="产品长(cm)" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.singleProductLength"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="singleProductWidth" label="产品宽(cm)" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.singleProductLength"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="singleProductHeight" label="产品高(cm)" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.singleProductHeight"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="totalGrossWeightKG" label="整箱毛重KG" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.totalGrossWeightKG"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="boxLength" label="箱长(cm)" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.boxLength"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="boxWidth" label="箱宽(cm)" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.boxWidth"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="boxHeight" label="箱高(cm)" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.boxHeight"></el-input>
+					</template>
+				</el-table-column>
+
+				<el-table-column prop="totalNetWeightKG" label="总净重KG" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.totalNetWeightKG"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="totalGrossWeightKG" label="总毛重KG" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.totalGrossWeightKG"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="totalSquaresM3" label="总方数m³" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.totalSquaresM3"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="volumeWeight" label="体积重" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.volumeWeight"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="shippingTime" label="入货代仓时间" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.shippingTime"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="includingTaxPurchasePrice" label="采购价含税(RMB)" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.includingTaxPurchasePrice"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="domesticLogisticsCost" label="国内物流费用(RMB/个)" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.domesticLogisticsCost"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="exportUnitPrice" label="出口单价(USD)" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.exportUnitPrice"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="exportUnitPriceCurrency" label="出口总价(USD)" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.exportUnitPriceCurrency"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="commodityInspectionFee" label="商检费(RMB)个" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.commodityInspectionFee"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="customsDeclarationFee" label="报关费个" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.customsDeclarationFee"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="singleCusInternationalLogisticsFee" label="报关物流费用(RMB/个)" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.singleCusInternationalLogisticsFee"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="singleInternationalLogisticsFee" label="集货物流费用(RMB/个)" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.singleInternationalLogisticsFee"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="totalInternationalLogisticsFee" label="国际物流费用总额(RMB)" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.totalInternationalLogisticsFee"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="incidentalPrice" label="杂费" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.incidentalPrice"></el-input>
+					</template>
+				</el-table-column>
+
+				<el-table-column prop="fobSupplyPrice" label="FOB供货价(AED)" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.fobSupplyPrice"></el-input>
+					</template>
+				</el-table-column>
+				<el-table-column prop="notes" label="备注" width="120">
+					<template #default="scope">
+						<el-input v-if="scope.row.rowCompile" v-model="scope.row.notes"></el-input>
+					</template>
+				</el-table-column>
+			</el-table>
+			<el-row>
+				<el-form-item style="margin-top: 20px">
+					<el-button type="primary" icon="ele-Plus" @click="openAddMenu" style="margin-right: 20px"> 复制 </el-button>
+				</el-form-item>
+				<el-form-item style="margin-top: 20px" v-show="compile">
+					<el-button-group>
+						<el-button type="primary" icon="ele-Search" @click="handleQuery"> 批量编辑 </el-button>
+						<el-button icon="ele-Refresh" @click="resetQuery"> 新增一行 </el-button>
+						<el-button type="primary" icon="ele-Search" @click="handleQuery"> 重新计价 </el-button>
+						<el-button icon="ele-Refresh" @click="resetQuery"> 批量删除 </el-button>
+						<el-button type="primary" icon="ele-Search" @click="handleQuery"> 剪切 </el-button>
+						<el-button icon="ele-Refresh" @click="resetQuery"> 粘贴 </el-button>
+					</el-button-group>
+				</el-form-item>
+			</el-row>
+		</el-card>
+
+		<!-- <EditMenu ref="editMenuRef" :title="state.editMenuTitle" :menuData="state.menuData" @handleQuery="handleQuery" /> -->
+	</div>
+</template>
+
+<script lang="ts" setup >
+import { onMounted, reactive, ref, toRefs } from 'vue';
+import { ElMessageBox, ElMessage } from 'element-plus';
+import { useRouter, useRoute } from 'vue-router';
+import { getAPI } from '/@/utils/axios-utils';
+import { SysMenuApi } from '/@/api-services/api';
+import { SysMenu } from '/@/api-services/models';
+import service from '/@/utils/request';
+import { Session } from '/@/utils/storage';
+import { useTagsViewRoutes } from '/@/stores/tagsViewRoutes';
+const state = reactive({
+	loading: false,
+	menuData: [] as Array<SysMenu>,
+	queryParams: {
+		title: undefined,
+		type: undefined,
+	},
+	editMenuTitle: '',
+});
+
+let id = ref<any>();
+let collectionOrderInfo = reactive<any>({});
+let collectionGoodsInfolist = reactive<any>([]);
+let compile = ref<boolean>(false);
+let rowCompile = ref<boolean>(false);
+let widths = ref<any>(150);
+let buttonDisabled = ref<any>(false);
+let tagsViewLists = ref<any>()
+const myButton = ref(null);
+//按钮是否禁用
+function disabledfun(val: any): void {
+	val.row.rowCompile = !val.row.rowCompile;
+}
+// 请求数据
+async function getAppPage() {
+	service({
+		url: `/api/collectionOrderInfo/detail/${id.value}`,
+		method: 'get',
+		params: {
+			id: id.value,
+		},
+	}).then((data) => {
+		console.log(data.data.result.collectionOrderInfo);
+		// collectionOrderInfo = data.data.result.collectionOrderInfo;
+
+		Object.assign(collectionOrderInfo, data.data.result.collectionOrderInfo);
+		data.data.result.collectionGoodsInfolist.forEach((element: any) => {
+			collectionGoodsInfolist.push(element);
+		});
+		collectionGoodsInfolist.forEach((element: any) => {
+			element.rowCompile = false;
+		});
+	});
+}
+onMounted(async () => {
+	const route = useRoute();
+	id.value = route.query.id;
+	console.log(id); // 在控制台输出传递的id值
+	handleQuery();
+	getAppPage();
+});
+
+// 查询操作
+const handleQuery = async () => {
+	state.loading = true;
+	var res = await getAPI(SysMenuApi).apiSysMenuListGet(state.queryParams.title, state.queryParams.type);
+	state.menuData = res.data.result ?? [];
+	state.loading = false;
+};
+
+// 重置操作
+const resetQuery = () => {
+	state.queryParams.title = undefined;
+	state.queryParams.type = undefined;
+	handleQuery();
+};
+
+// 打开新增页面
+const openAddMenu = () => {
+	state.editMenuTitle = '添加菜单';
+	// editMenuRef.value?.openDialog({ type: 2, isHide: false, isKeepAlive: true, isAffix: false, isIframe: false, status: 1, orderNo: 100 });
+};
+
+// 打开编辑页面
+const openEditMenu = (row: any) => {
+	state.editMenuTitle = '编辑菜单';
+	// editMenuRef.value?.openDialog(row);
+};
+
+// 删除当前行
+const delMenu = (row: any) => {
+	ElMessageBox.confirm(`确定删除菜单：【${row.title}】?`, '提示', {
+		confirmButtonText: '确定',
+		cancelButtonText: '取消',
+		type: 'warning',
+	})
+		.then(async () => {
+			await getAPI(SysMenuApi).apiSysMenuDeletePost({ id: row.id });
+			handleQuery();
+			ElMessage.success('删除成功');
+		})
+		.catch(() => {});
+};
+</script>
+<style scoped lang="less" >
+.titleForm {
+	transform: translate(50%);
+}
+:deep(.el-collapse-item__arrow) {
+	// display: none !important;
+	margin: 0 auto;
+	
+}
+</style>

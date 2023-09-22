@@ -1,0 +1,224 @@
+<template>
+	<div class="collectionOrderInfo-container">
+		<el-card shadow="hover" :body-style="{ paddingBottom: '0' }">
+			<el-form :model="queryList" :inline="true">
+				<el-form-item label="货代入仓号">
+					<el-input v-model="queryList.inWareHouseNo" clearable="" placeholder="请输入货代入仓号" />
+				</el-form-item>
+				<el-form-item label="报关单号">
+					<el-input v-model="queryList.customsDeclarationNo" clearable="" placeholder="请输入报关单号" />
+				</el-form-item>
+
+				<el-form-item label="ECVV箱单号">
+					<el-input v-model="queryList.ecvvBoxNo" clearable="" placeholder="请输入ECVV箱单号" />
+				</el-form-item>
+
+				<el-form-item label="品名、识别码">
+					<el-input v-model="queryList.internalProductName" clearable="" placeholder="请输入内部品名、唯一识别码" />
+				</el-form-item>
+
+				<el-form-item label="采购合同号">
+					<el-input v-model="queryList.purchaseContractNo" clearable="" placeholder="请输入采购合同号" />
+				</el-form-item>
+
+				<el-form-item label="运输方式">
+					<el-select filterable clearable class="w100" v-model="queryList.shippingMethod">
+						<el-option label="海运" value="海运" />
+						<el-option label="空运" value="空运" />
+						<el-option label="快递" value="快递" />
+						<el-option label="小包" value="小包" />
+					</el-select>
+				</el-form-item>
+
+				<el-form-item label="状态">
+					<el-select filterable clearable class="w100" v-model="queryList.state">
+						<el-option label="集货" value="集货" />
+						<el-option label="截仓" value="截仓" />
+						<el-option label="在途中" value="在途中" />
+						<el-option label="已入仓" value="已入仓" />
+					</el-select>
+				</el-form-item>
+				<el-form-item label="创建日期">
+					<el-date-picker start-placeholder=" 开始时间" end-placeholder="结束时间" type="daterange" v-model="queryList.time" />
+				</el-form-item>
+
+				<el-form-item>
+					<el-button-group>
+						<el-button type="primary" icon="ele-Search" @click="queryfun()"> 查询 </el-button>
+						<el-button icon="ele-Refresh" @click="resetfun()"> 重置 </el-button>
+					</el-button-group>
+				</el-form-item>
+			</el-form>
+		</el-card>
+		<el-card class="full-table" shadow="hover" style="margin-top: 8px">
+			<el-form-item class="settingf">
+				<el-button type="primary" icon="ele-Plus" @click="openAddMenu" v-auth="'sysMenu:add'" style="margin-right: 20px"> 新增集货单信息 </el-button>
+				<el-checkbox v-model="checked2" style="margin-right: 20px">导出所有</el-checkbox>
+				<el-button type="primary" icon="ele-Plus" @click="openAddMenu" style="margin-right: 20px"> 出货明细汇总 </el-button>
+				<div class="block" style="margin-right: 20px">
+					<span class="demonstration">计算此[送仓日期]后的价格 </span>
+					<el-date-picker v-model="value1" type="date" placeholder="日期" />
+				</div>
+				<el-button type="primary" icon="ele-Plus" @click="openAddMenu" style="margin-right: 20px"> 重新计算价格 </el-button>
+				<el-button type="primary" icon="ele-Plus" @click="openAddMenu"> 自定义报关件表头 </el-button>
+				<div class="setting">
+					
+					
+					<el-tooltip class="box-item" effect="dark" content="刷新" placement="bottom-end">
+						<el-button type="primary" :icon="Refresh" />
+					</el-tooltip>
+					<el-tooltip class="box-item" effect="dark" content="密度" placement="bottom-end">
+						<el-button type="primary" :icon="DCaret" />
+					</el-tooltip>
+					<el-tooltip class="box-item" effect="dark" content="列设置" placement="bottom-end">
+						<el-button type="primary" :icon="Setting" />
+					</el-tooltip>
+				</div>
+			</el-form-item>
+
+			<el-table :data="tableData" size="large" style="width: 100%" v-loading="loading" tooltip-effect="light" row-key="id">
+				<el-table-column type="selection" width="55" />
+				<el-table-column prop="documentNo" label="单据编号" align="center" sortable width="150" fixed=""  show-overflow-tooltip="" />
+				<el-table-column prop="destination" label="目的地" align="center" sortable width="100"  show-overflow-tooltip="" />
+				<el-table-column prop="forwarderName" label="货代名称" align="center" sortable width="150"  show-overflow-tooltip="" />
+				<el-table-column prop="shippingMethod" label="运输方式" align="center" sortable width="150" show-overflow-tooltip="" />
+				<el-table-column prop="customsDeclarationNo" label="报关单号" align="center" width="150" sortable  show-overflow-tooltip="" />
+				<el-table-column prop="inWareHouseNo" label="货代入仓号" align="center"  sortable width="150"  show-overflow-tooltip="" />
+				<el-table-column prop="packBoxesQuantitySum" label="总箱数" width="100" align="center" sortable  show-overflow-tooltip="" />
+				<el-table-column prop="tiDanSum" label="总数量" align="center" width="100" sortable  show-overflow-tooltip="" />
+				<el-table-column prop="weightSum" label="总毛重KG" align="center" width="120" sortable  show-overflow-tooltip="" />
+				<el-table-column prop="tiDanTotalSquaresM3" label="总方数" align="center" width="100" sortable  show-overflow-tooltip="" />
+				<el-table-column prop="isCustomsDeclaration" label="是否报关" width="120" align="center" sortable  show-overflow-tooltip="" />
+				<el-table-column prop="cutOffDate" label="截仓日期" align="center" width="180" sortable  show-overflow-tooltip="" />
+				<el-table-column prop="state" label="状态" align="center"  width="120" sortable show-overflow-tooltip="" />
+				<el-table-column label="操作" width="200" align="center" fixed="right" show-overflow-tooltip="">
+					<template #default="scope">
+						<el-button size="small" text type="primary" @click="examine(scope.row.id)"> 查看 </el-button>
+						<el-dropdown>
+							<el-button icon="ele-MoreFilled" size="small" text type="primary" style="padding-left: 12px" />
+							<template #dropdown>
+								<el-dropdown-menu>
+									<el-dropdown-item> 删除 </el-dropdown-item>
+									<el-dropdown-item> 导出报关件 </el-dropdown-item>
+									<el-dropdown-item> 导出验货单 </el-dropdown-item>
+									<el-dropdown-item> 导出外箱标签 </el-dropdown-item>
+									<el-dropdown-item> 附件下载 </el-dropdown-item>
+								</el-dropdown-menu>
+							</template>
+						</el-dropdown>
+					</template>
+				</el-table-column>
+			</el-table>
+			<el-pagination
+				v-model:currentPage="tableParams.page"
+				v-model:page-size="tableParams.pageSize"
+				:total="tableParams.total"
+				:page-sizes="[10, 20, 50, 100]"
+				small=""
+				background=""
+				@size-change="handleSizeChange"
+				@current-change="handleCurrentChange"
+				layout="total, sizes, prev, pager, next, jumper"
+			/>
+			<editDialog ref="editDialogRef" :title="editCollectionOrderInfoTitle" @reloadTable="handleQuery" />
+		</el-card>
+	</div>
+</template>
+
+<script lang="ts" setup name="collectionOrderInfo">
+import { da } from 'element-plus/es/locale';
+import { ref, Ref, onMounted, reactive, computed } from 'vue';
+import router from '/@/router';
+import { getAPI } from '/@/utils/axios-utils';
+import { service } from '/@/utils/request';
+import moment from 'moment';
+import { get } from 'http';
+import { Refresh, Setting, DCaret } from '@element-plus/icons-vue';
+const editDialogRef = ref();
+const loading = ref(false);
+let tableData: any[] = reactive([]);
+const queryParams = ref<any>({});
+let tableParams = ref({
+	page: 1,
+	pageSize: 20,
+	total: 0,
+});
+const editCollectionOrderInfoTitle = ref('');
+// 查询表单数据
+let queryList = reactive<any>({
+	time: [],
+	endTime: '',
+	inWareHouseNo: '',
+	customsDeclarationNo: '',
+	internalProductName: '',
+	ecvvBoxNo: '',
+	purchaseContractNo: '',
+	shippingMethod: '',
+	state: '',
+});
+async function getAppPage() {
+	service({
+		url: '/api/CollectionOrderInfo/page',
+		method: 'get',
+		params: {
+			page: tableParams.value.page,
+			pageSize: tableParams.value.pageSize,
+			startTime: queryList.time.length ? moment(queryList.time[0]).format('YYYY-MM-DD') : '',
+			endTime: queryList.time.length ? moment(queryList.time[1]).format('YYYY-MM-DD') : '',
+			inWareHouseNo: queryList.inWareHouseNo,
+			customsDeclarationNo: queryList.customsDeclarationNo,
+			internalProductName: queryList.internalProductName,
+			ecvvBoxNo: queryList.ecvvBoxNo,
+			purchaseContractNo: queryList.purchaseContractNo,
+			shippingMethod: queryList.shippingMethod,
+			state: queryList.state,
+		},
+	}).then((data) => {
+		tableData.splice(0, tableData.length);
+		data.data.result.items.forEach((element: any) => {
+			tableData.push(element);
+		});
+		tableParams.value.total = data.data.result.total;
+	});
+}
+//查询
+function queryfun(): void {
+	getAppPage();
+}
+//重置
+function resetfun(): void {
+	Object.keys(queryList).forEach((key: any) => {
+		queryList[key] = '';
+	});
+}
+// 查看
+function examine(val: any): void {
+	router.push({ path: '/business/edit/edit?id', query: { id: val } });
+
+}
+onMounted(() => {
+	getAppPage();
+});
+
+// 改变页面容量
+const handleSizeChange = (val: number) => {
+	tableParams.value.pageSize = val;
+	getAppPage();
+};
+
+// 改变页码序号
+const handleCurrentChange = (val: number) => {
+	tableParams.value.page = val;
+	getAppPage();
+};
+</script>
+
+<style lang="less" scoped>
+.settingf {
+	position: relative;
+	.setting {
+		position: absolute;
+		right: 0;
+	}
+}
+</style>

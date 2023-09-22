@@ -1,0 +1,129 @@
+﻿<script lang="ts" setup="" name="oFSStockWarning">
+import { ref } from "vue";
+import { ElMessageBox, ElMessage } from "element-plus";
+import { auth } from '/@/utils/authFunction';
+//import { formatDate } from '/@/utils/formatTime';
+import { getInventorySKUBasicInfo, ExportInventorySKUBasicInfo } from '/@/api/modular/main/uAE_ProcurementDetails'
+
+
+const loading = ref(false);
+const tableData = ref<any>([]);
+const queryParams = ref<any>({});
+const tableParams = ref({
+  pageNo: 1,
+  pageSize: 10,
+  // inventorySKU : '123 ',
+  total : 0,
+});
+function switchingDate() {
+  const obj = JSON.parse(JSON.stringify(this.queryParam))
+  return obj
+}
+
+
+
+// 改变页面容量
+const handleSizeChange = (val: number) => {
+  tableParams.value.pageSize = val;
+  handleQuery()
+};
+
+// 改变页码序号
+const handleCurrentChange = (val: number) => {
+  tableParams.value.pageNo = val;
+  handleQuery()
+};
+
+// 查询操作
+const handleQuery = async () => {
+  loading.value = true;
+  var res = await getInventorySKUBasicInfo(Object.assign(queryParams.value, tableParams.value));
+  tableData.value = res.data.result?.items ?? [];
+  tableParams.value.total = res.data.result?.total;
+  loading.value = false;
+};
+
+function Export() {
+  loading.value = true
+  ExportInventorySKUBasicInfo().then(res => {
+    loading.value = false
+    downloadfile(res)
+    handleQuery()
+  })
+}
+
+function downloadfile(res) {
+  var blob = new Blob([res.data], { type: 'application/octet-stream;charset=UTF-8' })
+  var contentDisposition = res.headers['content-disposition']
+  var patt = new RegExp('filename=([^;]+\\.[^\\.;]+);*')
+  var result = patt.exec(contentDisposition)
+  var filename = result[1]
+  var downloadElement = document.createElement('a')
+  var href = window.URL.createObjectURL(blob) // 创建下载的链接
+  var reg = /^["](.*)["]$/g
+  downloadElement.style.display = 'none'
+  downloadElement.href = href
+  downloadElement.download = decodeURI(filename.replace(reg, '$1')) // 下载后文件名
+  document.body.appendChild(downloadElement)
+  downloadElement.click() // 点击下载
+  document.body.removeChild(downloadElement) // 下载完成移除元素
+  window.URL.revokeObjectURL(href)
+}
+handleQuery()
+</script>
+
+<template>
+  <div class="oFSStockWarning-container">
+    <el-card shadow="hover" :body-style="{ paddingBottom: '0' }">
+      <el-form :model="queryParams" ref="queryForm" :inline="true">
+        <el-form-item label="库存SKU">
+          <el-input v-model="queryParams.inventorySKU" clearable="" placeholder="请输入库存SKU" />
+        </el-form-item>
+        <!-- <el-form-item label="供应商货号">
+          <el-input v-model="queryParams.supplierItemNumber" clearable="" placeholder="请输入供应商货号" />
+
+        </el-form-item> -->
+
+        <el-form-item>
+          <el-button-group>
+            <el-button type="primary" icon="ele-Search" @click="handleQuery"> 查询
+            </el-button>
+            <el-button icon="ele-Refresh" @click="() => {queryParams = {}; handleQuery();}"> 重置 </el-button>
+          </el-button-group>
+        </el-form-item>
+      </el-form>
+    </el-card>
+    <el-card class="full-table" shadow="hover" style="margin-top: 8px">
+      <div>
+        <el-button @click="Export" type="primary" size="small">导出库存Sku信息</el-button>
+      </div>
+
+      <el-table :data="tableData" style="width: 100%" v-loading="loading" tooltip-effect="light" row-key="id" border="">
+        <el-table-column prop="inventorySKU1" label="库存SKU" fixed="" show-overflow-tooltip="" />
+        <el-table-column prop="purchasingCountry" label="采购国" fixed="" show-overflow-tooltip="" />
+        <el-table-column prop="totalQuantityShipped" label="发货总数量" fixed="" show-overflow-tooltip="" />
+        <el-table-column prop="totalProcurementCost" label="采购总成本" fixed="" show-overflow-tooltip="" />
+        <el-table-column prop="totalCostOfCNHeadProcess" label="CN头程总成本" fixed="" show-overflow-tooltip="" />
+        <el-table-column prop="comprehensiveProcurementUnitPrice" label="综合采购单价" fixed="" show-overflow-tooltip="" />
+        <el-table-column prop="monetaryUnit" label="货币单位" fixed="" show-overflow-tooltip="" />
+        <el-table-column prop="comprehensiveProcurementUnitPriceAED" label="综合采购单价AED" fixed=""
+          show-overflow-tooltip="" />
+        <el-table-column prop="comprehensiveSupplyPriceAED" label="综合供货价AED" fixed="" show-overflow-tooltip="" />
+        <el-table-column prop="comprehensiveInitialUnitPriceAED" label="综合头程单价AED" fixed="" show-overflow-tooltip="" />
+        <el-table-column prop="quantityShippedInThePast90Days" label="近90天发货数量" fixed="" show-overflow-tooltip="" />
+        <el-table-column prop="totalProcurementCostInThePast90DaysAED" label="近90天总采购成本AED" fixed=""
+          show-overflow-tooltip="" />
+        <el-table-column prop="purchaseUnitPriceAEDInThePast90Days" label="近90天采购单价AED" fixed=""
+          show-overflow-tooltip="" />
+        <el-table-column prop="lastYearcomprehensivePriceAED" label="去年综合采购单价AED" fixed="" show-overflow-tooltip="" />
+      </el-table>
+      <el-pagination v-model:currentPage="tableParams.page" v-model:page-size="tableParams.pageSize"
+        :total="tableParams.total" :page-sizes="[10, 20, 50, 100]" small="" background="" @size-change="handleSizeChange"
+        @current-change="handleCurrentChange" layout="total, sizes, prev, pager, next, jumper" />
+    </el-card>
+  </div>
+</template>
+
+
+
+

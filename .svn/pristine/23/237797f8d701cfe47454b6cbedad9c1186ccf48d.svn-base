@@ -1,0 +1,113 @@
+<template>
+	<div class="collectionOrderInfo-container">
+
+		<el-card class="full-table" shadow="hover" style="margin-top: 8px">
+			<el-form-item class="settingf">
+		
+				<div class="setting">
+					
+					
+					<el-tooltip class="box-item" effect="dark" content="刷新" placement="bottom-end">
+						<el-button type="primary" :icon="Refresh" />
+					</el-tooltip>
+					<el-tooltip class="box-item" effect="dark" content="密度" placement="bottom-end">
+						<el-button type="primary" :icon="DCaret" />
+					</el-tooltip>
+					<el-tooltip class="box-item" effect="dark" content="列设置" placement="bottom-end">
+						<el-button type="primary" :icon="Setting" />
+					</el-tooltip>
+				</div>
+			</el-form-item>
+
+			<el-table :data="tableData" size="large" style="width: 100%" v-loading="loading" tooltip-effect="light" row-key="id">
+				<el-table-column type="selection" width="55" />
+				<el-table-column prop="documentNo" label="单据编号" align="center" sortable width="150" fixed=""  show-overflow-tooltip="" />
+				
+				<el-table-column label="操作" width="200" align="center" fixed="right" show-overflow-tooltip="">
+					<template #default="scope">
+						<el-button size="small" text type="primary" @click="examine(scope.row.id)"> 查看 </el-button>
+						<el-dropdown>
+							<el-button icon="ele-MoreFilled" size="small" text type="primary" style="padding-left: 12px" />
+							<template #dropdown>
+								<el-dropdown-menu>
+									<el-dropdown-item> 删除 </el-dropdown-item>
+									<el-dropdown-item> 导出报关件 </el-dropdown-item>
+									<el-dropdown-item> 导出验货单 </el-dropdown-item>
+									<el-dropdown-item> 导出外箱标签 </el-dropdown-item>
+									<el-dropdown-item> 附件下载 </el-dropdown-item>
+								</el-dropdown-menu>
+							</template>
+						</el-dropdown>
+					</template>
+				</el-table-column>
+			</el-table>
+			<el-pagination
+				v-model:currentPage="tableParams.page"
+				v-model:page-size="tableParams.pageSize"
+				:total="tableParams.total"
+				:page-sizes="[10, 20, 50, 100]"
+				small=""
+				background=""
+				@size-change="handleSizeChange"
+				@current-change="handleCurrentChange"
+				layout="total, sizes, prev, pager, next, jumper"
+			/>
+			
+		</el-card>
+	</div>
+</template>
+
+<script lang="ts" setup name="collectionOrderInfo">
+import { ref, Ref, onMounted, reactive, computed } from 'vue';
+import router from '/@/router';
+import { service } from '/@/utils/request';
+import moment from 'moment';
+import { Refresh, Setting, DCaret } from '@element-plus/icons-vue';
+const editDialogRef = ref();
+const loading = ref(false);
+let tableData: any[] = reactive([]);
+let tableParams = ref({
+	page: 1,
+	pageSize: 20,
+	total: 0,
+});
+
+async function getAppPage() {
+	service({
+		url: '/api/CollectionOrderInfo/page',
+		method: 'get',
+		params: {
+			
+		},
+	}).then((data) => {
+		
+	});
+}
+
+onMounted(() => {
+	getAppPage();
+});
+
+// 改变页面容量
+const handleSizeChange = (val: number) => {
+	tableParams.value.pageSize = val;
+	getAppPage();
+};
+
+// 改变页码序号
+const handleCurrentChange = (val: number) => {
+	tableParams.value.page = val;
+	getAppPage();
+};
+</script>
+
+<style lang="less" scoped>
+.settingf {
+	position: relative;
+	.setting {
+		position: relative;
+        
+		left: 88%;
+	}
+}
+</style>

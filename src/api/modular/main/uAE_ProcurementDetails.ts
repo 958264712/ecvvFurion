@@ -1,0 +1,117 @@
+﻿import request from '/@/utils/request';
+enum Api {
+	AddUAE_ProcurementDetails = '/api/uAE_ProcurementDetails/add',
+	DeleteUAE_ProcurementDetails = '/api/uAE_ProcurementDetails/delete',
+	UpdateUAE_ProcurementDetails = '/api/uAE_ProcurementDetails/update',
+	PageUAE_ProcurementDetails = '/api/uAE_ProcurementDetails/page',
+	getInventorySKUBasicInfo = '/api/uAE_ProcurementDetails/getInventorySKUBasicInfo',
+	ExportInventorySKUBasicInfo = '/api/uAE_ProcurementDetails/ExportInventorySKUBasicInfo',
+	AddCN_OperationalProductAttributes = '/api/cN_OperationalProductAttributes/add',
+	DeleteCN_OperationalProductAttributes = '/api/cN_OperationalProductAttributes/delete',
+	UpdateCN_OperationalProductAttributes = '/api/cN_OperationalProductAttributes/update',
+	PageCN_OperationalProductAttributes = '/api/cN_OperationalProductAttributes/page',
+	Import = '/api/CN_OperationalProductAttributes/import',
+	UAEImport = '/api/uAE_ProcurementDetails/import',
+}
+
+// 增加UAE采购明细表
+export const addUAE_ProcurementDetails = (params?: any) =>
+	request({
+		url: Api.AddUAE_ProcurementDetails,
+		method: 'post',
+		data: params,
+	});
+
+// 删除UAE采购明细表
+export const deleteUAE_ProcurementDetails = (params?: any) =>
+	request({
+		url: Api.DeleteUAE_ProcurementDetails,
+		method: 'post',
+		data: params,
+	});
+
+// 编辑UAE采购明细表
+export const updateUAE_ProcurementDetails = (params?: any) =>
+	request({
+		url: Api.UpdateUAE_ProcurementDetails,
+		method: 'post',
+		data: params,
+	});
+
+// 分页查询UAE采购明细表
+export const pageUAE_ProcurementDetails = (params?: any) =>
+	request({
+		url: Api.PageUAE_ProcurementDetails,
+		method: 'post',
+		data: params,
+	});
+// 库存sku基础信息
+export const getInventorySKUBasicInfo = (params?: any) =>
+	request({
+		url: Api.getInventorySKUBasicInfo,
+		method: 'get',
+		params: params,
+	});
+
+// 导出库存sku基础信息
+export const ExportInventorySKUBasicInfo = (params?: any) =>
+	request({
+		url: Api.ExportInventorySKUBasicInfo,
+		method: 'post',
+		data: params,
+		responseType: 'blob',
+	});
+
+// 增加CN运营产品属性表
+export const addCN_OperationalProductAttributes = (params?: any) =>
+	request({
+		url: Api.AddCN_OperationalProductAttributes,
+		method: 'post',
+		data: params,
+	});
+
+// 删除CN运营产品属性表
+export const deleteCN_OperationalProductAttributes = (params?: any) =>
+	request({
+		url: Api.DeleteCN_OperationalProductAttributes,
+		method: 'post',
+		data: params,
+	});
+
+// 编辑CN运营产品属性表
+export const updateCN_OperationalProductAttributes = (params?: any) =>
+	request({
+		url: Api.UpdateCN_OperationalProductAttributes,
+		method: 'post',
+		data: params,
+	});
+
+// 分页查询CN运营产品属性表
+export const pageCN_OperationalProductAttributes = (params?: any) =>
+	request({
+		url: Api.PageCN_OperationalProductAttributes,
+		method: 'post',
+		data: params,
+	});
+
+// 导入CN运营产品属性
+export const Import = (params?: any) =>
+	request({
+		url: Api.Import,
+		method: 'post',
+		data: params,
+		headers: {
+			'Content-Type': 'multipart/form-data; boundary=----WebKitFormBoundarynl6gT1BKdPWIejNq',
+		},
+	});
+
+// 导入UAE采购明细
+export const UAEImport = (params?: any) =>
+	request({
+		url: Api.UAEImport,
+		method: 'post',
+		data: params,
+		headers: {
+			'Content-Type': 'multipart/form-data; boundary=----WebKitFormBoundarynl6gT1BKdPWIejNq',
+		},
+	});

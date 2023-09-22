@@ -1,0 +1,174 @@
+﻿<script lang="ts" setup>
+import { ref } from "vue";
+import { ElMessageBox, ElMessage } from "element-plus";
+import { auth } from '/@/utils/authFunction';
+//import { formatDate } from '/@/utils/formatTime';
+import editDialog from './component/editDialog.vue'
+import { pageASINBasicData, Import,ExportASIN } from '/@/api/modular/main/aSINBasicData.ts';
+
+
+const editDialogRef = ref();
+const loading = ref(false);
+const loading1 = ref(false);
+const tableData = ref<any>([]);
+const queryParams = ref<AsinParamsType>({});
+const tableParams = ref({
+  page: 1,
+  pageSize: 10,
+  total: 0,
+});
+const editASINBasicDataTitle = ref("");
+
+
+// 查询操作
+const handleQuery = async () => {
+  loading.value = true;
+  var res = await pageASINBasicData(Object.assign(queryParams.value, tableParams.value));
+  tableData.value = res.data.result?.items ?? [];
+  console.log(tableData.value);
+  
+  tableParams.value.total = res.data.result?.total;
+  loading.value = false;
+};
+
+// 打开新增页面
+const openAddASINBasicData = () => {
+  editASINBasicDataTitle.value = '添加ASIN基础数据';
+  editDialogRef.value.openDialog({});
+};
+
+
+// 改变页面容量
+const handleSizeChange = (val: number) => {
+  tableParams.value.pageSize = val;
+  handleQuery();
+};
+
+// 改变页码序号
+const handleCurrentChange = (val: number) => {
+  tableParams.value.page = val;
+  handleQuery();
+};
+
+// 导入
+function Imports(data) {
+  loading.value = true
+  const formData = new FormData()
+  formData.append('file', data.file)
+  Import(formData).then(res => {
+    loading.value = false
+    if (res.success) {
+      ElMessage.success('Import succeeded')
+      handleQuery();
+    } else {
+      ElMessage.error(res.message) // + res.message
+    }
+  })
+}
+
+// 导出
+function Export() {
+  loading1.value = true
+  ExportASIN().then(res => {
+    loading1.value = false
+    downloadfile(res)
+    handleQuery();
+  })
+}
+function downloadfile(res) {
+  var blob = new Blob([res.data], { type: 'application/octet-stream;charset=UTF-8' })
+  var contentDisposition = res.headers['content-disposition']
+  var patt = new RegExp('filename=([^;]+\\.[^\\.;]+);*')
+  var result = patt.exec(contentDisposition)
+  var filename = result[1]
+  var downloadElement = document.createElement('a')
+  var href = window.URL.createObjectURL(blob) // 创建下载的链接
+  var reg = /^["](.*)["]$/g
+  downloadElement.style.display = 'none'
+  downloadElement.href = href
+  downloadElement.download = decodeURI(filename.replace(reg, '$1')) // 下载后文件名
+  document.body.appendChild(downloadElement)
+  downloadElement.click() // 点击下载
+  document.body.removeChild(downloadElement) // 下载完成移除元素
+  window.URL.revokeObjectURL(href)
+}
+handleQuery();
+
+</script>
+<template>
+  <div class="aSINBasicDatel-container">
+    <el-card shadow="hover" :body-style="{ paddingBottom: '0' }">
+      <el-form :model="queryParams" ref="queryForm" :inline="true">
+        <el-form-item label="ASIN">
+          <el-input v-model="queryParams.aSIN" clearable="" placeholder="请输入ASIN" />
+        </el-form-item>
+        <el-form-item label="店铺SKU">
+          <el-input v-model="queryParams.storeSKU" clearable="" placeholder="请输入店铺SKU" />
+        </el-form-item>
+        <el-form-item label="对应品名">
+          <el-input v-model="queryParams.goodsName" clearable="" placeholder="请输入对应品名" />
+        </el-form-item>
+        <el-form-item label="ERP-SKU">
+          <el-input v-model="queryParams.erpSku" clearable="" placeholder="请输入ERP-SKU" />
+        </el-form-item>
+        <el-form-item label="Origin">
+          <el-input v-model="queryParams.origin" clearable="" placeholder="请输入Origin" />
+        </el-form-item>
+        <el-form-item>
+          <el-button-group>
+            <el-button type="primary" icon="ele-Search" @click="handleQuery"> 查询
+            </el-button>
+            <el-button icon="ele-Refresh" @click="() => { queryParams = {}; handleQuery(); }"> 重置 </el-button>
+          </el-button-group>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" icon="ele-Plus" @click="openAddASINBasicData" v-auth="'aSINBasicData:add'"> 新增
+          </el-button>
+        </el-form-item>
+      </el-form>
+    </el-card>
+    <el-card class="full-table" shadow="hover" style="margin-top: 8px">
+      <div class="importDiv">
+        <el-upload :http-request="Imports" :multiple="false" :show-file-list="false" name="file">
+          <el-button :loading="loading" type="primary">ASIN基础数据导入</el-button>
+        </el-upload>
+        <el-button @click="Export" :loading="loading1" type="primary">导出全部ASIN</el-button>
+        <!-- <el-button icon="link" type="link" href="https://sa.ecvv.com/api/ExcelTemplate/ASIN.xlsx">
+          下载ASIN上传模板</el-button> -->
+      </div>
+      <el-table :data="tableData" size="lagre" style="width: 100%" v-loading="loading" tooltip-effect="light" row-key="id"
+        border="">
+        <el-table-column type="selection" width="55" />
+        <el-table-column prop="asin" label="ASIN" align="center" sortable show-overflow-tooltip="" />
+        <el-table-column prop="storeSKU" label="店铺SKU" align="center" sortable show-overflow-tooltip="" />
+        <el-table-column prop="goodsName" label="对应品名" align="center" sortable show-overflow-tooltip="" />
+        <el-table-column prop="erpSku" label="ERP-SKU" align="center" sortable show-overflow-tooltip="" />
+        <el-table-column prop="origin" label="Origin" align="center" sortable show-overflow-tooltip="" />
+        <el-table-column prop="costPrice" label="CostPrice" align="center" sortable show-overflow-tooltip="" />
+        <el-table-column prop="saudiBottomPrice_R96EP" align="center" label="SaudiBottomPrice_R96EP" width="220" sortable
+          show-overflow-tooltip="" />
+        <el-table-column prop="saudiBottomPrice_63FV3" align="center" label="SaudiBottomPrice_63FV3" width="220" sortable
+          show-overflow-tooltip="" />
+        <el-table-column prop="saudiBottomPrice_YZ6VH" align="center" label="SaudiBottomPrice_YZ6VH" width="220" sortable
+          show-overflow-tooltip="" />
+        <el-table-column prop="unit" label="单位" align="center" sortable show-overflow-tooltip="" />
+      </el-table>
+      <el-pagination v-model:currentPage="tableParams.page" v-model:page-size="tableParams.pageSize"
+        :total="tableParams.total" :page-sizes="[10, 20, 50, 100]" small="" background="" @size-change="handleSizeChange"
+        @current-change="handleCurrentChange" layout="total, sizes, prev, pager, next, jumper" />
+      <editDialog ref="editDialogRef" :title="editASINBasicDataTitle" @reloadTable="handleQuery" />
+    </el-card>
+  </div>
+</template>
+
+<style lang="less" scoped>
+.importDiv{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 50px;
+  width: 400px;
+}
+</style>
+
+
