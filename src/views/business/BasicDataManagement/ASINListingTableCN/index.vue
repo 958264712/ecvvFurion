@@ -570,7 +570,6 @@ function Imports(file: any) {
 	formData.append('Site', area.value);
 	if (area.value == 'CN') {
 		ImportCN(formData).then((res: any) => {
-			loading3.value = false;
 			if (res.data.code == 200) {
 				ElMessage.success('Import succeeded');
 				handleQuery();
@@ -580,7 +579,6 @@ function Imports(file: any) {
 		});
 	} else {
 		ImportUAE(formData).then((res: any) => {
-			loading3.value = false;
 			if (res.data.code == 200) {
 				ElMessage.success('Import succeeded');
 				handleQuery();
@@ -589,6 +587,7 @@ function Imports(file: any) {
 			}
 		});
 	}
+	loading3.value = false;
 }
 //选中的数据
 function handleSelectionChange(val: any) {

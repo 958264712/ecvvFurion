@@ -60,15 +60,21 @@
 		</el-card>
 		<el-card class="full-table" shadow="hover">
 			<div style="display: flex; justify-content: space-between">
-				<el-dropdown>
-					<el-button type="primary">导出</el-button>
-					<template #dropdown>
-						<el-dropdown-menu>
-							<el-dropdown-item @click="Export"> 导出全部 </el-dropdown-item>
-							<el-dropdown-item @click="SelectedExport"> 导出选中 </el-dropdown-item>
-						</el-dropdown-menu>
-					</template>
-				</el-dropdown>
+				<div style="margin-bottom: 20px">
+					<el-dropdown>
+						<el-button type="primary">导出</el-button>
+						<template #dropdown>
+							<el-dropdown-menu>
+								<el-dropdown-item @click="Export"> 导出全部 </el-dropdown-item>
+								<el-dropdown-item @click="SelectedExport"> 导出选中 </el-dropdown-item>
+							</el-dropdown-menu>
+						</template>
+					</el-dropdown>
+					<el-radio-group v-model="area1"  style="margin-left: 20px" >
+						<el-radio-button label="中文表头"  value="中文表头" @change="changeArea('CN')"/>
+						<el-radio-button label="English header"  value="English header" @change="changeArea('EN')"/>
+					</el-radio-group>
+				</div>
 				<tabDragColum :data="TableData" :name="`newasinmanagementData`" :area="area" @handleData="handleData" />
 			</div>
 			<el-tabs v-model="selectcountry" type="card" style="height: 85%" @tab-click="handleClick">
@@ -119,7 +125,7 @@ import { ref, watch, h } from 'vue';
 import { ElMessageBox, ElMessage, ElNotification, ElTooltip } from 'element-plus';
 import { auth } from '/@/utils/authFunction';
 //import { formatDate } from '/@/utils/formatTime';
-import { AsinDataPage, GetNotImportedList } from '/@/api/modular/main/ASINManagement.ts';
+import { AsinDataPage, GetNotImportedList,ExportEnglish,ExportChinese } from '/@/api/modular/main/ASINManagement.ts';
 import axios from 'axios';
 import router from '/@/router';
 import other from '/@/utils/other.ts';
@@ -150,11 +156,21 @@ const tabsList = ref([
 	},
 ]);
 const area = ref('CN');
-
+const area1 = ref('中文表头');
+const changeArea = (val)=>{
+	area.value = val
+	if(area.value === 'CN'){
+		area1.value = '中文表头'
+	}else{
+		area1.value = 'English header'
+	}
+	
+}
 const TableData = ref<any>([
 	{
 		titleCN: 'ERP-SKU',
 		dataIndex: 'erpSku',
+		titleEN: 'ERP-SKU',
 		checked: true,
 		fixed: true,
 		width: '120',
@@ -162,6 +178,7 @@ const TableData = ref<any>([
 	{
 		titleCN: '中文NAME',
 		dataIndex: 'goodsName',
+		titleEN: 'GoodsName',
 		checked: true,
 		width: '145',
 		fixed: true,
@@ -169,6 +186,7 @@ const TableData = ref<any>([
 	{
 		titleCN: 'ASIN',
 		dataIndex: 'asin',
+		titleEN: 'ASIN',
 		width: '110',
 		checked: true,
 		fixed: true,
@@ -176,6 +194,7 @@ const TableData = ref<any>([
 	{
 		titleCN: '品牌',
 		dataIndex: 'brand',
+		titleEN: 'Brand',
 		checked: true,
 		width: '90',
 		fixed: true,
@@ -183,13 +202,15 @@ const TableData = ref<any>([
 	{
 		titleCN: '发货数量',
 		dataIndex: 'singleOrderQTY',
+		titleEN: 'SingleOrderQTY',
 		checked: true,
-		width: '75',
+		width: '130',
 		fixed: true,
 	},
 	{
 		titleCN: '包装规格',
 		dataIndex: 'specsUnit',
+		titleEN: 'SpecsUnit',
 		checked: true,
 		width: '75',
 		fixed: true,
@@ -197,6 +218,7 @@ const TableData = ref<any>([
 	{
 		titleCN: '是否下架',
 		dataIndex: 'list_Unlist',
+		titleEN: 'List/Unlist',
 		checked: true,
 		width: '75',
 		fixed: true,
@@ -204,6 +226,7 @@ const TableData = ref<any>([
 	{
 		titleCN: '采购国',
 		dataIndex: 'purchasingCountry',
+		titleEN: 'Origin',
 		checked: true,
 		width: '100',
 		fixed: true,
@@ -211,6 +234,7 @@ const TableData = ref<any>([
 	{
 		titleCN: '上架站点',
 		dataIndex: 'listingPlatform',
+		titleEN: 'Platform',
 		checked: true,
 		width: '100',
 		fixed: true,
@@ -218,20 +242,23 @@ const TableData = ref<any>([
 	{
 		titleCN: 'Buybox',
 		dataIndex: 'buyboxOne',
+		titleEN: 'Buybox Last Check',
 		checked: true,
-		width: '120',
+		width: '150',
 		fixed: false,
 	},
 	{
 		titleCN: 'Update date',
 		dataIndex: 'updateDateOne',
-		width: '85',
+		titleEN: 'Update date Last Check',
+		width: '160',
 		checked: true,
 		fixed: false,
 	},
 	{
 		titleCN: 'Buybox',
 		dataIndex: 'buyboxTow',
+		titleEN: 'Buybox Update',
 		width: '120',
 		checked: true,
 		fixed: false,
@@ -239,6 +266,7 @@ const TableData = ref<any>([
 	{
 		titleCN: 'Update date',
 		dataIndex: 'updateDateTow',
+		titleEN: 'Update date',
 		width: '85',
 		checked: true,
 		fixed: false,
@@ -246,6 +274,7 @@ const TableData = ref<any>([
 	{
 		titleCN: 'SELLER',
 		dataIndex: 'seller',
+		titleEN: 'SELLER',
 		width: '85',
 		checked: true,
 		fixed: false,
@@ -253,6 +282,7 @@ const TableData = ref<any>([
 	{
 		titleCN: '占有率',
 		dataIndex: 'buyboxSharePercentage',
+		titleEN: 'Buybox Share Percentage',
 		width: '85',
 		checked: true,
 		fixed: false,
@@ -261,6 +291,7 @@ const TableData = ref<any>([
 		titleCN: '总箱数(共多少箱)',
 		dataIndex: 'packBoxesQuantity',
 		width: '85',
+		titleEN: 'Pack Boxes Quantity',
 		checked: true,
 		fixed: false,
 	},
@@ -268,6 +299,7 @@ const TableData = ref<any>([
 		titleCN: 'RANK',
 		dataIndex: 'rank',
 		width: '250',
+		titleEN: 'RANK',
 		checked: true,
 		fixed: false,
 	},
@@ -275,6 +307,7 @@ const TableData = ref<any>([
 		titleCN: '评论',
 		dataIndex: 'reviewStar',
 		checked: true,
+		titleEN: 'Review Star',
 		width: '120',
 		fixed: false,
 	},
@@ -282,12 +315,14 @@ const TableData = ref<any>([
 		titleCN: '评论数量',
 		dataIndex: 'reviews',
 		checked: true,
+		titleEN: 'Reviews',
 		width: '100',
 		fixed: false,
 	},
 	{
 		titleCN: '跟卖数量',
 		dataIndex: 'numberOfSellers',
+		titleEN: 'Number of Sellers',
 		checked: true,
 		width: '140',
 		fixed: false,
@@ -296,6 +331,7 @@ const TableData = ref<any>([
 		titleCN: '视频',
 		dataIndex: 'videoStr',
 		width: '120',
+		titleEN: 'Video',
 		checked: true,
 		fixed: false,
 	},
@@ -303,18 +339,21 @@ const TableData = ref<any>([
 		titleCN: 'A+',
 		dataIndex: 'aStr',
 		width: '85',
+		titleEN: 'A+',
 		checked: true,
 		fixed: false,
 	},
 	{
 		titleCN: '活动',
 		dataIndex: 'discount',
+		titleEN: 'Discount',
 		width: '85',
 		checked: true,
 		fixed: false,
 	},
 	{
 		titleCN: 'Coupon',
+		titleEN: 'Coupon',
 		dataIndex: 'coupon',
 		width: '85',
 		checked: true,
@@ -322,6 +361,7 @@ const TableData = ref<any>([
 	},
 	{
 		titleCN: '历史销量',
+		titleEN: 'History Sales',
 		dataIndex: 'historySales',
 		width: '110',
 		checked: true,
@@ -329,6 +369,7 @@ const TableData = ref<any>([
 	},
 	{
 		titleCN: '亚马逊周销量',
+		titleEN: '7 Days Sales',
 		dataIndex: 'days7Sales',
 		width: '110',
 		checked: true,
@@ -336,6 +377,7 @@ const TableData = ref<any>([
 	},
 	{
 		titleCN: '亚马逊月销量',
+		titleEN: '30 Days Sales',
 		dataIndex: 'days30Sales',
 		width: '120',
 		checked: true,
@@ -343,6 +385,7 @@ const TableData = ref<any>([
 	},
 	{
 		titleCN: '亚马逊仓库存',
+		titleEN: 'AMZ Inventory',
 		dataIndex: 'amzInventory',
 		width: '120',
 		checked: true,
@@ -350,6 +393,7 @@ const TableData = ref<any>([
 	},
 	{
 		titleCN: 'ERP库存',
+		titleEN: 'ERP Inventory',
 		dataIndex: 'erpInventory',
 		width: '120',
 		checked: true,
@@ -357,6 +401,7 @@ const TableData = ref<any>([
 	},
 	{
 		titleCN: 'DF库存SHOWAY',
+		titleEN: 'DF Inventory',
 		dataIndex: 'dfInventory',
 		width: '145',
 		checked: true,
@@ -364,6 +409,7 @@ const TableData = ref<any>([
 	},
 	{
 		titleCN: 'Listing Inventory Status',
+		titleEN: 'Listing Inventory Status',
 		dataIndex: 'listingInventoryStatus',
 		width: '155',
 		checked: true,
@@ -371,27 +417,31 @@ const TableData = ref<any>([
 	},
 	{
 		titleCN: '最低COST',
+		titleEN: 'Lowest Cost Price',
 		dataIndex: 'lowestCostStr',
-		width: '110',
+		width: '150',
 		checked: true,
 		fixed: false,
 	},
 	{
 		titleCN: '最低COST利润率',
+		titleEN: 'Lowest Cost Price Rate',
 		dataIndex: 'lowestCostProfitRateStr',
-		width: '110',
+		width: '150',
 		checked: true,
 		fixed: false,
 	},
 	{
 		titleCN: '当前Cost Price',
+		titleEN: 'Current Cost Price',
 		dataIndex: 'currentCost',
-		width: '110',
+		width: '150',
 		checked: true,
 		fixed: false,
 	},
 	{
 		titleCN: '货币单位',
+		titleEN: 'Currency',
 		dataIndex: 'currency',
 		width: '110',
 		checked: true,
@@ -399,6 +449,7 @@ const TableData = ref<any>([
 	},
 	{
 		titleCN: 'Our List Price',
+		titleEN: 'Our List Price',
 		dataIndex: 'ourListPriceStr',
 		width: '120',
 		checked: true,
@@ -406,6 +457,7 @@ const TableData = ref<any>([
 	},
 	{
 		titleCN: 'Buybox price',
+		titleEN: 'Buybox price',
 		dataIndex: 'buyBoxPriceStr',
 		width: '110',
 		checked: true,
@@ -413,6 +465,7 @@ const TableData = ref<any>([
 	},
 	{
 		titleCN: 'Cost Profit',
+		titleEN: 'Cost Profit',
 		dataIndex: 'costProfit',
 		width: '110',
 		checked: true,
@@ -420,6 +473,7 @@ const TableData = ref<any>([
 	},
 	{
 		titleCN: '亚马逊佣金',
+		titleEN: 'Commission Rate',
 		dataIndex: 'commissionRateStr',
 		width: '125',
 		checked: true,
@@ -427,6 +481,7 @@ const TableData = ref<any>([
 	},
 	{
 		titleCN: 'Cost Profit Rate',
+		titleEN: 'Cost Profit Rate',
 		dataIndex: 'costProfitRateStr',
 		width: '125',
 		checked: true,
@@ -434,6 +489,7 @@ const TableData = ref<any>([
 	},
 	{
 		titleCN: 'Offer是否存在',
+		titleEN: 'Offer Exist',
 		dataIndex: 'offerExist',
 		width: '120',
 		checked: true,
@@ -441,6 +497,7 @@ const TableData = ref<any>([
 	},
 	{
 		titleCN: '页面是否存在',
+		titleEN: 'Page Exist',
 		dataIndex: 'pageExist',
 		width: '120',
 		checked: true,
@@ -448,6 +505,7 @@ const TableData = ref<any>([
 	},
 	{
 		titleCN: '页面高价预警',
+		titleEN: 'High List Alert',
 		dataIndex: 'highListAlert',
 		width: '120',
 		checked: true,
@@ -455,6 +513,7 @@ const TableData = ref<any>([
 	},
 	{
 		titleCN: '页面低价预警',
+		titleEN: 'Low List Price Alert',
 		dataIndex: 'lowListPriceAlert',
 		width: '120',
 		checked: true,
@@ -462,12 +521,14 @@ const TableData = ref<any>([
 	},
 	{
 		titleCN: '负责人',
+		titleEN: 'Creator',
 		dataIndex: 'creator',
 		width: '100',
 		checked: true,
 		fixed: false,
 	},
 ]);
+
 const handleData = (list: any) => {
 	if (list?.length) {
 		TableData.value = list;
@@ -489,8 +550,8 @@ const splitRank = (row, column) => {
 							// str += `<div><span>#${item}</span>`;
 							// arr.push(h('span', null, '#'+item));
 						} else {
-							str += `<a href="${item}" target="_blank">#${iArr[index-1]}</a></div>`;
-							arr.push(h('a', { href: list[1], target: '_blank' }, '#'+iArr[index-1]));
+							str += `<a href="${item}" target="_blank">#${iArr[index - 1]}</a></div>`;
+							arr.push(h('a', { href: list[1], target: '_blank' }, '#' + iArr[index - 1]));
 							let countArr = h('div', null, arr);
 							hArr.push(countArr);
 							arr = [];
@@ -502,9 +563,9 @@ const splitRank = (row, column) => {
 				let arr = [];
 				iArr.map((item, index) => {
 					let str = '';
-					if (index % 2 === 0&&item?.length) {
+					if (index % 2 === 0 && item?.length) {
 						str += `<div>#${item}</div>`;
-						arr.push(h('span', null, '#'+item));
+						arr.push(h('span', null, '#' + item));
 						let countArr = h('div', null, arr);
 						hArr.push(countArr);
 						arr = [];
@@ -514,11 +575,7 @@ const splitRank = (row, column) => {
 			}
 		});
 		content += '</div>';
-		return h(ElTooltip, { content, placement: 'top', rawContent: true, effect: 'light' }, [
-			h('div', null, [
-				...hArr,
-			]),
-		]);
+		return h(ElTooltip, { content, placement: 'top', rawContent: true, effect: 'light' }, [h('div', null, [...hArr])]);
 	}
 };
 const selectcountry = ref<string>('UAE');
@@ -530,45 +587,21 @@ const handleClick = (tab, event): void => {
 	handleQuery();
 };
 
-function Export() {
+const Export = () => {
 	loading.value = true;
 	const input = {
 		country: selectcountry.value,
 	};
-	axios
-		.post((import.meta.env.VITE_API_URL as any) + `/api/aSINData/export`, input, {
-			responseType: 'blob', // 将响应解析为二进制数据
-		})
-		.then((data) => {
-			downloadfile(data);
-			if (data.statusText == 'OK') {
-				ElNotification({
-					title: '系统提示',
-					message: '导出成功',
-					type: 'success',
-				});
-				ElMessage({
-					type: 'success',
-					message: '导出成功',
-				});
-			}
-			loading.value = false;
-		})
-		.catch((arr) => {
-			ElNotification({
-				title: '系统提示',
-				message: '下载错误：获取文件流错误',
-				type: 'error',
-			});
-			ElMessage({
-				type: 'error',
-				message: '导出失败',
-			});
-			loading.value = false;
-		});
+	if(area.value === 'CN'){
+		Chinese(input)
+	}else{
+		English(input)
+	}
+	loading.value = false;
 }
 
-function SelectedExport() {
+
+const SelectedExport = () =>{
 	if (selectedRows.value.length === 0) {
 		ElMessage.warning('请至少选中一条数据');
 		return;
@@ -578,13 +611,17 @@ function SelectedExport() {
 		country: selectcountry.value,
 		idLists: selectedRows.value,
 	};
-	axios
-		.post((import.meta.env.VITE_API_URL as any) + `/api/aSINData/export`, formData, {
-			responseType: 'blob', // 将响应解析为二进制数据
-		})
-		.then((data) => {
-			downloadfile(data);
-			if (data.statusText == 'OK') {
+	if(area.value === 'CN'){
+		Chinese(formData)
+	}else{
+		English(formData)
+	}
+	loading.value = false;
+}
+const English = async (obj:any) => {
+	await ExportEnglish(obj).then((data)=>{
+		other.downloadfile(data);
+		if (data.statusText == 'OK') {
 				ElNotification({
 					title: '系统提示',
 					message: '导出成功',
@@ -595,9 +632,7 @@ function SelectedExport() {
 					message: '导出成功',
 				});
 			}
-			loading.value = false;
-		})
-		.catch((arr) => {
+	}).catch((arr) => {
 			ElNotification({
 				title: '系统提示',
 				message: '下载错误：获取文件流错误',
@@ -607,29 +642,53 @@ function SelectedExport() {
 				type: 'error',
 				message: '导出失败',
 			});
-			loading.value = false;
 		});
 }
-
-const downloadfile = (res: any) => {
-	var blob = new Blob([res.data], {
-		type: 'application/octet-stream;charset=UTF-8',
-	});
-	var contentDisposition = res.headers['content-disposition'];
-	var patt = new RegExp("filename\\*=(UTF-8['']*[''])([^';]+)(?:.*)");
-	var result = patt.exec(contentDisposition);
-	var filename = result[2];
-	var downloadElement = document.createElement('a');
-	var href = window.URL.createObjectURL(blob); // 创建下载的链接
-	var reg = /^["](.*)["]$/g;
-	downloadElement.style.display = 'none';
-	downloadElement.href = href;
-	downloadElement.download = decodeURIComponent(filename.replace(reg, '$1')); // 下载后文件名
-	document.body.appendChild(downloadElement);
-	downloadElement.click(); // 点击下载
-	document.body.removeChild(downloadElement); // 下载完成移除元素
-	window.URL.revokeObjectURL(href);
-};
+const Chinese = async (obj:any) => {
+	await ExportChinese(obj).then((data)=>{
+		other.downloadfile(data);
+		if (data.statusText == 'OK') {
+				ElNotification({
+					title: '系统提示',
+					message: '导出成功',
+					type: 'success',
+				});
+				ElMessage({
+					type: 'success',
+					message: '导出成功',
+				});
+			}
+	}).catch((arr) => {
+			ElNotification({
+				title: '系统提示',
+				message: '下载错误：获取文件流错误',
+				type: 'error',
+			});
+			ElMessage({
+				type: 'error',
+				message: '导出失败',
+			});
+		});
+}
+// const downloadfile = (res: any) => {
+// 	var blob = new Blob([res.data], {
+// 		type: 'application/octet-stream;charset=UTF-8',
+// 	});
+// 	var contentDisposition = res.headers['content-disposition'];
+// 	var patt = new RegExp("filename\\*=(UTF-8['']*[''])([^';]+)(?:.*)");
+// 	var result = patt.exec(contentDisposition);
+// 	var filename = result[2];
+// 	var downloadElement = document.createElement('a');
+// 	var href = window.URL.createObjectURL(blob); // 创建下载的链接
+// 	var reg = /^["](.*)["]$/g;
+// 	downloadElement.style.display = 'none';
+// 	downloadElement.href = href;
+// 	downloadElement.download = decodeURIComponent(filename.replace(reg, '$1')); // 下载后文件名
+// 	document.body.appendChild(downloadElement);
+// 	downloadElement.click(); // 点击下载
+// 	document.body.removeChild(downloadElement); // 下载完成移除元素
+// 	window.URL.revokeObjectURL(href);
+// };
 
 const clearObj = () => {
 	Session.set('queryObj', { ifquery: true });

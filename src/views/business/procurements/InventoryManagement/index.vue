@@ -27,26 +27,8 @@
 			<div style="display: flex; justify-content: space-between">
 				<div class="importDiv" style="width: 17%">
 					<el-button @click="dialogFormVisible = true" type="primary"> 导入 </el-button>
-					<el-dialog v-model="dialogFormVisible" title="表格导入" width="40%">
-						<el-form :label-position="right" style="max-width: 460px">
-							<el-form-item>
-								<span class="itemlabel">站点：</span>
-								<el-select v-model="Typevalue" size="large">
-									<el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"> </el-option>
-								</el-select>
-							</el-form-item>
-							<el-form-item>
-								<span class="itemlabel">表格名：</span>
-								<el-select v-model="Namevalue" size="large">
-									<el-option v-for="item in options2" :key="item.value" :label="item.label" :value="item.value"> </el-option>
-								</el-select>
-							</el-form-item>
-							<el-form-item>
-								<el-upload style="position: relative; left: 260px" :on-change="Imports" :multiple="false" action="#" :show-file-list="false" :auto-upload="false" name="file">
-									<el-button style="width: 65px; height: 32px" :loading="ImportsSalesloading" type="primary">导入</el-button>
-								</el-upload>
-							</el-form-item>
-						</el-form>
+					<el-dialog v-model="dialogFormVisible" title="导入" width="600px" center>
+						<importDialog :type="importType" :text="importText" :formList="importFormList" :importsInterface="ImportInventoryManagement" @close="importClose" @importQuery="importQuery"/>
 					</el-dialog>
 
 					<div class="flex flex-wrap items-center">
@@ -166,6 +148,7 @@ import { Right } from '@element-plus/icons-vue/dist/types';
 import errorDialog from './component/error_table.vue';
 import axios from 'axios';
 import tabDragColum from '/@/components/tabDragColum/index.vue';
+import importDialog from '/@/components/importDialog/index.vue';
 
 const loading = ref(false);
 const errorDialogRef = ref();
@@ -317,6 +300,18 @@ const TableData = ref<any>([
 		fixed: false,
 	},
 	{
+		titleCN: '近30天销量-UAE',
+		dataIndex: 'shippedUnitsUAE',
+		checked: true,
+		fixed: false,
+	},
+	{
+		titleCN: '近30天销量-SA',
+		dataIndex: 'shippedUnitsSA',
+		checked: true,
+		fixed: false,
+	},
+	{
 		titleCN: 'UAE建议采购数量',
 		dataIndex: 'uaeSuggestedProcurementQuantity',
 		checked: true,
@@ -330,12 +325,12 @@ const TableData = ref<any>([
 	},
 ]);
 
-const handleData = (list: any) => {
-	if (list?.length) {
-		TableData.value = list;
-	}
-};
+// 导入模块
 const options = ref([
+	{
+		value: '全部(UAE、SA)',
+		label: '全部(UAE、SA)',
+	},
 	{
 		value: 'UAE',
 		label: 'UAE',
@@ -347,20 +342,19 @@ const options = ref([
 ]);
 const options2 = ref([
 	{
-		value: 'Sales',
-		label: 'Sales',
-	},
-	{
 		value: 'amazon-orders-Dropship',
 		label: 'amazon-orders-Dropship',
+		disabled:false,
 	},
 	{
 		value: 'Inventory_Sourcing_Retail',
 		label: 'Inventory_Sourcing_Retail',
+		disabled:false,
 	},
 	{
 		value: '金蝶云采购申请单',
 		label: '金蝶云采购申请单',
+		disabled:false,
 	},
 ]);
 const Typevalue = ref<any>('UAE');
@@ -372,30 +366,81 @@ const tableParams = ref({
 	order: null,
 	prop: null,
 });
-let selectedRows = ref<any>([]);
-function Imports(file: any) {
-	ImportsSalesloading.value = true;
-	const formData = new FormData();
-	formData.append('file', file.raw);
-	formData.append('type', Typevalue.value);
-	formData.append('table', Namevalue.value);
-	ImportInventoryManagement(formData).then((res: any) => {
-		ImportsSalesloading.value = false;
-		if (res.data.code == 200) {
-			if (res.data.result == null) {
-				ElMessage.success('导入成功');
-				handleQuery();
-			} else {
-				errorDTitle.value = '金蝶采购云申请单';
-				errorDialogRef.value.openDialog(res.data.result);
+const importType = ref('inventoryManagement')
+const importText = ref('选择站点、表格名，点击"确定"后，选择需要导入的文件，将导入该数据')
+// const importsInterface = ref('/api/inventoryManagement/Imports')
+const importChange = (val) => {
+	if(val === '全部(UAE、SA)'){
+		options2.value.map(item=>{
+			if(item.label !== '金蝶云采购申请单'){
+				item.disabled = true;
+			}else{
+				item.disabled = false;
 			}
-		} else {
-			ImportsSalesloading.value = false;
-			ElMessage.error('导入失败'); // + res.message
-		}
-	});
+		})
+	}else{
+		options2.value.map(item=>{
+			if(item.label === '金蝶云采购申请单'){
+				item.disabled = true;
+			}else{
+				item.disabled = false;
+			}
+		})
+	}
 }
+const importFormList = ref<any>([
+	{
+		label:'站点',
+		prop:'Site',
+		type:'select',
+		select:'value1',
+		selectList:options.value,
+		change:importChange,
+	},
+	{
+		label:'表格名',
+		prop:'excelName',
+		type:'select',
+		select:'value2',
+		selectList:options2.value,
+		change:null,
+	},
+])
+let selectedRows = ref<any>([]);
+// function Imports(file: any) {
+// 	ImportsSalesloading.value = true;
+// 	const formData = new FormData();
+// 	formData.append('file', file.raw);
+// 	formData.append('type', Typevalue.value);
+// 	formData.append('table', Namevalue.value);
+// 	ImportInventoryManagement(formData).then((res: any) => {
+// 		ImportsSalesloading.value = false;
+// 		if (res.data.code == 200) {
+// 			if (res.data.result == null) {
+// 				ElMessage.success('导入成功');
+// 				handleQuery();
+// 			} else {
+// 				errorDTitle.value = '金蝶采购云申请单';
+// 				errorDialogRef.value.openDialog(res.data.result);
+// 			}
+// 		} else {
+// 			ImportsSalesloading.value = false;
+// 			ElMessage.error('导入失败'); // + res.message
+// 		}
+// 	});
+// }
 
+const importClose = (bol:boolean) => {
+	dialogFormVisible.value = bol
+}
+const importQuery = ()=>{
+	handleQuery()
+}
+const handleData = (list: any) => {
+	if (list?.length) {
+		TableData.value = list;
+	}
+};
 // 改变页面容量
 const handleSizeChange = (val: number) => {
 	tableParams.value.pageSize = val;

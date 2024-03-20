@@ -155,9 +155,9 @@ export const InventoryManagementInfo = (params?: any) =>
 		method: 'get',
 		data: params,
 	});
-export const ImportInventoryManagement = (params?: any) =>
+export const ImportInventoryManagement = (params?: any,obj?:any) =>
 	request({
-		url: Api.ImportInventoryManagement + '/' + params.table + '/' + params.Type,
+		url: Api.ImportInventoryManagement + '/' + obj.table + '/' + obj.Type,
 		method: 'post',
 		data: params,
 		headers: {

@@ -87,7 +87,7 @@
 		</el-card>
 		<el-dialog v-model="visible" title="SevenDaysSales List" @close="close" width="1000px">
 			<!-- <sevenDaysSales :id="sevenDaysSalesId"></sevenDaysSales> -->
-			<InfoDataDialog :id="sevenDaysSalesId" idName="sevenDaysSalesBatchId" :dataList="dataList"  :interface="pageSevenDaysSales" :formList="formList" />
+			<InfoDataDialog :id="sevenDaysSalesId" idName="sevenDaysSalesBatchId" :dataList="dataList" :ifClose="ifClose" :pointerface="pageSevenDaysSales" :formList="formList" />
 		</el-dialog>
 	</div>
 </template>
@@ -175,14 +175,18 @@ const opendialog = () => {
 	dialogFormVisible.value = true;
 	site.value = '';
 };
+const ifClose = ref(false);
 //打开弹窗
 function showModal(id: any) {
 	sevenDaysSalesId = id;
+	ifClose.value = true;
 	visible.value = true;
 }
 
+
 //关闭弹窗
 function close() {
+	ifClose.value = false;
 	visible.value = false;
 }
 

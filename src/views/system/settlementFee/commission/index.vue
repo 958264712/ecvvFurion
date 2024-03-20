@@ -2,34 +2,65 @@
 import { ref, watch, onMounted } from 'vue';
 import editDialog from './components/index.vue';
 import { ElMessage } from 'element-plus';
-import { SKUOperationPage, SKUOperationUpdate, SKUOperationExport } from '/@/api/modular/main/sotckSkuOperations';
+import { amazonGetRate, amazonPage, amazonUpdate } from '/@/api/modular/main/amazonPlatformCommission';
 
-const queryParams = ref<any>({ UAE: '23', SA: '10' });
+const queryParams = ref<any>({});
+const tableParams = ref<any>({ page: 1, pageSize: 20 });
 const tableData = ref<any>([]);
 const setUAE = ref(true);
 const setSA = ref(true);
 const loading = ref(false);
 
+const getRate = async () => {
+	await amazonGetRate().then((res) => {
+		if (res.data.code === 200) {
+			queryParams.value = {
+				UAE: res.data.result.uaeRate,
+				SA: res.data.result.saRate,
+			};
+		}
+	});
+};
+
 const handleQuery = async (): void => {
+	getRate();
 	loading.value = true;
-	var res = await SKUOperationPage(Object.assign(queryParams.value));
+	var res = await amazonPage(Object.assign(tableParams.value));
 	tableData.value = res.data.result?.items ?? [];
+	tableParams.value.total = res.data.result?.total;
 	loading.value = false;
 };
 
-const setItem = (name:string,item: boolean) => {
+const setItem = async (name: string, item: boolean) => {
 	switch (name) {
-		case 'setUAE':
-			setUAE.value = !item
+		case 'UAE':
+			setUAE.value = !item;
 			break;
 		default:
-			setSA.value = !item
+			setSA.value = !item;
 			break;
 	}
+	
 	if (!item) {
-		ElMessage.success('保存成功');
+		await amazonUpdate(Object.assign({ site: name, rate: queryParams.value[name] })).then((res) => {
+			if (res.data.code === 200) {
+				ElMessage.success('保存成功');
+				handleQuery();
+			}
+		});
 	}
 };
+// 改变页面容量
+const handleSizeChange = (val: number): void => {
+	tableParams.value.pageSize = val;
+	handleQuery();
+};
+// 改变页码序号
+const handleCurrentChange = (val: number): void => {
+	tableParams.value.page = val;
+	handleQuery();
+};
+handleQuery();
 </script>
 <template>
 	<div class="stock_sku_operations">
@@ -48,7 +79,7 @@ const setItem = (name:string,item: boolean) => {
 						]"
 					>
 						<el-input v-model="queryParams.UAE" :disabled="setUAE" />
-						<el-button type="primary" style="marginLeft: 10px" @click="setItem('setUAE',setUAE)">{{ setUAE ? '设置' : '保存' }}</el-button>
+						<el-button type="primary" style="marginleft: 10px" @click="setItem('UAE', setUAE)">{{ setUAE ? '设置' : '保存' }}</el-button>
 					</el-form-item>
 				</el-col>
 				<el-col :xs="24" :sm="11" :md="11" :lg="11" :xl="11" class="mb20">
@@ -64,20 +95,31 @@ const setItem = (name:string,item: boolean) => {
 						]"
 					>
 						<el-input v-model="queryParams.SA" :disabled="setSA" />
-						<el-button type="primary" style="marginLeft: 10px" @click="setItem('setSA',setSA)">{{ setSA ? '设置' : '保存' }}</el-button>
+						<el-button type="primary" style="marginleft: 10px" @click="setItem('SA', setSA)">{{ setSA ? '设置' : '保存' }}</el-button>
 					</el-form-item>
 				</el-col>
 			</el-row>
 		</el-form>
-		<el-card class="full-table" shadow="hover" :body-style="{ padding: '10px 20px' }">
+		<el-card class="full-table" shadow="hover">
 			<div class="settingf">历史记录</div>
 			<el-table :data="tableData" style="height: 100%" v-loading="loading" tooltip-effect="light" row-key="id" @selection-change="(selection: any) => selectChange(selection)">
-				<el-table-column sortable prop="inventorySKU" label="站点" align="center" show-overflow-tooltip="" />
-				<el-table-column prop="inventoryProductName" label="修改前佣金（%）" align="center" />
-				<el-table-column prop="salesAttributes" label="修改后佣金（%）" align="center" />
-				<el-table-column prop="productCAT" label="操作时间 " align="center" />
-				<el-table-column prop="inTransitQuantity" label="操作人 " align="center" />
+				<el-table-column sortable prop="site" label="站点" align="center" show-overflow-tooltip="" />
+				<el-table-column prop="beforeModificationRateStr" label="修改前毛利率（%）" align="center" />
+				<el-table-column prop="afterModificationRateRateStr" label="修改后毛利率（%）" align="center" />
+				<el-table-column prop="operationTime" label="操作时间 " align="center" />
+				<el-table-column prop="creator" label="操作人 " align="center" />
 			</el-table>
+			<el-pagination
+				v-model:currentPage="tableParams.page"
+				v-model:page-size="tableParams.pageSize"
+				:total="tableParams.total"
+				:page-sizes="[10, 20, 50, 100, 500, 1000]"
+				small=""
+				background=""
+				@size-change="handleSizeChange"
+				@current-change="handleCurrentChange"
+				layout="total, sizes, prev, pager, next, jumper"
+			/>
 		</el-card>
 	</div>
 </template>

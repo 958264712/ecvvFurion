@@ -36,8 +36,9 @@
 		</el-card>
 		<el-card class="full-table" shadow="hover" style="margin-top: 8px">
 			<el-form-item><el-button @click="opendialog" type="primary"> 导入 </el-button></el-form-item>
-			<el-dialog v-model="dialogFormVisible" title="表格导入" :width="400">
-				<span class="itemlabel">站点：</span>
+			<el-dialog v-model="dialogFormVisible" title="DFInventoryBatch导入" :width="600" center>
+				<importDialog :type="importType" text="选择站点，点击'确定'后，选择需要导入的文件，将导入该数据"  :formList="importFormList" :importsInterface="Import" @close="importClose" @importQuery="importQuery" />
+				<!-- <span class="itemlabel">站点：</span>
 				<el-select v-model="site" size="large">
 					<el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"> </el-option>
 				</el-select>
@@ -47,7 +48,7 @@
 							<el-button :loading="importloading" type="primary" size="default">导入数据</el-button>
 						</el-upload>
 					</span>
-				</template>
+				</template> -->
 			</el-dialog>
 			<el-table :data="tableData" style="width: 100%" v-loading="loading" tooltip-effect="light" row-key="id" border="">
 				<el-table-column type="index" label="序号" width="55" align="center" />
@@ -78,7 +79,7 @@
 			<editDialog ref="editDialogRef" :title="editDFInventory_BatchTitle" @reloadTable="handleQuery" />
 		</el-card>
 		<el-dialog v-model="visible" title="DFInventory List" @close="close" width="1000px">
-			<InfoDataDialog :id="dFInventoryBatchId" idName="dFInventoryBatchId" :dataList="dataList"  :interface="pageDFInventory" :formList="formList" />
+			<InfoDataDialog :id="dFInventoryBatchId" idName="dFInventoryBatchId" :dataList="dataList" :ifClose="ifClose"  :pointerface="pageDFInventory" :formList="formList" />
 			<!-- <dFInventory :id="dFInventoryBatchId"></dFInventory> -->
 		</el-dialog>
 	</div>
@@ -95,6 +96,7 @@ import { pageDFInventory } from '/@/api/operation/dFInventory';
 import { pageDFInventory_Batch, deleteDFInventory_Batch, Import } from '/@/api/operation/dFInventory_Batch';
 import { getDictDataList } from '/@/api/system/admin';
 import InfoDataDialog from '/@/components/infoDataDialog/index.vue'
+import importDialog from '/@/components/importDialog/index.vue';
 
 const getsiteData = ref<any>([]);
 
@@ -169,17 +171,36 @@ const opendialog = () => {
 	dialogFormVisible.value = true;
 	site.value = '';
 };
+const ifClose = ref(false);
 //打开弹窗
 function showModal(id: any) {
 	dFInventoryBatchId = id;
+	ifClose.value = true;
 	visible.value = true;
 }
 
 //关闭弹窗
 function close() {
+	ifClose.value = false;
 	visible.value = false;
 }
+const importType = ref('dFInventory_batch');
+const importFormList = ref<any>([
+	{
+		label: '站点',
+		prop: 'Site',
+		type: 'select',
+		select: 'Site',
+		selectList: options.value,
+	},
 
+]);
+const importClose = (bol:boolean) => {
+	dialogFormVisible.value = bol
+}
+const importQuery = ()=>{
+	handleQuery()
+}
 // 导入
 const Imports = (file: any) => {
 	if (site.value == '') {

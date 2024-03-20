@@ -36,8 +36,9 @@
 		</el-card>
 		<el-card class="full-table" shadow="hover" style="margin-top: 8px">
 			<el-form-item><el-button @click="opendialog" type="primary"> 导入 </el-button></el-form-item>
-			<el-dialog v-model="dialogFormVisible" title="表格导入" :width="400">
-				<span class="itemlabel">站点：</span>
+			<el-dialog v-model="dialogFormVisible" title="CostpriceBatch导入" width="600px" center>
+					<importDialog :type="importType" text="选择站点，点击'确定'后，选择需要导入的文件，将导入该数据"  :formList="importFormList" :importsInterface="Import" @close="importClose" @importQuery="importQuery" />
+				<!-- <span class="itemlabel">站点：</span>
 				<el-select v-model="site" size="large">
 					<el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"> </el-option>
 				</el-select>
@@ -47,7 +48,7 @@
 							<el-button :loading="importloading" type="primary" size="default">导入数据</el-button>
 						</el-upload>
 					</span>
-				</template>
+				</template> -->
 			</el-dialog>
 			<el-table :data="tableData" style="width: 100%" v-loading="loading" tooltip-effect="light" row-key="id" border="">
 				<el-table-column type="index" label="序号" width="55" align="center" />
@@ -79,7 +80,7 @@
 		</el-card>
 		<el-dialog v-model="visible" title="Costpeice List" @close="close" width="1000px">
 			<!-- <costprice :id="costpriceBatchId"></costprice> -->
-			<InfoDataDialog :id="costpriceBatchId" idName="costpriceBatchId" :dataList="dataList"  :interface="pageCostpeice" :formList="formList" />
+			<InfoDataDialog :id="costpriceBatchId" idName="costpriceBatchId" :dataList="dataList" :ifClose="ifClose" :pointerface="pageCostpeice" :formList="formList" />
 		</el-dialog>
 	</div>
 </template>
@@ -95,17 +96,21 @@ import costprice from './component/costprice.vue';
 import { pageCostpeice_Batch, deleteCostpeice_Batch, Import } from '/@/api/operation/costprice_Batch';
 import { pageCostpeice } from '/@/api/operation/costprice';
 import { getDictDataList } from '/@/api/system/admin';
+import importDialog from '/@/components/importDialog/index.vue';
 import InfoDataDialog from '/@/components/infoDataDialog/index.vue'
 
+const ifClose = ref(false);
 //打开弹窗
 function showModal(id: any) {
 	costpriceBatchId = id;
+	ifClose.value = true;
 	visible.value = true;
 }
 
 //关闭弹窗
 function close() {
 	visible.value = false;
+	ifClose.value = false;
 }
 // infoDataDialog 配套参数
 const formList = ref<any>([
@@ -191,34 +196,50 @@ const tableParams = ref({
 	total: 0,
 });
 const editCostpeice_BatchTitle = ref('');
+const importType = ref('costprice_batch');
+const importFormList = ref<any>([
+	{
+		label: '站点',
+		prop: 'Site',
+		type: 'select',
+		select: 'Site',
+		selectList: options.value,
+	},
 
+]);
+const importClose = (bol:boolean) => {
+	dialogFormVisible.value = bol
+}
+const importQuery = ()=>{
+	handleQuery()
+}
 // 导入
-const Imports = (file: any) => {
-	if (site.value == '') {
-		ElMessage.warning('请选择站点');
-		return;
-	}
-	importloading.value = true;
-	const formData = new FormData();
-	formData.append('file', file.raw);
-	formData.append('site', site.value);
-	Import(formData)
-		.then((res: any) => {
-			importloading.value = false;
-			if (res.data.code == 200) {
-				ElMessage.success('导入成功');
-				dialogFormVisible.value = false;
-				handleQuery();
-			} else {
-				importloading.value = false;
-				ElMessage.error(res.message); // + res.message
-			}
-		})
-		.catch(() => {
-			importloading.value = false;
-			dialogFormVisible.value = false;
-		});
-};
+// const Imports = (file: any) => {
+// 	if (site.value == '') {
+// 		ElMessage.warning('请选择站点');
+// 		return;
+// 	}
+// 	importloading.value = true;
+// 	const formData = new FormData();
+// 	formData.append('file', file.raw);
+// 	formData.append('site', site.value);
+// 	Import(formData)
+// 		.then((res: any) => {
+// 			importloading.value = false;
+// 			if (res.data.code == 200) {
+// 				ElMessage.success('导入成功');
+// 				dialogFormVisible.value = false;
+// 				handleQuery();
+// 			} else {
+// 				importloading.value = false;
+// 				ElMessage.error(res.message); // + res.message
+// 			}
+// 		})
+// 		.catch(() => {
+// 			importloading.value = false;
+// 			dialogFormVisible.value = false;
+// 		});
+// };
 
 const opendialog = () => {
 	dialogFormVisible.value = true;

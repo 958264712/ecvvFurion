@@ -21,6 +21,8 @@ const importloading = ref(false);
 const Exportloading = ref(false);
 const dialogFormVisible = ref(false);
 const dialogFormVisible1 = ref(false);
+const ifClose = ref(false);
+const pointerface = ref<any>(null)
 const orderFulfillmentId = ref<number>(0);
 
 const sites = ref([
@@ -146,26 +148,32 @@ const exportPo = async (id:any,type:any)=>{
 			other.downloadfile(res);
 		})
 	}
+	handleQuery()
 	Exportloading.value = false;
 }
 //打开详情弹窗
 const showModal = (id: any) => {
 	orderFulfillmentId.value = id;
+	pointerface.value = getPoFulfillingOrdersList
 	visible.value = true;
+	ifClose.value = true;
 };
 const showModal1 = (id: any) => {
 	orderFulfillmentId.value = id;
+	pointerface.value = getConfirmedNewPOsPage
 	visible1.value = true;
+	ifClose.value = true;
 };
 //关闭弹窗
 const close = () => {
-	orderFulfillmentId.value = '';
+	ifClose.value = false;
 	visible.value = false;
 };
 const close1 = () => {
-	orderFulfillmentId.value = '';
+	ifClose.value = false;
 	visible1.value = false;
 };
+
 const cancel = () => {
 	dialogFormVisible1.value = false;
 };
@@ -186,7 +194,7 @@ const handleCurrentChange = (val: number): void => {
 const formList = ref<any>([
 	{
 		label:'ASIN',
-		prop:'aSIN'
+		prop:'asin'
 	}
 ])
 const dataList = ref<any>([
@@ -507,12 +515,12 @@ onMounted(() => {
 				@current-change="handleCurrentChange"
 				layout="total, sizes, prev, pager, next, jumper"
 			/>
-			<el-dialog v-model="visible" title="详情" @close="close" width="1000px">
+			<el-dialog v-model="visible" title="POs PANEL详情" @close="close" width="1000px">
 				<!-- <editDialog :id="orderFulfillmentId" /> -->
-				<InfoDataDialog :id="orderFulfillmentId" idName="poFulfillingOrderBatchId" :dataList="dataList"  :interface="getPoFulfillingOrdersList" :formList="formList" />
+				<InfoDataDialog :id="orderFulfillmentId" idName="poFulfillingOrderBatchId" :dataList="dataList"  :pointerface="pointerface" :formList="formList" :ifClose="ifClose"/>
 			</el-dialog>
-			<el-dialog v-model="visible1" title="详情" @close="close1" width="1000px">
-				<InfoDataDialog :id="orderFulfillmentId" idName="poFulfillingOrderBatchId" :dataList="dataList1"  :interface="getConfirmedNewPOsPage" :formList="formList" />
+			<el-dialog v-model="visible1" title="Confirmed New POs详情" @close="close1" width="1000px">
+				<InfoDataDialog :id="orderFulfillmentId" idName="poFulfillingOrderBatchId" :dataList="dataList1"  :pointerface="pointerface" :formList="formList" :ifClose="ifClose" />
 			</el-dialog>
 		</el-card>
 	</div>

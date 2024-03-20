@@ -226,11 +226,15 @@
 							<div class="topchange">
 								<span>亚马逊销量（{{ operationsData.amazonSalesUnit }}）</span>
 								<el-radio-group v-model="radio1" size="large">
-									<el-radio-button label="周" @change="changeItem('radio1', radio1, '月')" />
-									<el-radio-button label="月" @change="changeItem('radio1', radio1, '周')" />
+									<el-radio-button label="日" @change="changeItem('radio1', radio1, '日')" />
+									<el-radio-button label="周" @change="changeItem('radio1', radio1, '周')" />
+									<el-radio-button label="月" @change="changeItem('radio1', radio1, '月')" />
 								</el-radio-group>
 							</div>
-							<template v-if="radio1 === '周'">
+							<template v-if="radio1 === '日'">
+								<div style="height: 435px; background: #fff" ref="ymxMoneyRef"></div>
+							</template>
+							<template v-else-if="radio1 === '周'">
 								<div style="height: 435px; background: #fff" ref="ymxMoneyRef"></div>
 							</template>
 							<template v-else>
@@ -304,11 +308,15 @@
 							<div class="topchange">
 								<span>销售金额（{{ operationsData.salesAmountUnit }}）</span>
 								<el-radio-group v-model="radio2" size="large">
-									<el-radio-button label="周" @change="changeItem('radio2', radio2, '月')" />
-									<el-radio-button label="月" @change="changeItem('radio2', radio2, '周')" />
+									<el-radio-button label="日" @change="changeItem('radio2', radio2, '日')" />
+									<el-radio-button label="周" @change="changeItem('radio2', radio2, '周')" />
+									<el-radio-button label="月" @change="changeItem('radio2', radio2, '月')" />
 								</el-radio-group>
 							</div>
-							<template v-if="radio2 === '周'">
+							<template v-if="radio2 === '日'">
+								<div style="height: 435px; background: #fff" ref="moneyCountRef"></div>
+							</template>
+							<template v-else-if="radio2 === '周'">
 								<div style="height: 435px; background: #fff" ref="moneyCountRef"></div>
 							</template>
 							<template v-else>
@@ -736,8 +744,8 @@ const style6 = ref<any>({ "font-size": '30px' })
 const style7 = ref<any>({ "font-size": '30px' })
 const style8 = ref<any>({ "font-size": '30px' })
 
-const radio1 = ref('周');
-const radio2 = ref('周');
+const radio1 = ref('日');
+const radio2 = ref('日');
 const radio3 = ref('周');
 const radio4 = ref('周');
 const radio5 = ref('周');
@@ -749,6 +757,105 @@ const outCountRef = ref();
 const outMoneyRef = ref();
 const POCountRef = ref();
 const POMoneyRef = ref();
+
+
+const d = new Date(year,month,0);    
+const days = d.getDate(); 
+const dayList = ref<any>([])
+for(let i = 1;i<=days;i++){
+	dayList.value.push(i)
+}
+// 日 
+
+const dataymxMoney = async () => {
+	const myChart = echarts.init(ymxMoneyRef.value);
+	let data = [0, 0, 0, 0, 0];
+	queryParams.value.Weeks = radio1.value;
+	
+	const options = {
+		color: '#d7d7d7cc',
+		tooltip: {
+			trigger: 'axis',
+			axisPointer: {
+				type: 'none',
+			},
+			formatter: '亚马逊销量 {c}',
+		},
+		xAxis: {
+			type: 'category',
+			data: dayList.value,
+			axisLabel: {
+      			margin: 18
+    		}
+		},
+		grid: {
+			containLabel: true,
+		},
+		yAxis: {
+			type: 'value',
+			axisLabel: {
+				color: '#000',
+				fontWeight: 'bold',
+			},
+			boundaryGap: [0, '-1%'],
+		},
+		series: [
+			{
+				data: data,
+				type: 'bar',
+			},
+		],
+	};
+	myChart.setOption(options);
+	window.onresize = function () {
+		myChart.resize();
+	};
+}
+const datamoneyCount = async () => {
+	const myChart = echarts.init(moneyCountRef.value);
+	let data = [0, 0, 0, 0, 0];
+	queryParams.value.Weeks = radio2.value;
+	console.log(dayList.value);
+	
+	const options = {
+		color: '#d7d7d7cc',
+		tooltip: {
+			trigger: 'axis',
+			axisPointer: {
+				type: 'none',
+			},
+			formatter: '销售金额 {c}',
+		},
+		xAxis: {
+			type: 'category',
+			data: dayList.value,
+			axisLabel: {
+      			margin: 18
+    		}
+		},
+		grid: {
+			containLabel: true,
+		},
+		yAxis: {
+			type: 'value',
+			axisLabel: {
+				color: '#000',
+				fontWeight: 'bold',
+			},
+			boundaryGap: [0, '-1%'],
+		},
+		series: [
+			{
+				data: data,
+				type: 'bar',
+			},
+		],
+	};
+	myChart.setOption(options);
+	window.onresize = function () {
+		myChart.resize();
+	};
+}
 // 周 echarts图表
 const initymxMoney = async () => {
 	const myChart = echarts.init(ymxMoneyRef.value);
@@ -1316,16 +1423,20 @@ const changeItem = (key, name, type) => {
 	switch (key) {
 		case 'radio1':
 			if (name === '月') {
-				initymxMoney();
-			} else {
 				monthymxMoney();
+			}else if(name === '日'){
+				dataymxMoney();
+			} else {
+				initymxMoney();
 			}
 			break;
 		case 'radio2':
 			if (name === '月') {
-				initmoneyCount();
-			} else {
 				monthmoneyCount();
+			}else if(name === '日'){
+				datamoneyCount();
+			}  else {
+				initmoneyCount();
 			}
 			break;
 		case 'radio3':
@@ -1489,8 +1600,8 @@ onMounted(() => {
 	themeConfig.value.isCollapse = !themeConfig.value.isCollapse;
 	setLocalThemeConfig();
 	handleQuery();
-	initymxMoney();
-	initmoneyCount();
+	dataymxMoney();
+	datamoneyCount();
 	initoutCount();
 	initoutMoney();
 	initPOCount();

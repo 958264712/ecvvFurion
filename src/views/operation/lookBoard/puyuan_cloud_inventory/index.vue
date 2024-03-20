@@ -27,7 +27,8 @@
 					导入
 				</el-button>
 				<el-dialog v-model="dialogFormVisible" title="普源云库存数据导入" width="600px" center>
-					<el-form label-width="150" label-position="right" size="large" :model="ImportParams" ref="ruleFormRef">
+					<importDialog :type="importType" :text="importText" :weeks="weeks" :formList="importFormList" :importsInterface="puyuanCloudInventoryimport" @close="importClose" @importQuery="importQuery" />
+					<!-- <el-form label-width="150" label-position="right" size="large" :model="ImportParams" ref="ruleFormRef">
 						<div
 							style="width: 100%;height: 35px;margin-bottom: 10px;display: flex;flex-direction: column;align-items: center;justify-content: center;background-color: #FFFFE0;">
 							<el-text
@@ -70,7 +71,7 @@
 									type="primary">导入</el-button>
 							</el-upload>
 						</el-form-item>
-					</el-form>
+					</el-form> -->
 				</el-dialog>
 			</div>
 			<div style="margin-top: 5px;">
@@ -132,7 +133,8 @@ import { service } from '/@/utils/request';
 import { ElMessageBox, ElMessage, ElNotification, FormInstance } from 'element-plus';
 import axios from 'axios';
 //import { formatDate } from '/@/utils/formatTime';
-import { puyuanCloudInventoryPage } from '/@/api/modular/main/OperationManagement.ts';
+import { puyuanCloudInventoryPage,puyuanCloudInventoryimport } from '/@/api/modular/main/OperationManagement.ts';
+import importDialog from '/@/components/importDialog/index.vue';
 const loading = ref(false);
 const ImportsSalesloading = ref(false);
 const tableData = ref<any>([]);
@@ -163,6 +165,45 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 		} else {
 		}
 	})
+}
+const importType = ref('puyuanCloudInventory');
+const importText = ref(weeks === '周' ? '选择站点、日期、周，点击"确定"后，选择需要导入的文件，将导入该数据' : '选择站点、日期，点击"确定"后，选择需要导入的文件，将导入该数据')
+const options1 = ref([
+	{
+		value: '第一周',
+		label: '第一周',
+	},
+	{
+		value: '第二周',
+		label: '第二周',
+	},
+	{
+		value: '第三周',
+		label: '第三周',
+	},
+	{
+		value: '第四周',
+		label: '第四周',
+	},
+	{
+		value: '第五周',
+		label: '第五周',
+	},
+]);
+const importFormList = ref<any>([
+	{
+		label: '日期',
+		prop: 'Time',
+		type: 'datePicker',
+		dateType: 'month',
+	},
+
+]);
+const importClose = (bol:boolean) => {
+	dialogFormVisible.value = bol
+}
+const importQuery = ()=>{
+	handleQuery()
 }
 function Imports(file: any) {
 	ImportParams.value.TimeQuantum = weeks.value;
@@ -225,6 +266,18 @@ const handleQuery = async () => {
 	var res = await puyuanCloudInventoryPage(Object.assign(queryParams.value, tableParams.value));
 	tableData.value = res.data.result?.items ?? [];
 	tableParams.value.total = res.data.result?.total;
+	weeks.value === '周' ? '选择站点、日期、周，点击"确定"后，选择需要导入的文件，将导入该数据' : '选择站点、日期，点击"确定"后，选择需要导入的文件，将导入该数据'
+	if(weeks.value === '周'){
+		importFormList.value.push({
+		label: '周',
+		prop: 'Week',
+		type: 'select' ,
+		select: 'Week',
+		selectList: options1.value,
+	})
+	}else{
+		importFormList.value.pop()
+	}
 	loading.value = false;
 };
 //选中的数据

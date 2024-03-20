@@ -95,6 +95,7 @@ handleQuery();
 			"
 		>
 			<thead>
+				<!-- <el-link style="margin-left: 250px;" type="primary" @click="CollectionOrderUpdate">重置</el-link> -->
 				<tr>
 					<th class="checkbox"><el-checkbox v-model="checkOrderAll" @change="CollectionOrder"> </el-checkbox></th>
 					<th>列名称</th>

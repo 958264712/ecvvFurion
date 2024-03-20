@@ -2,7 +2,8 @@ import request from '/@/utils/request';
 enum Api {
 	amazonOrders = '/api/amazonOrders/page',
 	Import = '/api/amazonOrders/import',
-	puyuanCloudInventoryPage = '/api/puyuanCloudInventory/page'
+	puyuanCloudInventoryPage = '/api/puyuanCloudInventory/page',
+	puyuanCloudInventoryimport = '/api/puyuanCloudInventory/import'
 }
 export const amazonOrdersPage = (params?: any) =>
 	request({
@@ -26,4 +27,13 @@ export const puyuanCloudInventoryPage = (params?: any) =>
 		url: Api.puyuanCloudInventoryPage,
 		method: 'get',
 		params: params,
+	});
+export const puyuanCloudInventoryimport = (params?: any) =>
+	request({
+		url: Api.puyuanCloudInventoryimport,
+		method: 'post',
+		data: params,
+		headers: {
+			'Content-Type': 'multipart/form-data; boundary=----WebKitFormBoundarynl6gT1BKdPWIejNq',
+		},
 	});
