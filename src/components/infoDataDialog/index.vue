@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<el-card shadow="hover" :body-style="{ paddingBottom: '0' }">
+		<el-card shadow="hover" :body-style="{ paddingBottom: '0' }" v-show="props.formList?.length">
 			<el-form :model="queryParams" ref="queryForm" :inline="true">
 				<el-form-item :label="item.label" v-for="item in props.formList">
 					<el-input v-model="queryParams[item.prop]" :placeholder="'请输入' + `${item.label}`" />

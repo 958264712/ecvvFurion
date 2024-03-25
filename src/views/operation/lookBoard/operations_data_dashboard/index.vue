@@ -815,8 +815,6 @@ const datamoneyCount = async () => {
 	const myChart = echarts.init(moneyCountRef.value);
 	let data = [0, 0, 0, 0, 0];
 	queryParams.value.Weeks = radio2.value;
-	console.log(dayList.value);
-	
 	const options = {
 		color: '#d7d7d7cc',
 		tooltip: {

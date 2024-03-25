@@ -363,19 +363,19 @@ const selectChange = (selection: any) => {
 	});
 };
 // 导出选中
-const SelectedExport = async () => {
+const SelectedExport = async (coltype) => {
 	cardLoading.value = true;
-	await ExportShipmentDetails(Object.assign({ type: 0, idList: selectedRowKeys.value, destination: queryParams.destination })).then((res) => {
+	await ExportShipmentDetails(Object.assign({ type: 0,coltype:coltype, idList: selectedRowKeys.value, destination: queryParams.destination  })).then((res) => {
 		cardLoading.value = false;
 		other.downloadfile(res);
-		selectedRowKeys.value = [];
-		selectedRows.value = [];
+		//selectedRowKeys.value = [];
+		//selectedRows.value = [];
 	});
 };
 // 导出所有
-const AllExport = async () => {
+const AllExport = async (coltype) => {
 	cardLoading.value = true;
-	await ExportShipmentDetails(Object.assign({ type: 1, queryParams }, queryParams, tableParams.value)).then((res) => {
+	await ExportShipmentDetails(Object.assign({ type: 1, queryParams,coltype:coltype }, queryParams, tableParams.value)).then((res) => {
 		cardLoading.value = false;
 		other.downloadfile(res);
 		selectedRows.value = [];
@@ -422,15 +422,43 @@ function customCellStyle({ row, column, rowIndex, columnIndex }) {
 				</el-form-item>
 				<el-form-item>
 					<el-button-group>
-						<el-button type="primary" icon="ele-Search" @click="getAppPage()" style="width: 70px; margin-right: 2px"> 查询 </el-button>
+						<el-button v-auth="'shippingDetails:page'" type="primary" icon="ele-Search" @click="getAppPage()" style="width: 70px; margin-right: 2px"> 查询 </el-button>
 						<el-button icon="ele-Refresh" @click="resetfun()" style="width: 70px; margin-right: 2px"> 重置 </el-button>
 						<div class="flex flex-wrap items-center">
-							<el-dropdown>
+							<el-dropdown trigger="click">
 								<el-button type="primary" :loading="cardLoading"> 导出 </el-button>
 								<template #dropdown>
 									<el-dropdown-menu>
-										<el-dropdown-item @click="SelectedExport">导出选中</el-dropdown-item>
-										<el-dropdown-item @click="AllExport">导出搜索结果</el-dropdown-item>
+										<el-dropdown-item>
+											<el-dropdown placement='right-start'>
+												<span style="font-size: 12px;" class=" el-dropdown-link">
+													导出选中
+												</span>
+												<template #dropdown>
+													<el-dropdown-menu>
+														<el-dropdown-item @click="SelectedExport(0)">全部列</el-dropdown-item>
+														<button style="background-color: #FFFFFF;border: none;" v-auth="'shippingDetails:Export_cargo_packing'"><el-dropdown-item 
+															@click="SelectedExport(1)">集货装箱信息列</el-dropdown-item></button>
+														
+													</el-dropdown-menu>
+												</template>
+											</el-dropdown>
+										</el-dropdown-item>
+										<el-dropdown-item>
+											<el-dropdown placement='right-start'>
+												<span style="font-size: 12px;" class=" el-dropdown-link">
+													导出全部
+												</span>
+												<template #dropdown>
+													<el-dropdown-menu>
+														<el-dropdown-item @click="AllExport(0)">全部列</el-dropdown-item>
+														<button style="background-color: #FFFFFF;border: none;" v-auth="'shippingDetails:Export_cargo_packing'"><el-dropdown-item 
+															@click="AllExport(1)">集货装箱信息列</el-dropdown-item></button>
+														
+													</el-dropdown-menu>
+												</template>
+											</el-dropdown>
+										</el-dropdown-item>
 									</el-dropdown-menu>
 								</template>
 							</el-dropdown>

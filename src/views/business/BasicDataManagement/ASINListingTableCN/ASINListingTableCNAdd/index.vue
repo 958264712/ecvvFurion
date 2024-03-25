@@ -271,6 +271,10 @@ const Saves = (formEl: FormInstance | undefined) => {
 		if (valid) {
 			SubmitData.value = [];
 			var IsSku = true;
+			if (tableData.value.length == 1) {
+				tableData.value[0].IsSku = true;
+				return false;
+			}
 			for (var i = 0; i < tableData.value.length - 1; i++) {
 				if (tableData.value[i].storeSKU == '') {
 					tableData.value[i].IsSku = true;

@@ -2106,6 +2106,7 @@ function departureDateChange(val: any) {
 .titleForm {
 	width: 100px;
 	transform: translate(50%);
+	color:red;
 }
 
 :deep(.el-collapse-item__arrow) {
@@ -2128,11 +2129,12 @@ function departureDateChange(val: any) {
 	width: 200px;
 }
 
-// :deep(.el-collapse-item__header){
-// 	width: 100%;
-// 	transform: translate(-20px);
-
-// }
+:deep(.el-collapse-item__header){
+	justify-content:center;
+}
+:deep(.el-collapse-item__wrap){
+	padding-top:20px;
+}
 :deep(.el-collapse-item) {
 	width: 101%;
 }

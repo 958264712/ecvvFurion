@@ -51,6 +51,7 @@
 							<el-dropdown-menu>
 								<el-dropdown-item @click="AllExport">{{ area == 'CN' ? '导出所有' : 'Export All' }}</el-dropdown-item>
 								<el-dropdown-item :disabled="disabledSelected" @click="SelectedExport">{{ area == 'CN' ? '导出选中' : 'Export Selected' }}</el-dropdown-item>
+								<el-dropdown-item  @click="Exportemptycreator">{{ area == 'CN' ? '导出空创建人' : 'Export empty creator' }}</el-dropdown-item>
 							</el-dropdown-menu>
 						</template>
 					</el-dropdown>
@@ -325,8 +326,8 @@
 						<template #default="scope">
 							<!-- @dblclick="openEdit(scope.row)" 暂时不使用 -->
 							<div>
-								<el-input v-if="scope.row.IsEdit" type="text" v-model="scope.row.creator" clearable="" @keyup.enter.native="keyDown" />
-								<div v-else>{{ scope.row.creator }}</div>
+								<!--注释为无需修改 <el-input v-if="scope.row.IsEdit" type="text" v-model="scope.row.creator" clearable="" @keyup.enter.native="keyDown" /> -->
+								<div>{{ scope.row.creator }}</div>
 							</div>
 						</template>
 					</el-table-column>
@@ -690,6 +691,51 @@ function SelectedExport() {
 			Exportloading.value = false;
 		});
 }
+function Exportemptycreator() {
+	Exportloading.value = true;
+	const formData = {
+		type: 1,
+		Site: area.value,
+		IsTheCreatorEmpty:true
+	};
+	axios
+		.post((import.meta.env.VITE_API_URL as any) + `/api/aSINListingTable/export`, formData, {
+			responseType: 'blob', // 将响应解析为二进制数据
+		})
+		// service({
+		// 	url: `/api/inventoryManagement/Export`,
+		// 	method: 'post',
+		// 	data: formData,
+		// 	responseType: 'blob',
+		// })
+		.then((data) => {
+			downloadfile(data);
+			if (data.statusText == 'OK') {
+				ElNotification({
+					title: '系统提示',
+					message: '导出成功',
+					type: 'success',
+				});
+				ElMessage({
+					type: 'success',
+					message: '导出成功',
+				});
+			}
+			Exportloading.value = false;
+		})
+		.catch((arr) => {
+			ElNotification({
+				title: '系统提示',
+				message: '下载错误：获取文件流错误',
+				type: 'error',
+			});
+			ElMessage({
+				type: 'error',
+				message: '导出失败',
+			});
+			Exportloading.value = false;
+		});
+}
 const downloadfile = (res: any) => {
 	var blob = new Blob([res.data], {
 		type: 'application/octet-stream;charset=UTF-8',
@@ -805,6 +851,7 @@ const keyDown = (e: any) => {
 function update() {
 	const objectWithIsEditTrue = tableData.value.find((obj: any) => obj.IsEdit === true);
 	objectWithIsEditTrue.Site = area.value;
+	objectWithIsEditTrue.singleOrderQTY = objectWithIsEditTrue.singleOrderQTY.trim();
 	if (validateASIN() && validateStoreSKU() && validateSingleOrderQTY() && validateErpSku()) {
 		if (objectWithIsEditTrue.id === 0) {
 			addData.value = [];
@@ -857,7 +904,7 @@ const validateStoreSKU = () => {
 };
 const validateSingleOrderQTY = () => {
 	const objectWithIsEditTrue = tableData.value.find((obj: any) => obj.IsEdit === true);
-	if (objectWithIsEditTrue.singleOrderQTY != '') {
+	if (objectWithIsEditTrue.singleOrderQTY.trim() != '') {
 		tableData.value.find((obj: any) => obj.IsEdit === true).IsSingleOrderQTY = false;
 		return true;
 	} else {

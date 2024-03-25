@@ -15,14 +15,22 @@
 				},
 			]"
 		>
-			<el-select v-if="item.type === 'select' " v-model="ImportParams[item?.select]" size="large" style="width: 300px" @change="(val) => item?.change(val)">
+			<el-select
+				v-if="item.type === 'select'"
+				v-model="ImportParams[item?.select]"
+				size="large"
+				style="width: 300px"
+				@focus="(val) => blurItem(val)"
+				@blur="(val) => blurItem(val)"
+				@change="(val) => item?.change(val)"
+			>
 				<el-option v-for="optionItem in item?.selectList" :value="optionItem.value" :label="optionItem.label" :disabled="optionItem?.disabled ?? false"></el-option>
 			</el-select>
-			<el-date-picker v-else-if="item.type === 'datePicker'" style="width: 300px" size="large" v-model="ImportParams.Time"  :type="item?.dateType" placeholder="请选择" />
+			<el-date-picker v-else-if="item.type === 'datePicker'" style="width: 300px" size="large" v-model="ImportParams.Time" :type="item?.dateType" placeholder="请选择" />
 		</el-form-item>
 		<el-form-item>
 			<el-button :loading="ImportsSalesloading" style="width: 65px; height: 32px; margin-left: 150px; margin-right: 20px" type="info" @click="close">取消</el-button>
-			<el-upload ref="uploadRef" :on-change="Imports" :multiple="false" action="#" :show-file-list="false" :auto-upload="false" name="file">
+			<el-upload ref="uploadRef" :disabled="ifdisabled" :on-change="Imports" :multiple="false" action="#" :show-file-list="false" :auto-upload="false" name="file">
 				<el-button style="width: 65px; height: 32px" :loading="ImportsSalesloading" type="primary">确定</el-button>
 			</el-upload>
 		</el-form-item>
@@ -50,11 +58,33 @@ const emit = defineEmits(['close', 'importQuery']);
 const ImportsSalesloading = ref(false);
 const errorDTitle = ref('');
 const errorDialogRef = ref();
-const ImportParams = ref<any>({Time:new Date()});
+const ifdisabled = ref(false);
+const ImportParams = ref<any>({ Time: new Date() });
 const close = () => {
 	emit('close', false);
 };
 
+const blurItem = (val) => {
+	if (props.type === 'inventoryManagement') {
+		if (ImportParams.value.value2 !== '金蝶云采购申请单' && val.target.value === '全部(UAE、SA)' && ImportParams.value.value1 === '全部(UAE、SA)') {
+			ImportParams.value.value2 = '';
+			ifdisabled.value = true;
+		} else if (ImportParams.value.value2 === '金蝶云采购申请单' && val.target.value !== '全部(UAE、SA)' && ImportParams.value.value1 !== '全部(UAE、SA)') {
+			ifdisabled.value = true;
+			ImportParams.value.value2 = '';
+		} else if (ImportParams.value.value1 !== '全部(UAE、SA)' && val.target.value === '金蝶云采购申请单' && ImportParams.value.value2 === '金蝶云采购申请单') {
+			ifdisabled.value = true;
+			ImportParams.value.value1 = '';
+		} else if (ImportParams.value.value1 === '全部(UAE、SA)' && val.target.value !== '金蝶云采购申请单' && ImportParams.value.value2 === '金蝶云采购申请单') {
+			ifdisabled.value = true;
+			ImportParams.value.value1 = '';
+		} else {
+			ifdisabled.value = false;
+		}
+	} else {
+		ifdisabled.value = false;
+	}
+};
 // 导入
 const Imports = (file: any) => {
 	ImportParams.value.TimeQuantum = props?.weeks ?? '';
@@ -76,7 +106,7 @@ const Imports = (file: any) => {
 			formData.append('type', ImportParams.value.value1);
 			obj.Type = ImportParams.value.value1;
 		}
-	}else if (props.type === 'costprice_batch' || props.type === 'dFInventory_batch'){
+	} else if (props.type === 'costprice_batch' || props.type === 'dFInventory_batch') {
 		formData.append('site', ImportParams.value?.Site ?? null);
 	} else {
 		formData.append('Site', ImportParams.value?.Site ?? null);
@@ -84,26 +114,29 @@ const Imports = (file: any) => {
 		formData.append('Time', formattedDate);
 		formData.append('Week', ImportParams.value?.Week ?? null);
 	}
-	props.importsInterface(formData, obj).then((res: any) => {
-		ImportsSalesloading.value = false;
-		if (res.data.code == 200) {
-			if (res.data.result == null) {
-				ElMessage.success('导入成功');
-				emit('importQuery');
-			} else {
-				if(props.type === 'inventoryManagement'){
-					errorDTitle.value = '金蝶采购云申请单';
-					errorDialogRef.value.openDialog(res.data.result);
-				}
-			}
-		} else {
+	props
+		.importsInterface(formData, obj)
+		.then((res: any) => {
 			ImportsSalesloading.value = false;
-			ElMessage.error('导入失败'); // + res.message
-		}
-		emit('close', false);
-		ImportParams.value = {};
-	}).catch(()=>{
-		ImportsSalesloading.value = false;
-	})
+			if (res.data.code == 200) {
+				if (res.data.result == null) {
+					ElMessage.success('导入成功');
+					emit('importQuery');
+				} else {
+					if (props.type === 'inventoryManagement') {
+						errorDTitle.value = '金蝶采购云申请单';
+						errorDialogRef.value.openDialog(res.data.result);
+					}
+				}
+			} else {
+				ImportsSalesloading.value = false;
+				ElMessage.error('导入失败'); // + res.message
+			}
+			emit('close', false);
+			ImportParams.value = {};
+		})
+		.catch(() => {
+			ImportsSalesloading.value = false;
+		});
 };
 </script>

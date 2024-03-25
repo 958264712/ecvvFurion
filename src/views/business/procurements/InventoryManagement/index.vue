@@ -352,6 +352,11 @@ const options2 = ref([
 		disabled:false,
 	},
 	{
+		value: 'Sales',
+		label: 'Sales',
+		disabled:false,
+	},
+	{
 		value: '金蝶云采购申请单',
 		label: '金蝶云采购申请单',
 		disabled:false,
@@ -368,8 +373,10 @@ const tableParams = ref({
 });
 const importType = ref('inventoryManagement')
 const importText = ref('选择站点、表格名，点击"确定"后，选择需要导入的文件，将导入该数据')
-// const importsInterface = ref('/api/inventoryManagement/Imports')
+const importsOptionsItem = ref('')
+const importsOptionsItem1 = ref('')
 const importChange = (val) => {
+	importsOptionsItem.value = val
 	if(val === '全部(UAE、SA)'){
 		options2.value.map(item=>{
 			if(item.label !== '金蝶云采购申请单'){
@@ -388,6 +395,9 @@ const importChange = (val) => {
 		})
 	}
 }
+const importChange1 = (val)=>{
+	importsOptionsItem1.value = val
+}
 const importFormList = ref<any>([
 	{
 		label:'站点',
@@ -403,7 +413,7 @@ const importFormList = ref<any>([
 		type:'select',
 		select:'value2',
 		selectList:options2.value,
-		change:null,
+		change:importChange1,
 	},
 ])
 let selectedRows = ref<any>([]);

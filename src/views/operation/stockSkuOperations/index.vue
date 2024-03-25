@@ -8,6 +8,7 @@ import { Session } from '/@/utils/storage';
 import { SKUOperationPage, SKUOperationUpdate, SKUOperationExport } from '/@/api/modular/main/sotckSkuOperations';
 import tabDragColum from '/@/components/tabDragColum/index.vue';
 
+
 const router = useRouter();
 const queryParams = ref<any>({});
 const tableParams = ref<any>({ PageNo: 1, PageSize: 20 });
@@ -321,6 +322,8 @@ const handleRouter = (storeSku: string, site: string) => {
 		router.push({ path: '/operation/asin/asindata' });
 	}
 };
+
+
 // 站点改变调用接口
 watch(
 	() => activeName.value,
@@ -421,7 +424,7 @@ onMounted(() => {
 									<span style="color: red" @click="handleRouter(scope.row.inventorySKU, activeName)">{{ scope.row.listCount }} </span>
 								</template>
 							</el-table-column>
-							<el-table-column v-else-if="item.checked" :fixed="item.fixed"  :prop="item.dataIndex" :label="area == 'CN' ? item.titleCN : item.titleEN" align="center" />
+							<el-table-column v-else-if="item.checked" :fixed="item.fixed"  :prop="item.dataIndex" :label="area == 'CN' ? item.titleCN : item.titleEN" width="120" align="center" />
 						</template>
 						<el-table-column label="操作" width="140" align="center" fixed="right">
 							<template #default="scope">
