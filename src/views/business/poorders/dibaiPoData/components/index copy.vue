@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { ElMessageBox, ElMessage } from 'element-plus';
 import { pagePoData, deletePoData, updateOrderDate, ImportPO, bulkImportOrderDate, multipleExportByTemplate, downLoadPOZip } from '/@/api/modular/main/aSINBasicData.ts';
-import PoDataSource from './components/poDataSource.vue';
+// import PoDataSource from './components/poDataSource.vue';
 import { service } from '/@/utils/request';
 
 const timer = ref<any>();
@@ -306,7 +306,7 @@ handleQuery();
 				@size-change="handleSizeChange" @current-change="handleCurrentChange"
 				layout="total, sizes, prev, pager, next, jumper" />
 			<el-dialog v-model="visible" title="Product List" @close="close" width="1000px">
-				<PoDataSource :po="pos"></PoDataSource>
+				<!-- <PoDataSource :po="pos"></PoDataSource> -->
 			</el-dialog>
 			<el-dialog v-model="visible1" title="Edit OrderDate" width="400px">
 				<el-input v-model="orderDates" placeholder="Please enter orderDate" />

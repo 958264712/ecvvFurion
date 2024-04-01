@@ -1,16 +1,22 @@
 <script setup lang="ts" name="home">
 import { reactive, onMounted, ref, watch, nextTick, onActivated, markRaw } from 'vue';
 import { Loading, WarningFilled, Refresh } from '@element-plus/icons-vue';
-import { getAEAmazonState, getSAAmazonState } from '/@/api/modular/main/amazonPagePriceRecord';
+import { getAEAmazonState, getSAAmazonState,getScheduledFulfillmentList,getAppointmentList } from '/@/api/modular/main/amazonPagePriceRecord';
 import LateDelivery from './components/lateDeliveryLIst.vue';
 import ExpectedDelivery from './components/expectedDeliveryLIst.vue';
 // 定义变量内容
 
-const queryParams = ref<any>({});
+const queryParams = ref<any>({
+	aThisWeek:'全部',
+	sfNextWeek:'全部',
+	aNextWeek:'全部',
+	sfThisWeek:'全部',
+});
 const tableData = ref<any>([]);
 const tableData1 = ref<any>([]);
 const tableData2 = ref<any>([]);
 const tableData3 = ref<any>([]);
+const loading = ref<any>(false);
 const optionsList = ref<any>([
 	{
 		label: '全部',
@@ -23,10 +29,6 @@ const optionsList = ref<any>([
 	{
 		label: 'SA',
 		value: 'SA',
-	},
-	{
-		label: '...',
-		value: '...',
 	},
 ]);
 const state = reactive({
@@ -86,26 +88,82 @@ const TableList = ref<any>([
 ]);
 // AE抓取数据信息
 const AEAmazonState = async () => {
+	loading.value = true
 	await getAEAmazonState().then((res: any) => {
 		if (res.data.type === 'success') {
 			state.homeOne[0].runState = res.data.result.runState;
 			state.homeOne[0].time = res.data.result.updateTime;
 			state.homeOne[0].num1 = res.data.result.todayQuantity;
+			loading.value = false
 		}
 	});
 };
 // SA抓取数据信息
 const SAAmazonState = async () => {
+	loading.value = true
 	await getSAAmazonState().then((res: any) => {
 		if (res.data.type === 'success') {
 			state.homeOne[1].runState = res.data.result.runState;
 			state.homeOne[1].time = res.data.result.updateTime;
 			state.homeOne[1].num1 = res.data.result.todayQuantity;
+			loading.value = false
 		}
 	});
 };
+const ScheduledFulfillmentList = async (site:string,type:number,item:any) => {
+	loading.value = true
+	if(type === 1){
+		site = queryParams.value.sfThisWeek
+		if(queryParams.value.sfThisWeek === '全部'){
+			site = null
+		}
+	}else{
+		site = queryParams.value.sfNextWeek
+		if(queryParams.value.sfNextWeek === '全部'){
+			site = null
+		}
+	}
+	await getScheduledFulfillmentList({site,type}).then((res: any) => {
+		if (res.data.type === 'success') {
+			if(item === 'tableData1'){
+				tableData1.value = res.data.result ?? []
+			}else{
+				tableData3.value = res.data.result ?? []
+			}
+			loading.value = false
+		}
+	});
+}
+const AppointmentList = async (site:string,type:number,item:any) => {
+	loading.value = true
+	if(type === 1){
+		site = queryParams.value.aThisWeek
+		if(queryParams.value.aThisWeek === '全部'){
+			site = null
+		}
+	}else{
+		site = queryParams.value.aNextWeek
+		if(queryParams.value.aNextWeek === '全部'){
+			site = null
+		}
+	}
+	await getAppointmentList({site,type}).then((res: any) => {
+		if (res.data.type === 'success') {
+			if(item === 'tableData'){
+				tableData.value = res.data.result ?? []
+			}else{
+				tableData2.value = res.data.result ?? []
+			}
+			loading.value = false
+		}
+	});
+}
 SAAmazonState();
 AEAmazonState();
+ScheduledFulfillmentList(null,1,'tableData1')
+ScheduledFulfillmentList(null,2,'tableData3')
+AppointmentList(null,1,'tableData')
+AppointmentList(null,2,'tableData2')
 </script>
 
 <template>
@@ -161,18 +219,18 @@ AEAmazonState();
 				</div>
 			</el-col>
 		</el-row>
-		<el-row :gutter="15" class="home-card-three">
+		<el-row :gutter="15" class="home-card-three mb15">
 			<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12">
 				<div class="home-card-item">
 					<div class="cardTop">
 						<h2>Appointment This Week</h2>
-						<el-select v-model="queryParams.aThisWeek" size="large">
+						<el-select v-model="queryParams.aThisWeek" size="large" @change="AppointmentList(queryParams.aThisWeek,1,'tableData')">
 							<el-option v-for="item in optionsList" :value="item.value" :label="item.label" />
 						</el-select>
 					</div>
-					<div style="height: 100%; margin-top: 20px">
-						<el-table :data="tableData" style="height: 100%" v-loading="loading" tooltip-effect="light" row-key="id">
-							<el-table-column v-for="(item, index) in TableList" :key="index" :prop="item.dataIndex" :label="item.title_CN" width="106" align="center" />
+					<div style="height: 350px; margin-top: 20px">
+						<el-table :data="tableData" style="height: 100%" v-loading="loading" tooltip-effect="light" row-key="id" border>
+							<el-table-column v-for="(item, index) in TableList" :key="index" :prop="item.dataIndex" :label="item.title_CN"  align="center"  show-overflow-tooltip=""/>
 						</el-table>
 					</div>
 				</div>
@@ -181,13 +239,13 @@ AEAmazonState();
 				<div class="home-card-item">
 					<div class="cardTop">
 						<h2>Scheduled Fulfillment This Week</h2>
-						<el-select v-model="queryParams.sfThisWeek" size="large">
+						<el-select v-model="queryParams.sfThisWeek" size="large" @change="ScheduledFulfillmentList(queryParams.sfThisWeek,1,'tableData1')">
 							<el-option v-for="item in optionsList" :value="item.value" :label="item.label" />
 						</el-select>
 					</div>
-					<div style="height: 100%; margin-top: 20px">
-						<el-table :data="tableData1" style="height: 100%" v-loading="loading" tooltip-effect="light" row-key="id">
-							<el-table-column v-for="(item, index) in TableList" :key="index" :prop="item.dataIndex" :label="item.title_CN" width="106" align="center" />
+					<div style="height: 350px; margin-top: 20px">
+						<el-table :data="tableData1" style="height: 100%" v-loading="loading" border tooltip-effect="light" row-key="id">
+							<el-table-column v-for="(item, index) in TableList" :key="index" :prop="item.dataIndex" :label="item.title_CN"  align="center"  show-overflow-tooltip=""/>
 						</el-table>
 					</div>
 				</div>
@@ -199,13 +257,13 @@ AEAmazonState();
 				<div class="home-card-item">
 					<div class="cardTop">
 						<h2>Appointment Next Week</h2>
-						<el-select v-model="queryParams.aNextWeek" size="large">
+						<el-select v-model="queryParams.aNextWeek" size="large" @change="AppointmentList(queryParams.aNextWeek,2,'tableData2')">
 							<el-option v-for="item in optionsList" :value="item.value" :label="item.label" />
 						</el-select>
 					</div>
-					<div style="height: 100%; margin-top: 20px">
-						<el-table :data="tableData2" style="height: 100%" v-loading="loading" tooltip-effect="light" row-key="id">
-							<el-table-column v-for="(item, index) in TableList" :key="index" :prop="item.dataIndex" :label="item.title_CN" width="106" align="center" />
+					<div style="height: 350px; margin-top: 20px">
+						<el-table :data="tableData2" style="height: 100%" v-loading="loading" border tooltip-effect="light" row-key="id">
+							<el-table-column v-for="(item, index) in TableList" :key="index" :prop="item.dataIndex" :label="item.title_CN"  align="center"  show-overflow-tooltip=""/>
 						</el-table>
 					</div>
 				</div>
@@ -214,13 +272,13 @@ AEAmazonState();
 				<div class="home-card-item">
 					<div class="cardTop">
 						<h2>Scheduled Fulfillment Next Week</h2>
-						<el-select v-model="queryParams.sfNextWeek" size="large">
+						<el-select v-model="queryParams.sfNextWeek" size="large" @change="ScheduledFulfillmentList(queryParams.sfNextWeek,2,'tableData3')">
 							<el-option v-for="item in optionsList" :value="item.value" :label="item.label" />
 						</el-select>
 					</div>
-					<div style="height: 100%; margin-top: 20px">
-						<el-table :data="tableData3" style="height: 100%" v-loading="loading" tooltip-effect="light" row-key="id">
-							<el-table-column v-for="(item, index) in TableList" :key="index" :prop="item.dataIndex" :label="item.title_CN" width="106" align="center" />
+					<div style="height: 350px; margin-top: 20px">
+						<el-table :data="tableData3" style="height: 100%" v-loading="loading" border tooltip-effect="light" row-key="id">
+							<el-table-column v-for="(item, index) in TableList" :key="index" :prop="item.dataIndex" :label="item.title_CN"  align="center"  show-overflow-tooltip=""/>
 						</el-table>
 					</div>
 				</div>

@@ -262,7 +262,7 @@ const selectChange = (selection: any): void => {
 // 导出选中
 const SelectedExport = async (): void => {
 	Exportloading.value = true;
-	await SKUOperationExport(Object.assign({ type: 1, ids: selectedRowKeys.value, isImages: false, site: activeName.value })).then((res) => {
+	await SKUOperationExport(Object.assign({ type: 1, ids: selectedRowKeys.value, isImages: false, site: activeName.value === 'ALL'?null:activeName.value })).then((res) => {
 		other.downloadfile(res);
 		selectedRowKeys.value = [];
 		selectedRows.value = [];

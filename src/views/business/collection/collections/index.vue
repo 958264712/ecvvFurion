@@ -47,7 +47,13 @@
 					<el-date-picker start-placeholder=" 开始时间" end-placeholder="结束时间" type="daterange"
 						v-model="queryList.time" />
 				</el-form-item>
-
+				<el-form-item label="货代名称">
+					<el-select v-model="queryList.forwarderName" filterable clearable class="w100">
+						<el-option v-for="item in selectBox" :key="item.value" :label="item.label"
+							:value="item.label" />
+					</el-select>
+					<!-- <span v-if="!collectionOrderInfo.forwarderID" class="error-message">贷代名称不能为空！</span> -->
+				</el-form-item>
 				<el-form-item>
 					<el-button-group>
 						<el-button type="primary" icon="ele-Search" @click="queryfun()"> 查询 </el-button>
@@ -150,7 +156,8 @@
 						<el-divider />
 						<div class="ant-checkbox-group">
 							<div>
-								<draggable @update="CollectionOrderUpdate" :list="CollectionOrderTable" itemKey="dataIndex">
+								<draggable @update="CollectionOrderUpdate" :list="CollectionOrderTable"
+									itemKey="dataIndex">
 									<template #item="{ element }">
 										<div class="s-tool-column-item">
 											<el-icon style="margin: 0 5px 0 0px">
@@ -177,14 +184,15 @@
 						:label="item.title" :align="item.align" sortable="custom" :width="item.width" fixed="left"
 						show-overflow-tooltip="">
 						<template #default="scope">
-							<el-button size="small" text type="primary" @click="examine(scope)"> {{ scope.row.documentNo }}
+							<el-button size="small" text type="primary" @click="examine(scope)">
+								{{ scope.row.documentNo }}
 							</el-button>
 						</template>
 					</el-table-column>
 					<el-table-column
 						v-else-if="item.checked && (index !== CollectionOrderTable.length - 1 || item.title !== '操作')"
-						:prop="item.dataIndex" :label="item.title" :align="item.align" sortable="custom" :width="item.width"
-						show-overflow-tooltip="" />
+						:prop="item.dataIndex" :label="item.title" :align="item.align" sortable="custom"
+						:width="item.width" show-overflow-tooltip="" />
 					<el-table-column
 						v-else-if="item.checked && index === CollectionOrderTable.length - 1 && item.title === '操作'"
 						:label="item.title" width="200" :align="item.align" fixed="right" show-overflow-tooltip="">
@@ -255,6 +263,8 @@ let Exportloading = ref<any>(false);
 let tableData = ref<any>([]);
 const queryParams = ref<any>({});
 let isExProtAll = ref<any>(false);
+let activeNames = ref('1');
+let selectBox = ref<any>();
 let datevalue = ref<any>(moment().format('YYYY-MM-DD'));
 let SettingColumnShow = ref<any>(false);
 let BaoguanShows = ref<any>(false);
@@ -711,7 +721,6 @@ let CollectionOrderTable = ref<any>();
 
 let BaoguancolumnsSetting = ref<any>();
 const editCollectionOrderInfoTitle = ref('');
-
 // 查询表单数据
 let queryList = reactive<any>({
 	time: [],
@@ -1159,6 +1168,12 @@ function examine(val?: any): void {
 }
 onMounted(() => {
 	getAppPage();
+	service({
+		url: '/api/collectionGoodsInfo/returnSelectBox',
+		method: 'get',
+	}).then((data) => {
+		selectBox.value = data.data.result;
+	});
 });
 
 // 改变页面容量

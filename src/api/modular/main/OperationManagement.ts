@@ -3,8 +3,15 @@ enum Api {
 	amazonOrders = '/api/amazonOrders/page',
 	Import = '/api/amazonOrders/import',
 	puyuanCloudInventoryPage = '/api/puyuanCloudInventory/page',
+	batchPuyuanCloudInventoryPage = '/api/batchPuyuanCloudInventory/page',
 	puyuanCloudInventoryimport = '/api/puyuanCloudInventory/import'
 }
+export const batchPuyuanCloudInventoryPage = (params?: any) =>
+	request({
+		url: Api.batchPuyuanCloudInventoryPage,
+		method: 'get',
+		params: params,
+	});
 export const amazonOrdersPage = (params?: any) =>
 	request({
 		url: Api.amazonOrders,

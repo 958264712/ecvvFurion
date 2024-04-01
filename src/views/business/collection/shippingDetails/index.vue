@@ -285,11 +285,11 @@ const TableData = ref<any>([
 		checked: true,
 		fixed: false,
 	},
-	
+
 ])
 
-const handleData = (list:any)=>{
-	if(list?.length){
+const handleData = (list: any) => {
+	if (list?.length) {
 		TableData.value = list
 	}
 }
@@ -354,7 +354,6 @@ const handleSort = (v: any) => {
 };
 // 获取keys
 const selectChange = (selection: any) => {
-	console.log(selectedRowKeys.value);
 	selectedRowKeys.value = [];
 	selectedRows.value = [];
 	selectedRows.value = selection;
@@ -365,7 +364,7 @@ const selectChange = (selection: any) => {
 // 导出选中
 const SelectedExport = async (coltype) => {
 	cardLoading.value = true;
-	await ExportShipmentDetails(Object.assign({ type: 0,coltype:coltype, idList: selectedRowKeys.value, destination: queryParams.destination  })).then((res) => {
+	await ExportShipmentDetails(Object.assign({ type: 0, coltype: coltype, idList: selectedRowKeys.value, destination: queryParams.destination })).then((res) => {
 		cardLoading.value = false;
 		other.downloadfile(res);
 		//selectedRowKeys.value = [];
@@ -375,7 +374,7 @@ const SelectedExport = async (coltype) => {
 // 导出所有
 const AllExport = async (coltype) => {
 	cardLoading.value = true;
-	await ExportShipmentDetails(Object.assign({ type: 1, queryParams,coltype:coltype }, queryParams, tableParams.value)).then((res) => {
+	await ExportShipmentDetails(Object.assign({ type: 1, queryParams, coltype: coltype }, queryParams, tableParams.value)).then((res) => {
 		cardLoading.value = false;
 		other.downloadfile(res);
 		selectedRows.value = [];
@@ -401,7 +400,8 @@ function customCellStyle({ row, column, rowIndex, columnIndex }) {
 					</el-select>
 				</el-form-item>
 				<el-form-item label="出发日期">
-					<el-date-picker start-placeholder=" 开始时间" end-placeholder="结束时间" type="daterange" v-model="queryParams.time" />
+					<el-date-picker start-placeholder=" 开始时间" end-placeholder="结束时间" type="daterange"
+						v-model="queryParams.time" />
 				</el-form-item>
 				<el-form-item label="单据编号／货代入仓号">
 					<el-input v-model="queryParams.documentNo" clearable="" placeholder="单据编号／货代入仓号" />
@@ -422,39 +422,55 @@ function customCellStyle({ row, column, rowIndex, columnIndex }) {
 				</el-form-item>
 				<el-form-item>
 					<el-button-group>
-						<el-button v-auth="'shippingDetails:page'" type="primary" icon="ele-Search" @click="getAppPage()" style="width: 70px; margin-right: 2px"> 查询 </el-button>
-						<el-button icon="ele-Refresh" @click="resetfun()" style="width: 70px; margin-right: 2px"> 重置 </el-button>
+						<el-button v-auth="'shippingDetails:page'" type="primary" icon="ele-Search"
+							@click="getAppPage()" style="width: 70px; margin-right: 2px"> 查询 </el-button>
+						<el-button icon="ele-Refresh" @click="resetfun()" style="width: 70px; margin-right: 2px"> 重置
+						</el-button>
 						<div class="flex flex-wrap items-center">
 							<el-dropdown trigger="click">
 								<el-button type="primary" :loading="cardLoading"> 导出 </el-button>
 								<template #dropdown>
 									<el-dropdown-menu>
-										<el-dropdown-item>
+										<el-dropdown-item style="height:24px">
 											<el-dropdown placement='right-start'>
-												<span style="font-size: 12px;" class=" el-dropdown-link">
+												<span style="font-size: 12px;" class="el-dropdown-link">
 													导出选中
 												</span>
 												<template #dropdown>
 													<el-dropdown-menu>
-														<el-dropdown-item @click="SelectedExport(0)">全部列</el-dropdown-item>
-														<button style="background-color: #FFFFFF;border: none;" v-auth="'shippingDetails:Export_cargo_packing'"><el-dropdown-item 
-															@click="SelectedExport(1)">集货装箱信息列</el-dropdown-item></button>
-														
+														<button
+															style="background-color: #FFFFFF;border: none;display: block;width: 100%;"
+															v-auth="'shippingDetails:export_all_columns'">
+															<el-dropdown-item
+																@click="SelectedExport(0)">全部列</el-dropdown-item>
+														</button>
+														<button
+															style="background-color: #FFFFFF;border: none;display: block;width: 100%;"
+															v-auth="'shippingDetails:Export_cargo_packing'"><el-dropdown-item
+																@click="SelectedExport(1)">货代入仓号</el-dropdown-item></button>
+
 													</el-dropdown-menu>
 												</template>
 											</el-dropdown>
 										</el-dropdown-item>
-										<el-dropdown-item>
+										<el-dropdown-item style="height:24px">
 											<el-dropdown placement='right-start'>
 												<span style="font-size: 12px;" class=" el-dropdown-link">
 													导出全部
 												</span>
 												<template #dropdown>
 													<el-dropdown-menu>
-														<el-dropdown-item @click="AllExport(0)">全部列</el-dropdown-item>
-														<button style="background-color: #FFFFFF;border: none;" v-auth="'shippingDetails:Export_cargo_packing'"><el-dropdown-item 
-															@click="AllExport(1)">集货装箱信息列</el-dropdown-item></button>
-														
+														<button
+															style="background-color: #FFFFFF;border: none;display: block;width: 100%;"
+															v-auth="'shippingDetails:export_all_columns'">
+															<el-dropdown-item
+																@click="AllExport(0)">全部列</el-dropdown-item>
+														</button>
+														<button
+															style="background-color: #FFFFFF;border: none;display: block;width: 100%;"
+															v-auth="'shippingDetails:Export_cargo_packing'"><el-dropdown-item
+																@click="AllExport(1)">货代入仓号</el-dropdown-item></button>
+
 													</el-dropdown-menu>
 												</template>
 											</el-dropdown>
@@ -469,22 +485,14 @@ function customCellStyle({ row, column, rowIndex, columnIndex }) {
 		</el-card>
 		<el-card class="full-table" shadow="hover" style="margin-top: 8px">
 			<tabDragColum :data="TableData" :name="`shippingDetailsData`" :area="area" @handleData="handleData" />
-			<el-table
-				:data="tableData"
-				size="large"
-				style="width: 100%"
-				:cell-style="customCellStyle"
-				@selection-change="(selection: any) => selectChange(selection)"
-				v-loading="loading"
-				tooltip-effect="light"
-				@sort-change="handleSort"
-			>
-			<el-table-column type="selection" width="55" />
-			<template v-for="(item, index) in TableData" :key="index">
+			<el-table :data="tableData" size="large" style="width: 100%" :cell-style="customCellStyle"
+				@selection-change="(selection: any) => selectChange(selection)" v-loading="loading"
+				tooltip-effect="light" @sort-change="handleSort">
+				<el-table-column type="selection" width="55" />
+				<template v-for="(item, index) in TableData" :key="index">
 					<el-table-column v-if="item.dataIndex == 'warnTag' && item.checked" :fixed="item.fixed"
-						:prop="item.dataIndex"
-						:label="area == 'CN' ? item.titleCN : item.titleEN"
-						align="center"  width="120">
+						:prop="item.dataIndex" :label="area == 'CN' ? item.titleCN : item.titleEN" align="center"
+						width="120">
 						<template #default="scope">
 							<div v-for="(i, index) in scope.row.warnTag" :key="ind">
 								<el-tag class="mx-1" :color="IsTag(i)" :hit="false" effect="dark">{{ i }}</el-tag>
@@ -492,32 +500,23 @@ function customCellStyle({ row, column, rowIndex, columnIndex }) {
 						</template>
 					</el-table-column>
 
-					<el-table-column  v-else-if="item.dataIndex == 'productPic' && item.checked" :fixed="item.fixed"
-						:prop="item.dataIndex"
-						:label="area == 'CN' ? item.titleCN : item.titleEN"
-						align="center" width="80">
+					<el-table-column v-else-if="item.dataIndex == 'productPic' && item.checked" :fixed="item.fixed"
+						:prop="item.dataIndex" :label="area == 'CN' ? item.titleCN : item.titleEN" align="center"
+						width="80">
 						<template #default="scope">
-							<img :src="'https://raw.githubusercontent.com/okbuynow/OKPIC/main/50x50/' + scope.row.internalUniqueID + '.jpg'" alt="" />
+							<img :src="'https://raw.githubusercontent.com/okbuynow/OKPIC/main/50x50/' + scope.row.internalUniqueID + '.jpg'"
+								alt="" />
 						</template>
 					</el-table-column>
-					<el-table-column v-else-if=" item.checked" :fixed="item.fixed"
-						:prop="item.dataIndex"
-						:label="area == 'CN' ? item.titleCN : item.titleEN"
-						align="center" width="150" />
-			
+					<el-table-column v-else-if="item.checked" :fixed="item.fixed" :prop="item.dataIndex"
+						:label="area == 'CN' ? item.titleCN : item.titleEN" align="center" width="150" />
+
 				</template>
 			</el-table>
-			<el-pagination
-				v-model:currentPage="tableParams.page"
-				v-model:page-size="tableParams.pageSize"
-				:total="tableParams.total"
-				:page-sizes="[50, 100, 500, 1000]"
-				small=""
-				background=""
-				@size-change="handleSizeChange"
-				@current-change="handleCurrentChange"
-				layout="total, sizes, prev, pager, next, jumper"
-			/>
+			<el-pagination v-model:currentPage="tableParams.page" v-model:page-size="tableParams.pageSize"
+				:total="tableParams.total" :page-sizes="[50, 100, 500, 1000]" small="" background=""
+				@size-change="handleSizeChange" @current-change="handleCurrentChange"
+				layout="total, sizes, prev, pager, next, jumper" />
 		</el-card>
 	</div>
 </template>

@@ -7,16 +7,13 @@
 				</el-form-item>
 				<el-form-item>
 					<el-button-group>
-						<el-button type="primary" icon="ele-Search" @click="handleQuery" v-auth="'uAE_ProcurementDetails:page'"> 查询 </el-button>
-						<el-button
-							icon="ele-Refresh"
-							@click="
-								() => {
-									queryParams = {};
-									handleQuery();
-								}
-							"
-						>
+						<el-button type="primary" icon="ele-Search" @click="handleQuery"
+							v-auth="'uAE_ProcurementDetails:page'"> 查询 </el-button>
+						<el-button icon="ele-Refresh" @click="() => {
+			queryParams = {};
+			handleQuery();
+		}
+			">
 							重置
 						</el-button>
 					</el-button-group>
@@ -28,7 +25,9 @@
 				<div class="importDiv" style="width: 17%">
 					<el-button @click="dialogFormVisible = true" type="primary"> 导入 </el-button>
 					<el-dialog v-model="dialogFormVisible" title="导入" width="600px" center>
-						<importDialog :type="importType" :text="importText" :formList="importFormList" :importsInterface="ImportInventoryManagement" @close="importClose" @importQuery="importQuery"/>
+						<importDialog :type="importType" :text="importText" :formList="importFormList"
+							:importsInterface="ImportInventoryManagement" @close="importClose"
+							@importQuery="importQuery" />
 					</el-dialog>
 
 					<div class="flex flex-wrap items-center">
@@ -44,49 +43,32 @@
 						</el-dropdown>
 					</div>
 				</div>
-				<tabDragColum :data="TableData" :name="`InventoryManagementData`" :area="area" @handleData="handleData" />
+				<tabDragColum :data="TableData" :name="`InventoryManagementData`" :area="area"
+					@handleData="handleData" />
 			</div>
-			<el-table
-				:data="tableData"
-				size="lagre"
-				style="width: 100%"
-				v-loading="loading"
-				tooltip-effect="light"
-				@sort-change="sortfun"
-				@selection-change="handleSelectionChange"
-				:header-cell-style="customHeaderCellStyle"
-				row-key="id"
-				border=""
-			>
+			<el-table :data="tableData" size="lagre" style="width: 100%" v-loading="loading" tooltip-effect="light"
+				@sort-change="sortfun" @selection-change="handleSelectionChange"
+				:header-cell-style="customHeaderCellStyle" row-key="id" border="">
 				<el-table-column type="selection" width="55" class-name="custom-header" />
 				<template v-for="(item, index) in TableData" :key="index">
-					<el-table-column v-if="item.checked && item.dataIndex === 'images'" :prop="item.dataIndex" :fixed="item.fixed" width="80" :label="area == 'CN' ? item.titleCN : item.titleEN" align="center">
+					<el-table-column v-if="item.checked && item.dataIndex === 'images'" :prop="item.dataIndex"
+						:fixed="item.fixed" width="80" :label="area == 'CN' ? item.titleCN : item.titleEN"
+						align="center">
 						<template #default="scope">
 							<div class="demo-image__preview">
-								<el-image
-									style="width: 60px; height: 60px"
+								<el-image style="width: 60px; height: 60px"
 									:src="'https://raw.githubusercontent.com/okbuynow/OKPIC/main/50x50/' + scope.row.erpSKU + '.jpg'"
-									:zoom-rate="1.2"
-									:max-scale="7"
-									:min-scale="0.2"
+									:zoom-rate="1.2" :max-scale="7" :min-scale="0.2"
 									:preview-src-list="'https://raw.githubusercontent.com/okbuynow/OKPIC/main/50x50/' + scope.row.erpSKU + '.jpg'"
-									:initial-index="1"
-									fit="cover"
-								/>
+									:initial-index="1" fit="cover" />
 							</div>
 						</template>
 					</el-table-column>
-					
+
 					<!-- <el-table-column prop="suggestedProcurementQuantity" label="建议采购数量" sortable align="center" width="135" /> -->
-					<el-table-column
-						v-else-if="item.checked && item.dataIndex === 'uaeSuggestedProcurementQuantity'"
-						:fixed="item.fixed"
-						:prop="item.dataIndex"
-						:label="area == 'CN' ? item.titleCN : item.titleEN"
-						sortable
-						align="center"
-						width="175"
-					>
+					<el-table-column v-else-if="item.checked && item.dataIndex === 'uaeSuggestedProcurementQuantity'"
+						:fixed="item.fixed" :prop="item.dataIndex" :label="area == 'CN' ? item.titleCN : item.titleEN"
+						sortable align="center" width="175">
 						<template #default="scope">
 							<div v-if="scope.row.uaeSuggestedProcurementQuantity > 0">
 								{{ scope.row.uaeSuggestedProcurementQuantity }}
@@ -94,15 +76,9 @@
 							<div v-else></div>
 						</template>
 					</el-table-column>
-					<el-table-column
-						v-else-if="item.checked && item.dataIndex === 'saSuggestedProcurementQuantity'"
-						:fixed="item.fixed"
-						:prop="item.dataIndex"
-						:label="area == 'CN' ? item.titleCN : item.titleEN"
-						sortable
-						align="center"
-						width="170"
-					>
+					<el-table-column v-else-if="item.checked && item.dataIndex === 'saSuggestedProcurementQuantity'"
+						:fixed="item.fixed" :prop="item.dataIndex" :label="area == 'CN' ? item.titleCN : item.titleEN"
+						sortable align="center" width="170">
 						<template #default="scope">
 							<div v-if="scope.row.saSuggestedProcurementQuantity > 0">
 								{{ scope.row.saSuggestedProcurementQuantity }}
@@ -110,29 +86,15 @@
 							<div v-else></div>
 						</template>
 					</el-table-column>
-					<el-table-column
-						v-else-if="item.checked"
-						:fixed="item.fixed"
-						:prop="item.dataIndex"
-						:label="area == 'CN' ? item.titleCN : item.titleEN"
-						sortable
-						width="185"
-						align="center"
-						sortableshow-overflow-tooltip=""
-					/>
+					<el-table-column v-else-if="item.checked" :fixed="item.fixed" :prop="item.dataIndex"
+						:label="area == 'CN' ? item.titleCN : item.titleEN" sortable width="185" align="center"
+						sortableshow-overflow-tooltip="" />
 				</template>
 			</el-table>
-			<el-pagination
-				v-model:currentPage="tableParams.page"
-				v-model:page-size="tableParams.pageSize"
-				:total="tableParams.total"
-				:page-sizes="[10, 20, 50, 100, 500, 1000]"
-				small=""
-				background=""
-				@size-change="handleSizeChange"
-				@current-change="handleCurrentChange"
-				layout="total, sizes, prev, pager, next, jumper"
-			/>
+			<el-pagination v-model:currentPage="tableParams.page" v-model:page-size="tableParams.pageSize"
+				:total="tableParams.total" :page-sizes="[10, 20, 50, 100, 500, 1000]" small="" background=""
+				@size-change="handleSizeChange" @current-change="handleCurrentChange"
+				layout="total, sizes, prev, pager, next, jumper" />
 			<errorDialog ref="errorDialogRef" :title="errorDTitle" />
 		</el-card>
 	</div>
@@ -344,22 +306,22 @@ const options2 = ref([
 	{
 		value: 'amazon-orders-Dropship',
 		label: 'amazon-orders-Dropship',
-		disabled:false,
+		disabled: false,
 	},
 	{
 		value: 'Inventory_Sourcing_Retail',
 		label: 'Inventory_Sourcing_Retail',
-		disabled:false,
+		disabled: false,
 	},
 	{
 		value: 'Sales',
 		label: 'Sales',
-		disabled:false,
+		disabled: false,
 	},
 	{
 		value: '金蝶云采购申请单',
 		label: '金蝶云采购申请单',
-		disabled:false,
+		disabled: false,
 	},
 ]);
 const Typevalue = ref<any>('UAE');
@@ -377,43 +339,51 @@ const importsOptionsItem = ref('')
 const importsOptionsItem1 = ref('')
 const importChange = (val) => {
 	importsOptionsItem.value = val
-	if(val === '全部(UAE、SA)'){
-		options2.value.map(item=>{
-			if(item.label !== '金蝶云采购申请单'){
+	if (val === '全部(UAE、SA)') {
+		options2.value.map(item => {
+			if (item.label !== '金蝶云采购申请单') {
 				item.disabled = true;
-			}else{
+			} else {
 				item.disabled = false;
 			}
 		})
-	}else{
-		options2.value.map(item=>{
-			if(item.label === '金蝶云采购申请单'){
+	} else if (val === 'UAE') {
+		options2.value.map(item => {
+			if (item.label === 'Sales' || item.label === '金蝶云采购申请单') {
 				item.disabled = true;
-			}else{
+			} else {
+				item.disabled = false;
+			}
+		})
+	} else {
+		options2.value.map(item => {
+			if (item.label === '金蝶云采购申请单') {
+				item.disabled = true;
+			} else {
 				item.disabled = false;
 			}
 		})
 	}
 }
-const importChange1 = (val)=>{
+const importChange1 = (val) => {
 	importsOptionsItem1.value = val
 }
 const importFormList = ref<any>([
 	{
-		label:'站点',
-		prop:'Site',
-		type:'select',
-		select:'value1',
-		selectList:options.value,
-		change:importChange,
+		label: '站点',
+		prop: 'Site',
+		type: 'select',
+		select: 'value1',
+		selectList: options.value,
+		change: importChange,
 	},
 	{
-		label:'表格名',
-		prop:'excelName',
-		type:'select',
-		select:'value2',
-		selectList:options2.value,
-		change:importChange1,
+		label: '表格名',
+		prop: 'excelName',
+		type: 'select',
+		select: 'value2',
+		selectList: options2.value,
+		change: importChange1,
 	},
 ])
 let selectedRows = ref<any>([]);
@@ -440,10 +410,10 @@ let selectedRows = ref<any>([]);
 // 	});
 // }
 
-const importClose = (bol:boolean) => {
+const importClose = (bol: boolean) => {
 	dialogFormVisible.value = bol
 }
-const importQuery = ()=>{
+const importQuery = () => {
 	handleQuery()
 }
 const handleData = (list: any) => {
@@ -611,7 +581,7 @@ handleQuery();
 	width: 500px;
 }
 
-.example-showcase .el-dropdown + .el-dropdown {
+.example-showcase .el-dropdown+.el-dropdown {
 	margin-left: 15px;
 }
 

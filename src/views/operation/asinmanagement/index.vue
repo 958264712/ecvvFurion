@@ -39,6 +39,9 @@
 						<el-option label="NO" value="NO" />
 					</el-select>
 				</el-form-item>
+				<el-form-item label="负责人">
+					<el-input v-model="queryParams.creator" clearable="" placeholder="请输入负责人" @clear="clearObj" @blur="clearObj" />
+				</el-form-item>
 				<el-form-item>
 					<el-button-group>
 						<el-button type="primary" icon="ele-Search" @click="handleQuery"> 查询 </el-button>
@@ -70,9 +73,9 @@
 							</el-dropdown-menu>
 						</template>
 					</el-dropdown>
-					<el-radio-group v-model="area1"  style="margin-left: 20px" >
-						<el-radio-button label="中文表头"  value="中文表头" @change="changeArea('CN')"/>
-						<el-radio-button label="English header"  value="English header" @change="changeArea('EN')"/>
+					<el-radio-group v-model="area1" style="margin-left: 20px">
+						<el-radio-button label="中文表头" value="中文表头" @change="changeArea('CN')" />
+						<el-radio-button label="English header" value="English header" @change="changeArea('EN')" />
 					</el-radio-group>
 				</div>
 				<tabDragColum :data="TableData" :name="`newasinmanagementData`" :area="area" @handleData="handleData" />
@@ -125,7 +128,7 @@ import { ref, watch, h } from 'vue';
 import { ElMessageBox, ElMessage, ElNotification, ElTooltip } from 'element-plus';
 import { auth } from '/@/utils/authFunction';
 //import { formatDate } from '/@/utils/formatTime';
-import { AsinDataPage, GetNotImportedList,ExportEnglish,ExportChinese } from '/@/api/modular/main/ASINManagement.ts';
+import { AsinDataPage, GetNotImportedList, ExportEnglish, ExportChinese } from '/@/api/modular/main/ASINManagement.ts';
 import axios from 'axios';
 import router from '/@/router';
 import other from '/@/utils/other.ts';
@@ -157,15 +160,14 @@ const tabsList = ref([
 ]);
 const area = ref('CN');
 const area1 = ref('中文表头');
-const changeArea = (val)=>{
-	area.value = val
-	if(area.value === 'CN'){
-		area1.value = '中文表头'
-	}else{
-		area1.value = 'English header'
+const changeArea = (val) => {
+	area.value = val;
+	if (area.value === 'CN') {
+		area1.value = '中文表头';
+	} else {
+		area1.value = 'English header';
 	}
-	
-}
+};
 const TableData = ref<any>([
 	{
 		titleCN: 'ERP-SKU',
@@ -551,7 +553,7 @@ const splitRank = (row, column) => {
 							// arr.push(h('span', null, '#'+item));
 						} else {
 							str += `<a href="${item}" target="_blank">#${iArr[index - 1]}</a></div>`;
-							arr.push(h('a', { href: list[1], target: '_blank' }, '#' + iArr[index - 1]));
+							arr.push(h('a', { href: item, target: '_blank' }, '#' + iArr[index - 1]));
 							let countArr = h('div', null, arr);
 							hArr.push(countArr);
 							arr = [];
@@ -592,16 +594,15 @@ const Export = () => {
 	const input = {
 		country: selectcountry.value,
 	};
-	if(area.value === 'CN'){
-		Chinese(input)
-	}else{
-		English(input)
+	if (area.value === 'CN') {
+		Chinese(input);
+	} else {
+		English(input);
 	}
 	loading.value = false;
-}
+};
 
-
-const SelectedExport = () =>{
+const SelectedExport = () => {
 	if (selectedRows.value.length === 0) {
 		ElMessage.warning('请至少选中一条数据');
 		return;
@@ -611,17 +612,18 @@ const SelectedExport = () =>{
 		country: selectcountry.value,
 		idLists: selectedRows.value,
 	};
-	if(area.value === 'CN'){
-		Chinese(formData)
-	}else{
-		English(formData)
+	if (area.value === 'CN') {
+		Chinese(formData);
+	} else {
+		English(formData);
 	}
 	loading.value = false;
-}
-const English = async (obj:any) => {
-	await ExportEnglish(obj).then((data)=>{
-		other.downloadfile(data);
-		if (data.statusText == 'OK') {
+};
+const English = async (obj: any) => {
+	await ExportEnglish(obj)
+		.then((data) => {
+			other.downloadfile(data);
+			if (data.statusText == 'OK') {
 				ElNotification({
 					title: '系统提示',
 					message: '导出成功',
@@ -632,7 +634,8 @@ const English = async (obj:any) => {
 					message: '导出成功',
 				});
 			}
-	}).catch((arr) => {
+		})
+		.catch((arr) => {
 			ElNotification({
 				title: '系统提示',
 				message: '下载错误：获取文件流错误',
@@ -643,11 +646,12 @@ const English = async (obj:any) => {
 				message: '导出失败',
 			});
 		});
-}
-const Chinese = async (obj:any) => {
-	await ExportChinese(obj).then((data)=>{
-		other.downloadfile(data);
-		if (data.statusText == 'OK') {
+};
+const Chinese = async (obj: any) => {
+	await ExportChinese(obj)
+		.then((data) => {
+			other.downloadfile(data);
+			if (data.statusText == 'OK') {
 				ElNotification({
 					title: '系统提示',
 					message: '导出成功',
@@ -658,7 +662,8 @@ const Chinese = async (obj:any) => {
 					message: '导出成功',
 				});
 			}
-	}).catch((arr) => {
+		})
+		.catch((arr) => {
 			ElNotification({
 				title: '系统提示',
 				message: '下载错误：获取文件流错误',
@@ -669,7 +674,7 @@ const Chinese = async (obj:any) => {
 				message: '导出失败',
 			});
 		});
-}
+};
 // const downloadfile = (res: any) => {
 // 	var blob = new Blob([res.data], {
 // 		type: 'application/octet-stream;charset=UTF-8',

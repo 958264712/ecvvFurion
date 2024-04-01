@@ -18,8 +18,68 @@ enum Api {
 	multipleExportByTemplate = '/api/poData/multipleExportByTemplate',
 	importPO = '/api/poData/import',
 	downLoadPOZip = '/api/poData/downLoadPOZip',
+	newPage = '/api/newPoData/page',
+	newSaudiPage = '/api/newPoData/saudiPage',
+	getConfirmedNewPOsPage = '/api/newPoData/getConfirmedNewPOsPage',
+	newUpdate = '/api/newPoData/update',
+	newMultipleExportByTemplate = '/api/newPoData/multipleExportByTemplate',
+	newDownLoadPOZip = '/api/newPoData/downLoadPOZip',
+	getNewPoDataExportHistory = '/api/newPoData/getNewPoDataExportHistory',
 }
+// 获取导出历史记录
+export const getNewPoDataExportHistory = (params?: any) =>
+	request({
+		url: Api.getNewPoDataExportHistory + '/' + params.page + '/' + params.pageSize,
+		method: 'get',
+		// params: params,
+	});
 
+// 查询迪拜PO单数据源
+export const newPage = (params?: any) =>
+	request({
+		url: Api.newPage,
+		method: 'post',
+		data: params,
+	});
+
+// newSaudiPage单表
+export const newSaudiPage = (params?: any) =>
+	request({
+		url: Api.newSaudiPage,
+		method: 'post',
+		data: params,
+	});
+
+// 获取ConfirmedNewPOs详情
+export const getConfirmedNewPOsPage = (params?: any) =>
+	request({
+		url: Api.getConfirmedNewPOsPage,
+		method: 'post',
+		data: params,
+	});
+
+// 编辑newUpdate单表
+export const newUpdate = (params?: any) =>
+	request({
+		url: Api.newUpdate,
+		method: 'post',
+		data: params,
+	});
+// 更新PO订单 newMultipleExportByTemplate
+export const newMultipleExportByTemplate = (params?: any) =>
+	request({
+		url: Api.newMultipleExportByTemplate,
+		method: 'post',
+		data: params,
+	});
+
+// 更新PO订单 newDownLoadPOZip
+export const newDownLoadPOZip = (params?: any) =>
+	request({
+		url: Api.newDownLoadPOZip,
+		method: 'post',
+		data: params,
+	});
 // 更新PO订单 Imports
 export const ImportPO = (params?: any) =>
 	request({

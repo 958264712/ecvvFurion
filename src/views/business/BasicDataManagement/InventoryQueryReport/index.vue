@@ -10,10 +10,10 @@
 						<el-button type="primary" icon="ele-Search" @click="handleQuery"
 							v-auth="'uAE_ProcurementDetails:page'"> 查询 </el-button>
 						<el-button icon="ele-Refresh" @click="() => {
-							queryParams = {};
-							handleQuery();
-						}
-							">
+			queryParams = {};
+			handleQuery();
+		}
+			">
 							重置
 						</el-button>
 					</el-button-group>
@@ -22,19 +22,20 @@
 		</el-card>
 		<el-card class="full-table" shadow="hover" style="margin-top: 8px">
 			<div style="width: 10%">
-				<el-upload :on-change="Imports" :multiple="false" action="#" :show-file-list="false" :auto-upload="false"
-					name="file">
+				<el-upload :on-change="Imports" :multiple="false" action="#" :show-file-list="false"
+					:auto-upload="false" name="file">
 					<el-button :loading="ImportsSalesloading" type="primary">导入</el-button>
 				</el-upload>
 			</div>
 			<el-table :data="tableData" size="lagre" style="width: 100%" v-loading="loading" tooltip-effect="light"
-				@sort-change="sortfun" @selection-change="handleSelectionChange" :header-cell-style="customHeaderCellStyle"
-				row-key="id" border="">
+				@sort-change="sortfun" @selection-change="handleSelectionChange"
+				:header-cell-style="customHeaderCellStyle" row-key="id" border="">
 				<el-table-column type="selection" width="55" class-name="custom-header" />
 				<el-table-column prop="images" label="图片" width="90" align="center" sortableshow-overflow-tooltip="">
 					<template #default="scope">
-						<el-image style="width: 60px; height: 60px" :src="scope.row.images" :zoom-rate="1.2" :max-scale="7"
-							:min-scale="0.2" :preview-src-list="scope.row.images" :initial-index="1" fit="cover" />
+						<el-image style="width: 60px; height: 60px" :src="scope.row.images" :zoom-rate="1.2"
+							:max-scale="7" :min-scale="0.2" :preview-src-list="scope.row.images" :initial-index="1"
+							fit="cover" />
 					</template>
 				</el-table-column>
 				<el-table-column prop="inventorySKU" label="库存SKU" sortable width="150" align="center"
@@ -55,8 +56,8 @@
 					sortableshow-overflow-tooltip="" />
 				<el-table-column prop="outOfStockOccupancy" label="缺货占用数" sortable width="150" align="center"
 					sortableshow-overflow-tooltip="" />
-				<el-table-column prop="unconfirmedInventoryQuantity" label="已采购未确认入库数量" sortable width="190" align="center"
-					sortableshow-overflow-tooltip="" />
+				<el-table-column prop="unconfirmedInventoryQuantity" label="已采购未确认入库数量" sortable width="190"
+					align="center" sortableshow-overflow-tooltip="" />
 				<el-table-column prop="outOfStockAndPendingOrderQuantity" label="缺货及待派单数量" sortable width="180"
 					align="center" sortableshow-overflow-tooltip="" />
 				<el-table-column prop="projectedAvailableBalance" label="预计可用库存" sortable width="150" align="center"

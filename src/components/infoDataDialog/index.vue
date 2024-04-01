@@ -25,8 +25,8 @@
 		</el-card>
 		<el-card class="full-table" shadow="hover" style="margin-top: 8px; height: 440px">
 			<el-table :data="tableData" style="width: 100%" v-loading="loading" tooltip-effect="light" row-key="id" border="">
-				<el-table-column type="index" label="序号" width="55" align="center" />
-				<el-table-column v-for="item in props.dataList" align="center" :prop="item.prop" :label="item.label" width="150" show-overflow-tooltip="" />
+				<el-table-column type="index" label="序号" width="53" align="center" />
+				<el-table-column v-for="item in props.dataList" align="center" :prop="item.prop" :label="item.label" :width="props.idName === 'dibaiPoDataDataId' ? 173 :150" show-overflow-tooltip="" />
 			</el-table>
 			<el-pagination
 				v-model:currentPage="tableParams.page"
@@ -50,12 +50,13 @@ import { ElMessageBox, ElMessage } from 'element-plus';
  * 和弹窗组件el-dialog配套使用，外部弹窗控制大小，本组件主要用于详情，带查询表格展示，不带弹窗
  * infoDataDialog 配套参数
  * @props id 传入文件id
+ * @props weeks 页面专属属性判断周月
  * @props idName 传入表格名称
  * @props pointerface 传入表格相应接口
  * @props dataList 传入表格column列表
  * @props formList 传入筛选列表
  */
-const props = defineProps(['id', 'idName', 'pointerface', 'dataList', 'formList', 'ifClose']);
+const props = defineProps(['id','weeks', 'idName', 'pointerface', 'dataList', 'formList', 'ifClose']);
 const loading = ref(false);
 const tableData = ref<any>([]);
 const queryParams = ref<any>({});
@@ -69,6 +70,12 @@ const tableParams = ref({
 const handleQuery = async () => {
 	queryParams.value[props.idName] = props.id;
 	loading.value = true;
+	if(props.idName === 'BatchId'){
+		queryParams.value.TimeQuantum = props.weeks
+	}
+	// else if(props.idName === 'dibaiPoDataDataId'){
+
+	// }
 	var res = await props.pointerface(Object.assign(queryParams.value, tableParams.value));
 	tableData.value = res.data.result?.items ?? [];
 	tableParams.value.total = res.data.result?.total;

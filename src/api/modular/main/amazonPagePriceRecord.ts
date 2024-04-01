@@ -27,7 +27,24 @@ enum Api {
 	AmazonProductBatchDeleteSA = '/api/amazonProPricebaseSA/batchDelete',
 	getAEAmazonState = '/api/amazonProductPricebase/getAEAmazonState',
 	getSAAmazonState = '/api/amazonProPricebaseSA/getSAAmazonState',
+	getScheduledFulfillmentList = '/api/newPoData/getScheduledFulfillmentList',
+	getAppointmentList = '/api/newPoData/getAppointmentList',
 }
+
+// 获取ScheduledFulfillment列表 工作台
+export const getScheduledFulfillmentList = (params?: any) =>
+	request({
+		url: Api.getScheduledFulfillmentList,
+		method: 'post',
+		data: params,
+	});
+// 获取Appointment列表 工作台
+export const getAppointmentList = (params?: any) =>
+	request({
+		url: Api.getAppointmentList,
+		method: 'post',
+		data: params,
+	});
 
 // AE抓取数据信息
 export const getAEAmazonState = (params?: any) =>

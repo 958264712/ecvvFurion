@@ -139,4 +139,12 @@ const Imports = (file: any) => {
 			ImportsSalesloading.value = false;
 		});
 };
+
+onMounted(()=>{
+	if(props.formList?.length !== ImportParams.value.length){
+		ifdisabled.value = true
+	}else{
+		ifdisabled.value = false
+	}
+})
 </script>

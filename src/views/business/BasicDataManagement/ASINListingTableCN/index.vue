@@ -51,7 +51,7 @@
 							<el-dropdown-menu>
 								<el-dropdown-item @click="AllExport">{{ area == 'CN' ? '导出所有' : 'Export All' }}</el-dropdown-item>
 								<el-dropdown-item :disabled="disabledSelected" @click="SelectedExport">{{ area == 'CN' ? '导出选中' : 'Export Selected' }}</el-dropdown-item>
-								<el-dropdown-item  @click="Exportemptycreator">{{ area == 'CN' ? '导出空创建人' : 'Export empty creator' }}</el-dropdown-item>
+								<!-- <el-dropdown-item  @click="Exportemptycreator">{{ area == 'CN' ? '导出空创建人' : 'Export empty creator' }}</el-dropdown-item> 暂时不使用-->
 							</el-dropdown-menu>
 						</template>
 					</el-dropdown>
