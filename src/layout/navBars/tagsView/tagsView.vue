@@ -1,28 +1,50 @@
 <template>
 	<div class="layout-navbars-tagsview" :class="{ 'layout-navbars-tagsview-shadow': getThemeConfig.layout === 'classic' }">
 		<el-scrollbar ref="scrollbarRef" @wheel.prevent="onHandleScroll">
-			<ul class="layout-navbars-tagsview-ul" :class="setTagsStyle" ref="tagsUlRef">
-				<li v-for="(v, k) in state.tagsViewList" :key="k" class="layout-navbars-tagsview-ul-li" :data-url="v.url"
-					:class="{ 'is-active': isActive(v) }" @contextmenu.prevent="onContextmenu(v, $event)"
-					@mousedown="onMousedownMenu(v, $event)" @click="onTagsClick(v, k)" :ref="(el) => {
-						if (el) tagsRefs[k] = el;
-					}
-						">
-					<i class="iconfont icon-webicon318 layout-navbars-tagsview-ul-li-iconfont" v-if="isActive(v)"></i>
-					<SvgIcon :name="v.meta.icon" v-if="!isActive(v) && getThemeConfig.isTagsviewIcon" class="pr5" />
-					<span>{{ setTagsViewNameI18n(v) }}</span>
-					<template v-if="isActive(v)">
-						<SvgIcon name="ele-RefreshRight" class="ml5 layout-navbars-tagsview-ul-li-refresh"
-							@click.stop="refreshCurrentTagsView($route.fullPath)" />
-						<SvgIcon name="ele-Close" class="layout-navbars-tagsview-ul-li-icon layout-icon-active"
-							v-if="!v.meta.isAffix"
-							@click.stop="closeCurrentTagsView(getThemeConfig.isShareTagsView ? v.path : v.url)" />
-					</template>
-					<SvgIcon name="ele-Close" class="layout-navbars-tagsview-ul-li-icon layout-icon-three"
-						v-if="!v.meta.isAffix"
-						@click.stop="closeCurrentTagsView(getThemeConfig.isShareTagsView ? v.path : v.url)" />
-				</li>
-			</ul>
+			<el-popover  :visible="state.tagsViewListOver" placement="bottom" :width="260" popper-class="popover" >
+				<p style="color:white">为了更好的体验，建议您关闭不常用页面，最多可打开15个页面</p>
+				<div style="text-align: right; margin-top: 20px">
+					<el-button size="small"  @click="state.tagsViewListOver = false">知道了</el-button>
+				</div>
+				<template #reference>
+					<ul class="layout-navbars-tagsview-ul" :class="setTagsStyle" ref="tagsUlRef">
+						<li
+							v-for="(v, k) in state.tagsViewList"
+							:key="k"
+							class="layout-navbars-tagsview-ul-li"
+							:data-url="v.url"
+							:class="{ 'is-active': isActive(v) }"
+							@contextmenu.prevent="onContextmenu(v, $event)"
+							@mousedown="onMousedownMenu(v, $event)"
+							@click="onTagsClick(v, k)"
+							:ref="
+								(el) => {
+									if (el) tagsRefs[k] = el;
+								}
+							"
+						>
+							<i class="iconfont icon-webicon318 layout-navbars-tagsview-ul-li-iconfont" v-if="isActive(v)"></i>
+							<SvgIcon :name="v.meta.icon" v-if="!isActive(v) && getThemeConfig.isTagsviewIcon" class="pr5" />
+							<span>{{ setTagsViewNameI18n(v) }}</span>
+							<template v-if="isActive(v)">
+								<SvgIcon name="ele-RefreshRight" class="ml5 layout-navbars-tagsview-ul-li-refresh" @click.stop="refreshCurrentTagsView($route.fullPath)" />
+								<SvgIcon
+									name="ele-Close"
+									class="layout-navbars-tagsview-ul-li-icon layout-icon-active"
+									v-if="!v.meta.isAffix"
+									@click.stop="closeCurrentTagsView(getThemeConfig.isShareTagsView ? v.path : v.url)"
+								/>
+							</template>
+							<SvgIcon
+								name="ele-Close"
+								class="layout-navbars-tagsview-ul-li-icon layout-icon-three"
+								v-if="!v.meta.isAffix"
+								@click.stop="closeCurrentTagsView(getThemeConfig.isShareTagsView ? v.path : v.url)"
+							/>
+						</li>
+					</ul>
+				</template>
+			</el-popover>
 		</el-scrollbar>
 		<Contextmenu :dropdown="state.dropdown" ref="contextmenuRef" @currentContextmenuClick="onCurrentContextmenuClick" />
 	</div>
@@ -71,6 +93,7 @@ const state = reactive<TagsViewState>({
 	tagsRefsIndex: 0,
 	tagsViewList: [],
 	tagsViewRoutesList: [],
+	tagsViewListOver: false,
 });
 
 // 动态设置 tagsView 风格样式
@@ -105,7 +128,6 @@ const isActive = (v: RouteItem) => {
 // 存储 tagsViewList 到浏览器临时缓存中，页面刷新时，保留记录
 const regexPattern = /\/business\/edit\/edit-.*/;
 const addBrowserSetSession = (tagsViewList: Array<object>) => {
-
 	Session.set('tagsViewList', tagsViewList);
 };
 // 获取 pinia 中的 tagsViewRoutes 列表
@@ -120,6 +142,7 @@ const getTagsViewRoutes = async () => {
 const initTagsView = async () => {
 	if (Session.get('tagsViewList') && getThemeConfig.value.isCacheTagsView) {
 		state.tagsViewList = await Session.get('tagsViewList');
+		state.tagsViewListOver = await Session.get('tagsViewListOver');
 	} else {
 		await state.tagsViewRoutesList.map((v: RouteItem) => {
 			if (v.meta?.isAffix && !v.meta.isHide) {
@@ -557,11 +580,11 @@ onBeforeMount(() => {
 // 页面卸载时
 onUnmounted(() => {
 	// 取消非本页面调用监听
-	mittBus.off('onCurrentContextmenuClick', () => { });
+	mittBus.off('onCurrentContextmenuClick', () => {});
 	// 取消监听布局配置界面开启/关闭拖拽
-	mittBus.off('openOrCloseSortable', () => { });
+	mittBus.off('openOrCloseSortable', () => {});
 	// 取消监听布局配置开启 TagsView 共用
-	mittBus.off('openShareTagsView', () => { });
+	mittBus.off('openShareTagsView', () => {});
 	// 取消窗口 resize 监听
 	window.removeEventListener('resize', onSortableResize);
 });
@@ -577,7 +600,6 @@ onMounted(() => {
 });
 // 路由更新时（组件内生命钩子）
 onBeforeRouteUpdate(async (to) => {
-
 	state.routeActive = setTagsViewHighlight(to);
 	state.routePath = to.meta.isDynamic ? to.meta.isDynamicPath : to.path;
 
@@ -595,6 +617,28 @@ watch(
 		deep: true,
 	}
 );
+watch(()=>route.path,
+()=>{
+	if(Session.get('tagsViewList')?.length > 14){
+		state.tagsViewListOver = true
+		Session.set('tagsViewListOver',state.tagsViewListOver)
+	}else{
+		state.tagsViewListOver = false
+		Session.set('tagsViewListOver',state.tagsViewListOver)
+	}
+}
+)
+watch(()=>state.tagsViewList,
+()=>{
+	if(state.tagsViewList?.length <15){
+		state.tagsViewListOver = false
+		Session.set('tagsViewListOver',state.tagsViewListOver)
+	}else{
+		state.tagsViewListOver = true
+		Session.set('tagsViewListOver',state.tagsViewListOver)
+	}
+}
+)
 </script>
 
 <style scoped lang="scss">
@@ -753,5 +797,19 @@ watch(
 
 .layout-navbars-tagsview-shadow {
 	box-shadow: rgb(0 21 41 / 4%) 0px 1px 4px;
+}
+</style>
+<style>
+.popover.el-popper.is-light {
+  background: red !important;
+  inset:90px auto auto calc(50% - 130px) !important;
+}
+//修改下面的小三角，属性名根据组件的placement位置做相应修改
+.popover .popper__arrow{
+  background: red !important;
+}
+.popover.el-popper .el-popper__arrow::before {
+  border-top-color: red !important;
+  background: red !important;
 }
 </style>

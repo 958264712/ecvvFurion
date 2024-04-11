@@ -38,9 +38,9 @@ const formList = ref<any>([]);
 const formList1 = ref<any>([
 	{
 		label: 'ASIN',
-		prop: 'asin'
-	}
-])
+		prop: 'asin',
+	},
+]);
 const dataList = ref<any>([
 	{
 		label: '导出任务',
@@ -201,70 +201,71 @@ const invoicedStatusOptionList = ref<any>([
 const dataList1 = ref<any>([
 	{
 		label: 'Order/PO Number',
-		prop: 'po'
+		prop: 'po',
 	},
 	{
 		label: 'External ID',
-		prop: 'externalID'
+		prop: 'externalID',
 	},
 	{
 		label: 'Model Number',
-		prop: 'modelNumber'
+		prop: 'modelNumber',
 	},
 	{
 		label: 'ASIN',
-		prop: 'asin'
+		prop: 'asin',
 	},
 	{
 		label: 'Merchant Sku',
-		prop: 'merchantSku'
+		prop: 'merchantSku',
 	},
 	{
 		label: 'Title',
-		prop: 'title'
+		prop: 'title',
 	},
 	{
 		label: 'List Price',
-		prop: 'listPrice'
+		prop: 'listPrice',
 	},
 	{
 		label: 'Discount',
-		prop: 'discount'
+		prop: 'discount',
 	},
 	{
 		label: 'Cost',
-		prop: 'cost'
+		prop: 'cost',
 	},
 	{
 		label: 'Quantity Ordered',
-		prop: 'quantityOrdered'
+		prop: 'quantityOrdered',
 	},
 	{
 		label: 'Quantity Confirmed',
-		prop: 'quantityConfirmed'
+		prop: 'quantityConfirmed',
 	},
 	{
 		label: 'Previously Confirmed Quantity',
-		prop: 'previouslyConfirmedQuantity'
+		prop: 'previouslyConfirmedQuantity',
 	},
 	{
 		label: 'Hand Off Start',
-		prop: 'handOffStart'
+		prop: 'handOffStart',
 	},
 	{
 		label: 'Hand Off End',
-		prop: 'handOffEnd'
+		prop: 'handOffEnd',
 	},
 	{
 		label: 'Hand Off Type',
-		prop: 'handOffType'
+		prop: 'handOffType',
 	},
 	{
 		label: 'Expected Hand Off Date',
-		prop: 'expectedHandOffDate'
-	}, {
+		prop: 'expectedHandOffDate',
+	},
+	{
 		label: 'Availability Status',
-		prop: 'availabilityStatus'
+		prop: 'availabilityStatus',
 	},
 	// {
 	// 	label:'Error From Previous Upload Attempt',
@@ -272,75 +273,79 @@ const dataList1 = ref<any>([
 	// },
 	{
 		label: 'Vendor Code',
-		prop: 'vendorCode'
-	}, {
+		prop: 'vendorCode',
+	},
+	{
 		label: 'Fulfillment Center',
-		prop: 'fulfillmentCenter'
-	}, {
+		prop: 'fulfillmentCenter',
+	},
+	{
 		label: 'Condition',
-		prop: 'condition'
-	}, {
+		prop: 'condition',
+	},
+	{
 		label: 'Order Date',
-		prop: 'orderDate'
+		prop: 'orderDate',
 	},
 	{
 		label: 'Is Back Order',
-		prop: 'isBackOrder'
+		prop: 'isBackOrder',
 	},
 	{
 		label: 'Freight Terms',
-		prop: 'freightTerms'
+		prop: 'freightTerms',
 	},
 	{
 		label: 'Payment Method',
-		prop: 'paymentMethod'
+		prop: 'paymentMethod',
 	},
 	{
 		label: 'Special Instructions',
-		prop: 'specialInstructions'
+		prop: 'specialInstructions',
 	},
 	{
 		label: 'Comments',
-		prop: 'comments'
+		prop: 'comments',
 	},
 	{
 		label: 'Legal Entity Id',
-		prop: 'legalEntityId'
+		prop: 'legalEntityId',
 	},
 	{
 		label: 'Currency Code',
-		prop: 'currencyCode'
+		prop: 'currencyCode',
 	},
 	{
 		label: 'External Id Type',
-		prop: 'externalIdType'
-	}, {
+		prop: 'externalIdType',
+	},
+	{
 		label: 'Item Package Quantity',
-		prop: 'itemPackageQuantity'
+		prop: 'itemPackageQuantity',
 	},
 	{
 		label: 'Aggregate Quantity',
-		prop: 'aggregateQuantity'
+		prop: 'aggregateQuantity',
 	},
 	{
 		label: 'Legal Entity Id',
-		prop: 'legalEntityId'
+		prop: 'legalEntityId',
 	},
 	{
 		label: 'Merchant Customer ID',
-		prop: 'merchantCustomerID'
+		prop: 'merchantCustomerID',
 	},
 	{
 		label: 'Merchant Sku ratio',
-		prop: 'merchantSkuratio'
+		prop: 'merchantSkuratio',
 	},
-])
+]);
 //打开弹窗
 const showModal = (id: any) => {
 	showId.value = id;
 	ifClose1.value = true;
 	visible.value = true;
-}
+};
 const showModal1 = (val: any, id: any) => {
 	pos.value = id;
 	remark.value = val;
@@ -386,28 +391,28 @@ const handleQuery = async () => {
 	loading.value = true;
 	if (queryParams.value.type === 'Vendor') {
 		queryParams.value.vendor = queryParams.value.type1;
-		queryParams.value.shipToLocation = null
-		queryParams.value.type1 = null
-	} else if (queryParams.value.type === 'Location'){
+		queryParams.value.shipToLocation = null;
+		queryParams.value.type1 = null;
+	} else if (queryParams.value.type === 'Location') {
 		queryParams.value.shipToLocation = queryParams.value.type1;
-		queryParams.value.vendor = null
-		queryParams.value.type1 = null
+		queryParams.value.vendor = null;
+		queryParams.value.type1 = null;
 	}
-	if(queryParams.value.orderDate === 'orderDate'){
+	if (queryParams.value.orderDate === 'orderDate') {
 		queryParams.value.orderDateStartTime = queryParams.value.time?.length ? moment(queryParams.value.time[0]).format() : null;
 		queryParams.value.orderDateEndTime = queryParams.value.time?.length ? moment(queryParams.value.time[1]).format() : null;
 		queryParams.value.contractedWarehouseTimeEndTime = null;
 		queryParams.value.contractedWarehouseTimeStartTime = null;
 		queryParams.value.latestDateStartTime = null;
 		queryParams.value.latestDateEndTime = null;
-	}else if(queryParams.value.orderDate === '约仓时间'){
+	} else if (queryParams.value.orderDate === '约仓时间') {
 		queryParams.value.contractedWarehouseTimeStartTime = queryParams.value.time?.length ? moment(queryParams.value.time[0]).format() : null;
 		queryParams.value.contractedWarehouseTimeEndTime = queryParams.value.time?.length ? moment(queryParams.value.time[1]).format() : null;
 		queryParams.value.orderDateStartTime = null;
 		queryParams.value.orderDateEndTime = null;
 		queryParams.value.latestDateStartTime = null;
 		queryParams.value.latestDateEndTime = null;
-	}else if(queryParams.value.orderDate === '最迟履单时间'){
+	} else if (queryParams.value.orderDate === '最迟履单时间') {
 		queryParams.value.latestDateStartTime = queryParams.value.time?.length ? moment(queryParams.value.time[0]).format() : null;
 		queryParams.value.latestDateEndTime = queryParams.value.time?.length ? moment(queryParams.value.time[1]).format() : null;
 		queryParams.value.contractedWarehouseTimeEndTime = null;
@@ -429,21 +434,36 @@ const openEdit = async (id: any, row): void => {
 		const index = disabledList.value.findIndex((item) => item === id);
 		disabledList.value.splice(index, 1);
 	} else {
-		newUpdate({
-			id: id,
-			invoicedStatus: row.invoicedStatus,
-			contractedWarehouseTime: moment(row.contractedWarehouseTime).format() === "Invalid date"? null :moment(row.actualDate).format(),
-			actualDate: moment(row.actualDate).format() === "Invalid date" ? null :moment(row.actualDate).format(),
-			state: row.state,
-		}).then((res) => {
-			if (res.data.type === 'success') {
-				ElMessage.success('Edit successfully');
-				disabledList.value.push(id);
-				handleQuery();
-			} else {
-				ElMessage.error('Edit failed ' + res.message);
+		if (id > 0) {
+			var obj = {};
+			if (row.invoicedStatus?.length) {
+				obj.invoicedStatus = row.invoicedStatus;
 			}
-		});
+			if (row.contractedWarehouseTime?.length) {
+				obj.contractedWarehouseTime = moment(row.contractedWarehouseTime).format();
+			}
+			if (row.actualDate?.length) {
+				obj.actualDate = moment(row.actualDate).format();
+			}
+			if (row.state?.length) {
+				obj.state = row.state;
+			}
+			newUpdate(Object.assign(obj))
+				.then((res) => {
+					if (res.data.type === 'success') {
+						ElMessage.success('Edit successfully');
+						disabledList.value.push(id);
+						handleQuery();
+					} else {
+						ElMessage.error('Edit failed ' + res.message);
+					}
+				})
+				.catch(() => {
+					disabledList.value.push(id);
+				});
+		} else {
+			ElMessage.error('This id is null');
+		}
 	}
 };
 const disabledAuto = (scope: any): void => {
@@ -547,19 +567,11 @@ handleQuery();
 					</el-select>
 					<el-input v-model="queryParams.type1" style="width: 150px" clearable="" placeholder="Please enter" />
 				</el-form-item>
-				<el-form-item >
+				<el-form-item>
 					<el-select v-model="queryParams.orderDate" style="width: 90px" placeholder="orderDate">
 						<el-option v-for="i in orderDateOptionList" :value="i.value" :label="i.label" />
 					</el-select>
-					<el-date-picker
-						v-model="queryParams.time"
-						type="daterange"
-						start-placeholder="Start date"
-						end-placeholder="End date"
-						format="YYYY-MM-DD"
-						date-format="YYYY/MM/DD"
-						style="width: 290px"
-					/>
+					<el-date-picker v-model="queryParams.time" type="daterange" start-placeholder="Start date" end-placeholder="End date" format="YYYY-MM-DD" date-format="YYYY/MM/DD" style="width: 290px" />
 				</el-form-item>
 				<el-form-item label="状态">
 					<el-select v-model="queryParams.state" placeholder="全部">
@@ -595,7 +607,7 @@ handleQuery();
 				<template #dropdown>
 					<el-dropdown-menu>
 						<el-dropdown-item>
-							<el-dropdown placement='right-start'>
+							<el-dropdown placement="right-start">
 								PO Picking List
 								<template #dropdown>
 									<el-dropdown-menu>
@@ -682,8 +694,7 @@ handleQuery();
 				<infoDataDialog :id="111" idName="dibaiPoDataDataId" :dataList="dataList" :ifClose="ifClose" :pointerface="getNewPoDataExportHistory" :formList="formList" />
 			</el-dialog>
 			<el-dialog v-model="visible" title="Confirmed New POs详情" @close="close1" width="1000px">
-				<infoDataDialog :id="showId" idName="id" :dataList="dataList1"
-					:pointerface="getConfirmedNewPOsPage" :formList="formList1" :ifClose="ifClose1" />
+				<infoDataDialog :id="showId" idName="id" :dataList="dataList1" :pointerface="getConfirmedNewPOsPage" :formList="formList1" :ifClose="ifClose1" />
 			</el-dialog>
 		</el-card>
 	</div>

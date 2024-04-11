@@ -427,12 +427,12 @@ function customCellStyle({ row, column, rowIndex, columnIndex }) {
 						<el-button icon="ele-Refresh" @click="resetfun()" style="width: 70px; margin-right: 2px"> 重置
 						</el-button>
 						<div class="flex flex-wrap items-center">
-							<el-dropdown trigger="click">
+							<el-dropdown>
 								<el-button type="primary" :loading="cardLoading"> 导出 </el-button>
 								<template #dropdown>
 									<el-dropdown-menu>
-										<el-dropdown-item style="height:24px">
-											<el-dropdown placement='right-start'>
+										<el-dropdown-item style="height:24px" @click="SelectedExport(0)">导出选中
+											<!-- <el-dropdown placement='right-start'>
 												<span style="font-size: 12px;" class="el-dropdown-link">
 													导出选中
 												</span>
@@ -451,10 +451,10 @@ function customCellStyle({ row, column, rowIndex, columnIndex }) {
 
 													</el-dropdown-menu>
 												</template>
-											</el-dropdown>
+</el-dropdown> -->
 										</el-dropdown-item>
-										<el-dropdown-item style="height:24px">
-											<el-dropdown placement='right-start'>
+										<el-dropdown-item style="height:24px" @click="AllExport(0)">导出全部
+											<!-- <el-dropdown placement='right-start'>
 												<span style="font-size: 12px;" class=" el-dropdown-link">
 													导出全部
 												</span>
@@ -473,7 +473,7 @@ function customCellStyle({ row, column, rowIndex, columnIndex }) {
 
 													</el-dropdown-menu>
 												</template>
-											</el-dropdown>
+											</el-dropdown> -->
 										</el-dropdown-item>
 									</el-dropdown-menu>
 								</template>

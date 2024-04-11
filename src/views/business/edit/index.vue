@@ -1459,6 +1459,12 @@ let weightKG = (row: any) => {
 	else if (collectionOrderInfo.internationalLogisticsFeePayer == '迪拜支付') {
 		row['exportUnitPrice'] = Number(((row['includingTaxPurchasePrice'] * 1.1 + Number(row['domesticLogisticsCost'])) / collectionOrderInfo.exchangeRateUSD).toFixed(2));
 	}
+	else{
+		ElMessage({
+						type: 'error',
+						message: '请补充【国际物流支付方】',
+					});
+	}
 
 	//出口总价(USD)=出口单价*报关数量
 	row.totalExportPrice = row.exportUnitPrice * row.plannedShipmentQuantity;

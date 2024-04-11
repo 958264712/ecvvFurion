@@ -8,24 +8,15 @@
 						<el-option value="SA" label="SA"></el-option>
 					</el-select>
 				</el-form-item>
-				<el-form-item label="订单时间">
-					<el-date-picker style="width: 250px" start-placeholder=" 开始时间" end-placeholder="结束时间" type="daterange" v-model="queryParams.OrderTime" format="YYYY-MM-DD" />
-				</el-form-item>
-				<el-form-item label="导入时间">
-					<el-date-picker style="width: 250px" start-placeholder=" 开始时间" end-placeholder="结束时间" type="daterange" v-model="queryParams.ImportTime" format="YYYY-MM-DD" />
-				</el-form-item>
 				<el-form-item>
 					<el-button-group>
-						<el-button type="primary" icon="ele-Search" @click="handleQuery" v-auth="'uAE_ProcurementDetails:page'"> 查询 </el-button>
-						<el-button
-							icon="ele-Refresh"
-							@click="
-								() => {
-									queryParams = {};
-									handleQuery();
-								}
-							"
-						>
+						<el-button type="primary" icon="ele-Search" @click="handleQuery"
+							v-auth="'uAE_ProcurementDetails:page'"> 查询 </el-button>
+						<el-button icon="ele-Refresh" @click="() => {
+			queryParams = {};
+			handleQuery();
+		}
+			">
 							重置
 						</el-button>
 					</el-button-group>
@@ -33,126 +24,27 @@
 			</el-form>
 		</el-card>
 		<el-card class="full-table" shadow="hover" style="margin-top: 8px">
-			<div style="width: 10%">
-				<el-button @click="dialogFormVisible = true" type="primary"> 导入 </el-button>
-				<el-dialog v-model="dialogFormVisible" title="亚马逊订单数据导入" width="600px" center>
-					<importDialog :type="importType" :text="importText" :weeks="weeks" :formList="importFormList" :importsInterface="Import" @close="importClose" @importQuery="importQuery" />
-					<!-- <el-form label-width="150" label-position="right" size="large" :model="ImportParams" ref="ruleFormRef">
-						<div
-							style="width: 100%;height: 35px;margin-bottom: 10px;display: flex;flex-direction: column;align-items: center;justify-content: center;background-color: #FFFFE0;">
-							<el-text
-								size="20">{{ weeks == '周' ? '选择站点、日期、周，点击"确定"后，选择需要导入的文件，将导入该数据' : ' 选择站点、日期，点击"确定"后，选择需要导入的文件，将导入该数据' }}</el-text>
-						</div>
-						<el-form-item label="站点：" prop="Site" :rules="[
-							{
-								required: true,
-								message: '站点不能为空',
-								trigger: 'blur',
-							}]">
-							<el-select v-model="ImportParams.Site" size="large" style="width:300px;">
-								<el-option value="UAE" label="UAE"></el-option>
-								<el-option value="SA" label="SA"></el-option>
-							</el-select>
-						</el-form-item>
-						<el-form-item label="日期：" prop="Time" :rules="[
-							{
-								required: true,
-								message: '日期不能为空',
-								trigger: 'blur',
-							}]">
-							<el-date-picker style="width:300px;" size="large" v-model="ImportParams.Time" type="month"
-								placeholder="请选择月份" />
-						</el-form-item>
-						<el-form-item v-if="weeks == '周'" label="  周：" prop="Week" :rules="[
-							{
-								required: true,
-								message: '周不能为空',
-								trigger: 'blur',
-							}]">
-							<el-select v-model="ImportParams.Week" size="large" style="width:300px;">
-								<el-option value="第一周" label="第一周"></el-option>
-								<el-option value="第二周" label="第二周"></el-option>
-								<el-option value="第三周" label="第三周"></el-option>
-								<el-option value="第四周" label="第四周"></el-option>
-								<el-option value="第五周" label="第五周"></el-option>
-							</el-select>
-						</el-form-item>
-						<el-form-item>
-							<el-button :loading="ImportsSalesloading"
-								style="width: 65px;height: 32px;margin-left:160px;" type="info"
-								@click="dialogFormVisible = false">取消</el-button>
-							<el-button :loading="ImportsSalesloading"
-								style="width: 65px;height: 32px;" type="primary"
-								@click="submitForm(ruleFormRef)">确定</el-button>
-							<el-upload v-show="false" ref="uploadRef" 
-								:on-change="Imports" :multiple="false" action="#" :show-file-list="false"
-								:auto-upload="false" name="file">
-								<el-button style="width: 65px;height: 32px;" :loading="ImportsSalesloading"
-									type="primary">导入</el-button>
-							</el-upload>
-						</el-form-item>
-					</el-form> -->
-				</el-dialog>
-			</div>
-			<div style="margin-top: 5px">
-				<el-button-group>
-					<el-button
-						style="width: 80px; height: 27px"
-						@click="
-							weeks = '周';
-							handleQuery();
-						"
-						:class="{ buttonBackground: weeks == '周' }"
-						>周</el-button
-					>
-					<el-button
-						style="width: 80px; height: 27px"
-						@click="
-							weeks = '月';
-							handleQuery();
-						"
-						:class="{ buttonBackground: weeks == '月' }"
-						>月</el-button
-					>
-				</el-button-group>
-			</div>
-			<el-table
-				:data="tableData"
-				size="lagre"
-				style="width: 100%"
-				v-loading="loading"
-				tooltip-effect="light"
-				@sort-change="sortfun"
-				@selection-change="handleSelectionChange"
-				:header-cell-style="customHeaderCellStyle"
-				row-key="id"
-				border=""
-			>
-				<el-table-column type="selection" width="55" class-name="custom-header" />
-				<el-table-column prop="asin" label="ASIN" width="150" sortable align="center" show-overflow-tooltip="" />
-				<el-table-column prop="productTitle" label="Product Title" width="130" sortable align="center" show-overflow-tooltip="" />
-				<el-table-column prop="brand" label="Brand" width="100" sortable align="center" show-overflow-tooltip="" />
-				<el-table-column prop="shippedRevenue" label="Shipped Revenue" width="170" sortable align="center" show-overflow-tooltip="" />
-				<el-table-column prop="shippedCOGS" label="Shipped COGS" width="150" sortable align="center" show-overflow-tooltip="" />
-				<el-table-column prop="shippedUnits" label="Shipped Units" width="150" sortable align="center" show-overflow-tooltip="" />
-				<el-table-column prop="customerReturns" label="Customer Returns" width="170" sortable align="center" show-overflow-tooltip="" />
-				<el-table-column prop="site" label="站点" sortable align="center" show-overflow-tooltip="" />
-				<el-table-column prop="beginTime" label="订单开始时间" width="150" sortable align="center" show-overflow-tooltip="" />
-				<el-table-column prop="endTime" label="订单截止时间" width="150" sortable align="center" show-overflow-tooltip="" />
-				<el-table-column prop="createTime" label="导入时间" width="150" sortable align="center" show-overflow-tooltip="" />
-				<el-table-column prop="creator" label="操作人" width="110" sortable align="center" show-overflow-tooltip="" />
+			<el-table :data="tableData" size="lagre" style="width: 100%" v-loading="loading" tooltip-effect="light"
+				@sort-change="sortfun" :header-cell-style="customHeaderCellStyle" row-key="id" border="">
+				<el-table-column prop="site" label="站点" width="80" sortable align="center" show-overflow-tooltip="" />
+				<el-table-column prop="asin" label="ASIN" min-width="150" sortable align="center"
+					show-overflow-tooltip="" />
+				<el-table-column prop="shippedRevenue" label="Shipped Revenue" min-width="170" sortable align="center"
+					show-overflow-tooltip="" />
+				<el-table-column prop="shippedCOGS" label="Shipped COGS" min-width="150" sortable align="center"
+					show-overflow-tooltip="" />
+				<el-table-column prop="shippedUnits" label="Shipped Units" min-width="150" sortable align="center"
+					show-overflow-tooltip="" />
+				<el-table-column prop="customerReturns" label="Customer Returns" min-width="170" sortable align="center"
+					show-overflow-tooltip="" />
+
+				<el-table-column prop="startDate" label="Order Date" min-width="150" sortable align="center"
+					show-overflow-tooltip="" />
 			</el-table>
-			<el-pagination
-				v-model:currentPage="tableParams.page"
-				v-model:page-size="tableParams.pageSize"
-				:total="tableParams.total"
-				:page-sizes="[10, 20, 50, 100, 500, 1000]"
-				small=""
-				background=""
-				@size-change="handleSizeChange"
-				@current-change="handleCurrentChange"
-				layout="total, sizes, prev, pager, next, jumper"
-			/>
+			<el-pagination v-model:currentPage="tableParams.page" v-model:page-size="tableParams.pageSize"
+				:total="tableParams.total" :page-sizes="[10, 20, 50, 100, 500, 1000]" small="" background=""
+				@size-change="handleSizeChange" @current-change="handleCurrentChange"
+				layout="total, sizes, prev, pager, next, jumper" />
 		</el-card>
 	</div>
 </template>
@@ -169,7 +61,7 @@ import moment from 'moment';
 const loading = ref(false);
 const ImportsSalesloading = ref(false);
 const tableData = ref<any>([]);
-const queryParams = ref<any>({});
+const queryParams = ref<any>({ Site: 'UAE' });
 const dialogFormVisible = ref(false);
 const weeks = ref('周');
 interface RuleForm {
@@ -253,10 +145,10 @@ const importFormList = ref<any>([
 	},
 
 ]);
-const importClose = (bol:boolean) => {
+const importClose = (bol: boolean) => {
 	dialogFormVisible.value = bol
 }
-const importQuery = ()=>{
+const importQuery = () => {
 	handleQuery()
 }
 // function Imports(file: any) {
@@ -294,59 +186,26 @@ const handleSizeChange = (val: number) => {
 
 // 改变页码序号
 const handleCurrentChange = (val: number) => {
-	tableParams.value.pageNo = val;
+	tableParams.value.Page = val;
 	handleQuery();
 };
 
 // 查询操作
 const handleQuery = async () => {
 	loading.value = true;
-	queryParams.value.weeks = weeks.value;
-	queryParams.value.StartOrderTime = queryParams.value.OrderTime ? queryParams.value.OrderTime[0] : null;
-	queryParams.value.EndOrderTime = queryParams.value.OrderTime ? queryParams.value.OrderTime[1] : null;
-	queryParams.value.StartImportTime = queryParams.value.ImportTime ? queryParams.value.ImportTime[0] : null;
-	queryParams.value.EndImportTime = queryParams.value.ImportTime ? queryParams.value.ImportTime[1] : null;
-	if (queryParams.value.StartOrderTime) {
-		const date1 = new Date(queryParams.value.StartOrderTime);
-		const year1 = date1.getFullYear();
-		const month1 = date1.getMonth() + 1;
-		const day1 = date1.getDate();
-		queryParams.value.StartOrderTime = year1 + '-' + month1 + '-' + day1;
-	}
-	if (queryParams.value.EndOrderTime) {
-		const date2 = new Date(queryParams.value.EndOrderTime);
-		const year2 = date2.getFullYear();
-		const month2 = date2.getMonth() + 1;
-		const day2 = date2.getDate();
-		queryParams.value.EndOrderTime = year2 + '-' + month2 + '-' + day2;
-	}
-	if (queryParams.value.StartImportTime) {
-		const date3 = new Date(queryParams.value.StartImportTime);
-		const year3 = date3.getFullYear();
-		const month3 = date3.getMonth() + 1;
-		const day3 = date3.getDate();
-		queryParams.value.StartImportTime = year3 + '-' + month3 + '-' + day3;
-	}
-	if (queryParams.value.EndImportTime) {
-		const date4 = new Date(queryParams.value.EndImportTime);
-		const year4 = date4.getFullYear();
-		const month4 = date4.getMonth() + 1;
-		const day4 = date4.getDate();
-		queryParams.value.EndImportTime = year4 + '-' + month4 + '-' + day4;
-	}
 	var res = await amazonOrdersPage(Object.assign(queryParams.value, tableParams.value));
 	tableData.value = res.data.result?.items ?? [];
 	tableParams.value.total = res.data.result?.total;
 	weeks.value === '周' ? '选择站点、日期、周，点击"确定"后，选择需要导入的文件，将导入该数据' : '选择站点、日期，点击"确定"后，选择需要导入的文件，将导入该数据'
-	if(weeks.value === '周'){
+	if (weeks.value === '周') {
 		importFormList.value.push({
-		label: '周',
-		prop: 'Week',
-		type: 'select' ,
-		select: 'Week',
-		selectList: options1.value,
-	})
-	}else{
+			label: '周',
+			prop: 'Week',
+			type: 'select',
+			select: 'Week',
+			selectList: options1.value,
+		})
+	} else {
 		importFormList.value.pop()
 	}
 	loading.value = false;
@@ -388,7 +247,7 @@ handleQuery();
 	color: white;
 }
 
-.example-showcase .el-dropdown + .el-dropdown {
+.example-showcase .el-dropdown+.el-dropdown {
 	margin-left: 15px;
 }
 

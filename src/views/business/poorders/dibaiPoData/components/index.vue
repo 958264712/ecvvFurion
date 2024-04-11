@@ -335,6 +335,7 @@ const dataList1 = ref<any>([
 		prop: 'merchantSkuratio'
 	},
 ])
+//打开弹窗
 const showModal = (id: any) => {
 	showId.value = id;
 	ifClose1.value = true;
@@ -345,7 +346,6 @@ const showModal1 = (val: any, id: any) => {
 	remark.value = val;
 	visible1.value = true;
 };
-//打开弹窗
 const showModal2 = () => {
 	// costpriceBatchId = id;
 	ifClose.value = true;
@@ -428,21 +428,34 @@ const openEdit = async (id: any, row): void => {
 		const index = disabledList.value.findIndex((item) => item === id);
 		disabledList.value.splice(index, 1);
 	} else {
-		newUpdate({
-			id: id,
-			invoicedStatus: row.invoicedStatus,
-			contractedWarehouseTime: moment(row.contractedWarehouseTime).format(),
-			actualDate: moment(row.actualDate).format(),
-			state: row.state,
-		}).then((res) => {
-			if (res.data.type === 'success') {
-				ElMessage.success('Edit successfully');
-				disabledList.value.push(id);
-				handleQuery();
-			} else {
-				ElMessage.error('Edit failed ' + res.message);
+		if(id > 0){
+			var obj={};
+			if(row.invoicedStatus?.length){
+				obj.invoicedStatus= row.invoicedStatus
 			}
-		});
+			if(row.contractedWarehouseTime?.length){
+				obj.contractedWarehouseTime= moment(row.contractedWarehouseTime).format()
+			}
+			if(row.actualDate?.length){
+				obj.actualDate= moment(row.actualDate).format()
+			}
+			if(row.state?.length){
+				obj.state= row.state
+			}
+			newUpdate(Object.assign(obj)).then((res) => {
+				if (res.data.type === 'success') {
+					ElMessage.success('Edit successfully');
+					disabledList.value.push(id);
+					handleQuery();
+				} else {
+					ElMessage.error('Edit failed ' + res.message);
+				}
+			}).catch(()=>{
+					disabledList.value.push(id);
+			})
+		}else{
+			ElMessage.error('This id is null');
+		}
 	}
 };
 const disabledAuto = (scope: any): void => {

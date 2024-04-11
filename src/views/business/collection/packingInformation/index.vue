@@ -6,7 +6,7 @@ import other from '/@/utils/other.ts';
 import moment from 'moment';
 import { SysCodeGenConfigApi, SysConstApi, SysDictDataApi, SysDictTypeApi, SysEnumApi } from '/@/api-services/api';
 import { getAPI } from '/@/utils/axios-utils';
-import tabDragColum from '/@/components/tabDragColum/index.vue'
+import tabDragColum from '/@/components/tabDragColum/index.vue';
 
 const tagoptions = ref<any>([]);
 const tableData: any[] = ref([]);
@@ -24,7 +24,7 @@ const cardLoading = ref(false);
 const loading = ref(false);
 const selectedRows = ref([]);
 const selectedRowKeys = ref([]);
-const area = ref('CN')
+const area = ref('CN');
 const TableData = ref<any>([
 	{
 		titleCN: '入仓号',
@@ -62,12 +62,12 @@ const TableData = ref<any>([
 		checked: true,
 		fixed: false,
 	},
-	{
-		titleCN: '装箱个数',
-		dataIndex: 'quantityInBoxes',
-		checked: true,
-		fixed: false,
-	},
+	// {
+	// 	titleCN: '装箱个数',
+	// 	dataIndex: 'quantityInBoxes',
+	// 	checked: true,
+	// 	fixed: false,
+	// },
 	{
 		titleCN: '装箱数',
 		dataIndex: 'packBoxesQuantity',
@@ -80,8 +80,7 @@ const TableData = ref<any>([
 		checked: true,
 		fixed: false,
 	},
-
-])
+]);
 
 // 查询
 const getAppPage = async (): void => {
@@ -95,8 +94,7 @@ const getAppPage = async (): void => {
 		tableParams.value.total = res.data.result?.total;
 		tableData.value.splice(0, tableData.value.length);
 		res.data.result.items.forEach((element: any) => {
-
-			if (element.warnTag != null && element.warnTag != "") {
+			if (element.warnTag != null && element.warnTag != '') {
 				element.warnTag = element.warnTag.split(',');
 			}
 			tableData.value.push(element);
@@ -114,11 +112,11 @@ const resetfun = (): void => {
 };
 //判断标签是否存在于集合中
 function IsTag(tag: any) {
-	const element = tagoptions.value.find(item => item.value === tag);
+	const element = tagoptions.value.find((item) => item.value === tag);
 	if (element) {
 		return element.code;
 	}
-	return "#DE2910";
+	return '#DE2910';
 }
 onMounted(() => {
 	getAppPage();
@@ -153,7 +151,7 @@ const selectChange = (selection: any) => {
 // 导出选中
 const SelectedExport = async (coltype) => {
 	cardLoading.value = true;
-	await ExportShipmentDetails(Object.assign({ type: 0, coltype: coltype, idList: selectedRowKeys.value, destination: queryParams.destination })).then((res) => {
+	await ExportShipmentDetails(Object.assign({ type: 0, coltype: coltype, idList: selectedRowKeys.value, destination: queryParams.destination, documentNo: queryParams.documentNo })).then((res) => {
 		cardLoading.value = false;
 		other.downloadfile(res);
 		//selectedRowKeys.value = [];
@@ -179,19 +177,15 @@ const AllExport = async (coltype) => {
 				</el-form-item>
 				<el-form-item>
 					<el-button-group>
-						<el-button v-auth="'shippingDetails:page'" type="primary" icon="ele-Search"
-							@click="getAppPage()" style="width: 70px; margin-right: 2px"> 查询 </el-button>
-						<el-button icon="ele-Refresh" @click="resetfun()" style="width: 70px; margin-right: 2px"> 重置
-						</el-button>
+						<el-button v-auth="'shippingDetails:page'" type="primary" icon="ele-Search" @click="getAppPage()" style="width: 70px; margin-right: 2px"> 查询 </el-button>
+						<el-button icon="ele-Refresh" @click="resetfun()" style="width: 70px; margin-right: 2px"> 重置 </el-button>
 						<div class="flex flex-wrap items-center">
 							<el-dropdown>
 								<el-button type="primary" :loading="cardLoading"> 导出 </el-button>
 								<template #dropdown>
 									<el-dropdown-menu>
-										<el-dropdown-item style="height:24px" @click="SelectedExport(1)">导出选中
-										</el-dropdown-item>
-										<el-dropdown-item style="height:24px" @click="AllExport(1)">导出全部
-										</el-dropdown-item>
+										<el-dropdown-item style="height: 24px" @click="SelectedExport(1)">导出选中 </el-dropdown-item>
+										<el-dropdown-item style="height: 24px" @click="AllExport(1)">导出全部 </el-dropdown-item>
 									</el-dropdown-menu>
 								</template>
 							</el-dropdown>
@@ -201,19 +195,23 @@ const AllExport = async (coltype) => {
 			</el-form>
 		</el-card>
 		<el-card class="full-table" shadow="hover" style="margin-top: 8px">
-			<el-table :data="tableData" size="large" style="width: 100%"
-				@selection-change="(selection: any) => selectChange(selection)" v-loading="loading"
-				tooltip-effect="light" @sort-change="handleSort">
+			<el-table :data="tableData" size="large" style="width: 100%" @selection-change="(selection: any) => selectChange(selection)" v-loading="loading" tooltip-effect="light" @sort-change="handleSort">
 				<el-table-column type="selection" width="55" />
 				<template v-for="(item, index) in TableData" :key="index">
-					<el-table-column :fixed="item.fixed" :prop="item.dataIndex"
-						:label="area == 'CN' ? item.titleCN : item.titleEN" align="center" min-width="150" />
+					<el-table-column :fixed="item.fixed" :prop="item.dataIndex" :label="area == 'CN' ? item.titleCN : item.titleEN" align="center" min-width="150" />
 				</template>
 			</el-table>
-			<el-pagination v-model:currentPage="tableParams.page" v-model:page-size="tableParams.pageSize"
-				:total="tableParams.total" :page-sizes="[50, 100, 500, 1000]" small="" background=""
-				@size-change="handleSizeChange" @current-change="handleCurrentChange"
-				layout="total, sizes, prev, pager, next, jumper" />
+			<el-pagination
+				v-model:currentPage="tableParams.page"
+				v-model:page-size="tableParams.pageSize"
+				:total="tableParams.total"
+				:page-sizes="[50, 100, 500, 1000]"
+				small=""
+				background=""
+				@size-change="handleSizeChange"
+				@current-change="handleCurrentChange"
+				layout="total, sizes, prev, pager, next, jumper"
+			/>
 		</el-card>
 	</div>
 </template>

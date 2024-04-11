@@ -313,11 +313,11 @@ const options2 = ref([
 		label: 'Inventory_Sourcing_Retail',
 		disabled: false,
 	},
-	{
-		value: 'Sales',
-		label: 'Sales',
-		disabled: false,
-	},
+	// {
+	// 	value: 'Sales',
+	// 	label: 'Sales',
+	// 	disabled: false,
+	// },
 	{
 		value: '金蝶云采购申请单',
 		label: '金蝶云采购申请单',

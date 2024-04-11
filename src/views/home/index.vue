@@ -17,6 +17,9 @@ const tableData1 = ref<any>([]);
 const tableData2 = ref<any>([]);
 const tableData3 = ref<any>([]);
 const loading = ref<any>(false);
+const loading1 = ref<any>(false);
+const loading2 = ref<any>(false);
+const loading3 = ref<any>(false);
 const optionsList = ref<any>([
 	{
 		label: '全部',
@@ -78,12 +81,12 @@ const TableList = ref<any>([
 	{
 		title_CN: '约仓日期',
 		title_EN: '约仓日期',
-		dataIndex: 'lastTime',
+		dataIndex: 'contractedWarehouseTime',
 	},
 	{
 		title_CN: '最迟履单日期',
 		title_EN: '最迟履单日期',
-		dataIndex: 'lastfulfillmentdata',
+		dataIndex: 'latestDate',
 	},
 ]);
 // AE抓取数据信息
@@ -111,13 +114,14 @@ const SAAmazonState = async () => {
 	});
 };
 const ScheduledFulfillmentList = async (site:string,type:number,item:any) => {
-	loading.value = true
 	if(type === 1){
+		loading1.value = true
 		site = queryParams.value.sfThisWeek
 		if(queryParams.value.sfThisWeek === '全部'){
 			site = null
 		}
 	}else{
+		loading3.value = true
 		site = queryParams.value.sfNextWeek
 		if(queryParams.value.sfNextWeek === '全部'){
 			site = null
@@ -127,21 +131,23 @@ const ScheduledFulfillmentList = async (site:string,type:number,item:any) => {
 		if (res.data.type === 'success') {
 			if(item === 'tableData1'){
 				tableData1.value = res.data.result ?? []
+				loading1.value = false
 			}else{
 				tableData3.value = res.data.result ?? []
+				loading3.value = false
 			}
-			loading.value = false
 		}
 	});
 }
 const AppointmentList = async (site:string,type:number,item:any) => {
-	loading.value = true
 	if(type === 1){
+		loading.value = true
 		site = queryParams.value.aThisWeek
 		if(queryParams.value.aThisWeek === '全部'){
 			site = null
 		}
 	}else{
+		loading2.value = true
 		site = queryParams.value.aNextWeek
 		if(queryParams.value.aNextWeek === '全部'){
 			site = null
@@ -151,10 +157,11 @@ const AppointmentList = async (site:string,type:number,item:any) => {
 		if (res.data.type === 'success') {
 			if(item === 'tableData'){
 				tableData.value = res.data.result ?? []
+				loading.value = false
 			}else{
 				tableData2.value = res.data.result ?? []
+				loading2.value = false
 			}
-			loading.value = false
 		}
 	});
 }
@@ -244,7 +251,7 @@ AppointmentList(null,2,'tableData2')
 						</el-select>
 					</div>
 					<div style="height: 350px; margin-top: 20px">
-						<el-table :data="tableData1" style="height: 100%" v-loading="loading" border tooltip-effect="light" row-key="id">
+						<el-table :data="tableData1" style="height: 100%" v-loading="loading1" border tooltip-effect="light" row-key="id">
 							<el-table-column v-for="(item, index) in TableList" :key="index" :prop="item.dataIndex" :label="item.title_CN"  align="center"  show-overflow-tooltip=""/>
 						</el-table>
 					</div>
@@ -262,7 +269,7 @@ AppointmentList(null,2,'tableData2')
 						</el-select>
 					</div>
 					<div style="height: 350px; margin-top: 20px">
-						<el-table :data="tableData2" style="height: 100%" v-loading="loading" border tooltip-effect="light" row-key="id">
+						<el-table :data="tableData2" style="height: 100%" v-loading="loading2" border tooltip-effect="light" row-key="id">
 							<el-table-column v-for="(item, index) in TableList" :key="index" :prop="item.dataIndex" :label="item.title_CN"  align="center"  show-overflow-tooltip=""/>
 						</el-table>
 					</div>
@@ -277,7 +284,7 @@ AppointmentList(null,2,'tableData2')
 						</el-select>
 					</div>
 					<div style="height: 350px; margin-top: 20px">
-						<el-table :data="tableData3" style="height: 100%" v-loading="loading" border tooltip-effect="light" row-key="id">
+						<el-table :data="tableData3" style="height: 100%" v-loading="loading3" border tooltip-effect="light" row-key="id">
 							<el-table-column v-for="(item, index) in TableList" :key="index" :prop="item.dataIndex" :label="item.title_CN"  align="center"  show-overflow-tooltip=""/>
 						</el-table>
 					</div>

@@ -4,12 +4,13 @@ enum Api {
 	GetNotImportedList = '/api/aSINData/getNotImportedList',
 	ExportEnglish = '/api/aSINData/export_English',
 	ExportChinese = '/api/aSINData/export_Chinese',
+	GetASINDataExportRecord = '/api/aSINData/getASINDataExportRecord',
 }
 export const AsinDataPage = (params?: any) =>
 	request({
 		url: Api.AsinDataPage,
-		method: 'get',
-		params: params,
+		method: 'post',
+		data: params,
 	});
 
 export const GetNotImportedList = (params?: any) =>
@@ -32,5 +33,12 @@ export const ExportChinese = (params?: any) =>
 		url: Api.ExportChinese,
 		method: 'post',
 		responseType: 'blob',
+		data: params,
+	});
+//获取导出记录
+export const GetASINDataExportRecord = (params?: any) =>
+	request({
+		url: Api.GetASINDataExportRecord,
+		method: 'post',
 		data: params,
 	});

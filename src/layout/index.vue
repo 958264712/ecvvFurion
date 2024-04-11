@@ -16,7 +16,7 @@ const layouts: any = {
 	transverse: defineAsyncComponent(() => import('/@/layout/main/transverse.vue')),
 	columns: defineAsyncComponent(() => import('/@/layout/main/columns.vue')),
 };
-111
+
 // 定义变量内容
 const storesThemeConfig = useThemeConfig();
 const { themeConfig } = storeToRefs(storesThemeConfig);

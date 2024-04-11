@@ -80,6 +80,7 @@ const onColumnsAsideMenuClick = async (v: RouteItem) => {
 		else router.push(redirect);
 	} else {
 		if (!v.children) {
+			
 			router.push(path);
 		} else {
 			// 显示子级菜单

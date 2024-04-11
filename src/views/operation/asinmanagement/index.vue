@@ -1,6 +1,6 @@
 <template>
 	<div class="aSINBasicDatel-container">
-		<el-card shadow="hover" :body-style="{ paddingBottom: '0' }">
+		<el-card shadow="hover">
 			<el-form :model="queryParams" ref="queryForm" :inline="true">
 				<!-- <el-form-item label="数据类型">
 					<el-select v-model="queryParams.country" class="m-2" style="width: 240px" @change="getSite">
@@ -9,10 +9,52 @@
 					</el-select>
 				</el-form-item> -->
 				<el-form-item label="ERP-SKU/中文Name">
-					<el-input v-model="queryParams.erpAndGoodsName" clearable="" placeholder="请输入ERP-SKU/中文Name" @clear="clearObj" @blur="clearObj" />
+					<el-popover :visible="visibleTextarea1" placement="bottom" :width="250">
+						<el-scrollbar height="150px" style="border: 1px solid var(--el-border-color)">
+							<el-input
+								v-model="queryParams.erpTextArea"
+								style="width: 215px"
+								:autosize="{ minRows: 1, maxRows: 200 }"
+								type="textarea"
+								placeholder="可输入多个ERP-SKU精确查询，每行一个，最多支持200个"
+							/>
+						</el-scrollbar>
+						<div style="text-align: right; margin-top: 20px">
+							<el-button type="info" @click="queryParams.erpTextArea = ''">重置</el-button>
+							<el-button type="primary" @click="handleConfirm(1)">确定</el-button>
+						</div>
+						<template #reference>
+							<el-input v-model="queryParams.erpAndGoodsName" clearable="" placeholder="请输入,点击展开可输多个" @clear="clearObj" @blur="clearObj">
+								<template #suffix>
+									<el-icon class="el-input__icon"><ArrowDownBold @click="showTextarea(1, visibleTextarea1)" v-if="!visibleTextarea1" /><ArrowUpBold @click="showTextarea(1, visibleTextarea1)" v-else /></el-icon>
+								</template>
+							</el-input>
+						</template>
+					</el-popover>
 				</el-form-item>
 				<el-form-item label="ASIN">
-					<el-input v-model="queryParams.aSIN" clearable="" placeholder="请输入ASIN" @clear="clearObj" @blur="clearObj" />
+					<el-popover :visible="visibleTextarea2" placement="bottom" :width="250">
+						<el-scrollbar height="150px" style="border: 1px solid var(--el-border-color)">
+							<el-input
+								v-model="queryParams.asinTextArea"
+								style="width: 215px"
+								:autosize="{ minRows: 1, maxRows: 200 }"
+								type="textarea"
+								placeholder="可输入多个ERP-SKU精确查询，每行一个，最多支持200个"
+							/>
+						</el-scrollbar>
+						<div style="text-align: right; margin-top: 20px">
+							<el-button type="info" @click="queryParams.asinTextArea = ''">重置</el-button>
+							<el-button type="primary" @click="handleConfirm(2)">确定</el-button>
+						</div>
+						<template #reference>
+							<el-input v-model="queryParams.aSIN" clearable="" placeholder="请输入,点击展开可输多个" @clear="clearObj" @blur="clearObj">
+								<template #suffix>
+									<el-icon class="el-input__icon"><ArrowDownBold @click="showTextarea(2, visibleTextarea2)" v-if="!visibleTextarea2" /><ArrowUpBold @click="showTextarea(2, visibleTextarea2)" v-else /></el-icon>
+								</template>
+							</el-input>
+						</template>
+					</el-popover>
 				</el-form-item>
 				<el-form-item label="是否下架">
 					<el-select v-model="queryParams.list_Unlist" class="m-2" style="width: 240px" @change="handleQuery">
@@ -42,6 +84,13 @@
 				<el-form-item label="负责人">
 					<el-input v-model="queryParams.creator" clearable="" placeholder="请输入负责人" @clear="clearObj" @blur="clearObj" />
 				</el-form-item>
+				<el-form-item label="Buybox">
+					<el-select v-model="queryParams.IsBuyBox" placeholder="全部" style="width: 240px">
+						<el-option label="全部" value="" />
+						<el-option label="True" value=True />
+						<el-option label="False" value=False />
+					</el-select>
+				</el-form-item>
 				<el-form-item>
 					<el-button-group>
 						<el-button type="primary" icon="ele-Search" @click="handleQuery"> 查询 </el-button>
@@ -63,9 +112,9 @@
 		</el-card>
 		<el-card class="full-table" shadow="hover">
 			<div style="display: flex; justify-content: space-between">
-				<div style="margin-bottom: 20px">
+				<div style="margin-bottom: 20px; display: flex; justify-content: space-between">
 					<el-dropdown>
-						<el-button type="primary">导出</el-button>
+						<el-button type="primary" :loading="Exportloading">导出</el-button>
 						<template #dropdown>
 							<el-dropdown-menu>
 								<el-dropdown-item @click="Export"> 导出全部 </el-dropdown-item>
@@ -77,6 +126,7 @@
 						<el-radio-button label="中文表头" value="中文表头" @change="changeArea('CN')" />
 						<el-radio-button label="English header" value="English header" @change="changeArea('EN')" />
 					</el-radio-group>
+					<el-button type="primary" style="margin-left: 20px" :loading="exportDataLoading" @click="exportDataDialog">导出记录</el-button>
 				</div>
 				<tabDragColum :data="TableData" :name="`newasinmanagementData`" :area="area" @handleData="handleData" />
 			</div>
@@ -119,6 +169,37 @@
 				@current-change="handleCurrentChange"
 				layout="total, sizes, prev, pager, next, jumper"
 			/>
+			<el-dialog v-model="exportVisible" title="导出历史记录" @close="close" width="1000px">
+				<SvgIcon style="margin-bottom: 10px; display: flex; justify-content: flex-end; cursor: pointer" name="iconfont icon-shuaxin" :size="22" title="刷新" @click="multipleExport" />
+				<el-table :data="exportData" style="height: 100%" v-loading="exportTableLoading" tooltip-effect="light" row-key="id" border="">
+					<el-table-column prop="fileUrl" label="文件地址" align="center" width="280px" show-overflow-tooltip>
+						<template #default="scope">
+							<el-link type="success" :href="scope.row.fileUrl">{{ scope.row.fileUrl === null ? '无文件' : scope.row.fileUrl.split('http://192.168.1.81:5568/ASINData/')[1] }}</el-link>
+						</template>
+					</el-table-column>
+					<el-table-column prop="state" label="状态" width="130px" align="center">
+						<template #default="scope">
+							<el-tag type="primary" v-if="scope.row.state === 2">生成失败</el-tag>
+							<el-tag type="success" v-else-if="scope.row.state === 1">生成成功</el-tag>
+							<el-tag type="warning" v-else-if="scope.row.state === 0">文件生成中</el-tag>
+						</template>
+					</el-table-column>
+					<el-table-column prop="createTime" width="130px" label="导出时间" align="center" />
+					<el-table-column prop="exportedBy" width="135px" label="导出人" align="center" />
+					<el-table-column prop="remark" label="备注" align="center" show-overflow-tooltip />
+				</el-table>
+				<el-pagination
+					v-model:currentPage="tableParams1.page"
+					v-model:page-size="tableParams1.pageSize"
+					:total="tableParams1.total"
+					:page-sizes="[10, 20, 50, 100, 500, 1000]"
+					small=""
+					background=""
+					@size-change="handleSizeChange1"
+					@current-change="handleCurrentChange1"
+					layout="total, sizes, prev, pager, next, jumper"
+				/>
+			</el-dialog>
 		</el-card>
 	</div>
 </template>
@@ -128,7 +209,8 @@ import { ref, watch, h } from 'vue';
 import { ElMessageBox, ElMessage, ElNotification, ElTooltip } from 'element-plus';
 import { auth } from '/@/utils/authFunction';
 //import { formatDate } from '/@/utils/formatTime';
-import { AsinDataPage, GetNotImportedList, ExportEnglish, ExportChinese } from '/@/api/modular/main/ASINManagement.ts';
+import { AsinDataPage, GetNotImportedList, ExportEnglish, ExportChinese, GetASINDataExportRecord } from '/@/api/modular/main/ASINManagement.ts';
+import { ArrowDownBold, ArrowUpBold } from '@element-plus/icons-vue';
 import axios from 'axios';
 import router from '/@/router';
 import other from '/@/utils/other.ts';
@@ -136,10 +218,19 @@ import { Session } from '/@/utils/storage';
 import tabDragColum from '/@/components/tabDragColum/index.vue';
 
 const loading = ref(false);
+const Exportloading = ref(false);
+const exportDataLoading = ref(false);
+const exportTableLoading = ref(false);
 const tableData = ref<any>([]);
-let selectedRows = ref<any>([]);
+const exportData = ref<any>([]);
+const selectedRows = ref<any>([]);
 const dialogFormVisible = ref(false);
+const exportVisible = ref(false);
+const ifClose = ref(false);
+const visibleTextarea1 = ref(false);
+const visibleTextarea2 = ref(false);
 const Typevalue = ref<any>('UAE');
+const timer = ref<any>();
 
 let IsEdit = ref<any>(false);
 const queryParams = ref<any>({ country: 'UAE' });
@@ -147,6 +238,10 @@ const queryParams = ref<any>({ country: 'UAE' });
 const tableParams = ref({
 	page: 1,
 	pageSize: 50,
+});
+const tableParams1 = ref({
+	page: 1,
+	pageSize: 20,
 });
 const tabsList = ref([
 	{
@@ -286,14 +381,6 @@ const TableData = ref<any>([
 		dataIndex: 'buyboxSharePercentage',
 		titleEN: 'Buybox Share Percentage',
 		width: '85',
-		checked: true,
-		fixed: false,
-	},
-	{
-		titleCN: '总箱数(共多少箱)',
-		dataIndex: 'packBoxesQuantity',
-		width: '85',
-		titleEN: 'Pack Boxes Quantity',
 		checked: true,
 		fixed: false,
 	},
@@ -530,7 +617,6 @@ const TableData = ref<any>([
 		fixed: false,
 	},
 ]);
-
 const handleData = (list: any) => {
 	if (list?.length) {
 		TableData.value = list;
@@ -589,6 +675,8 @@ const handleClick = (tab, event): void => {
 	handleQuery();
 };
 
+
+
 const Export = () => {
 	loading.value = true;
 	const input = {
@@ -620,81 +708,138 @@ const SelectedExport = () => {
 	loading.value = false;
 };
 const English = async (obj: any) => {
-	await ExportEnglish(obj)
+	Exportloading.value = true;
+	axios
+		.post((import.meta.env.VITE_API_URL as any) + `/api/aSINData/export_English`, obj)
+		// service({
+		// 	url: `/api/inventoryManagement/Export`,
+		// 	method: 'post',
+		// 	data: formData,
+		// 	responseType: 'blob',
+		// })
 		.then((data) => {
-			other.downloadfile(data);
-			if (data.statusText == 'OK') {
-				ElNotification({
-					title: '系统提示',
-					message: '导出成功',
-					type: 'success',
-				});
+			if (data.data.code == 200) {
 				ElMessage({
 					type: 'success',
-					message: '导出成功',
+					message: '表格导出中，请到导出记录中下载表格',
 				});
 			}
+			Exportloading.value = false;
 		})
 		.catch((arr) => {
-			ElNotification({
-				title: '系统提示',
-				message: '下载错误：获取文件流错误',
-				type: 'error',
-			});
 			ElMessage({
 				type: 'error',
 				message: '导出失败',
 			});
+			Exportloading.value = false;
 		});
 };
 const Chinese = async (obj: any) => {
-	await ExportChinese(obj)
+	Exportloading.value = true;
+	axios
+		.post((import.meta.env.VITE_API_URL as any) + `/api/aSINData/export_Chinese`, obj)
+		// service({
+		// 	url: `/api/inventoryManagement/Export`,
+		// 	method: 'post',
+		// 	data: formData,
+		// 	responseType: 'blob',
+		// })
 		.then((data) => {
-			other.downloadfile(data);
-			if (data.statusText == 'OK') {
-				ElNotification({
-					title: '系统提示',
-					message: '导出成功',
-					type: 'success',
-				});
+			if (data.data.code == 200) {
 				ElMessage({
 					type: 'success',
-					message: '导出成功',
+					message: '表格导出中，请到导出记录中下载表格',
 				});
 			}
+			Exportloading.value = false;
 		})
 		.catch((arr) => {
-			ElNotification({
-				title: '系统提示',
-				message: '下载错误：获取文件流错误',
-				type: 'error',
-			});
 			ElMessage({
 				type: 'error',
 				message: '导出失败',
 			});
+			Exportloading.value = false;
 		});
 };
-// const downloadfile = (res: any) => {
-// 	var blob = new Blob([res.data], {
-// 		type: 'application/octet-stream;charset=UTF-8',
-// 	});
-// 	var contentDisposition = res.headers['content-disposition'];
-// 	var patt = new RegExp("filename\\*=(UTF-8['']*[''])([^';]+)(?:.*)");
-// 	var result = patt.exec(contentDisposition);
-// 	var filename = result[2];
-// 	var downloadElement = document.createElement('a');
-// 	var href = window.URL.createObjectURL(blob); // 创建下载的链接
-// 	var reg = /^["](.*)["]$/g;
-// 	downloadElement.style.display = 'none';
-// 	downloadElement.href = href;
-// 	downloadElement.download = decodeURIComponent(filename.replace(reg, '$1')); // 下载后文件名
-// 	document.body.appendChild(downloadElement);
-// 	downloadElement.click(); // 点击下载
-// 	document.body.removeChild(downloadElement); // 下载完成移除元素
-// 	window.URL.revokeObjectURL(href);
-// };
 
+const exportDataDialog = () => {
+	exportVisible.value = true;
+	ifClose.value = true;
+	multipleExport();
+};
+const close = () => {
+	exportVisible.value = false;
+	ifClose.value = false;
+};
+const inquireData = () => {
+	clearTimeout(timer.value); // 清除定时器
+	// 超过60s则停止轮询
+	if (!exportVisible.value) {
+		clearTimeout(timer.value);
+		return;
+	}
+	//5s一次, 轮询中
+	timer.value = setTimeout(() => {
+		multipleExport(); // 调用轮询
+	}, 5000);
+};
+const multipleExport = async () => {
+	await GetASINDataExportRecord(Object.assign(tableParams1.value)).then((res) => {
+		if (res.data.code !== 200) {
+			exportTableLoading.value = false;
+			ElMessage.error(res.message);
+			return;
+		} else {
+			exportData.value = res.data.result?.items ?? [];
+			tableParams1.value.total = res.data.result?.total;
+			inquireData(); // 调用轮询接口,开始进行轮询
+		}
+	});
+};
+const handleSizeChange1 = (val: number) => {
+	tableParams1.value.pageSize = val;
+	multipleExport();
+};
+
+// 多行筛选
+const showTextarea = (type, bol) => {
+	if (type === 1) {
+		visibleTextarea1.value = !bol;
+	} else {
+		visibleTextarea2.value = !bol;
+	}
+};
+const handleConfirm = (type) => {
+	let str_array = [];
+	if (type === 1) {
+		str_array = queryParams.value.erpTextArea?.split(/[(\r\n)\r\n]+/);
+	} else {
+		str_array = queryParams.value.asinTextArea?.split(/[(\r\n)\r\n]+/);
+	}
+	let arr = str_array?.map((item, index) => {
+		if (item === '') {
+			str_array.splice(index, 1);
+		}else{
+			return item.trim()
+		}
+	});
+	if (type === 1) {
+		queryParams.value.erpTextArea = ''
+		queryParams.value.erpSkuList = arr
+		visibleTextarea1.value = false
+	} else {
+		queryParams.value.asinTextArea = ''
+		queryParams.value.aSINList = arr
+		visibleTextarea2.value = false
+	}
+	// handleQuery()
+};
+
+// 改变页码序号
+const handleCurrentChange1 = (val: number) => {
+	tableParams1.value.page = val;
+	multipleExport();
+};
 const clearObj = () => {
 	Session.set('queryObj', { ifquery: true });
 };
@@ -713,7 +858,7 @@ const handleQuery = async () => {
 		return;
 	}
 	loading.value = true;
-
+	
 	var res = await AsinDataPage(Object.assign(queryParams.value, tableParams.value));
 	tableData.value = res.data.result?.items ?? [];
 	tableParams.value.total = res.data.result?.total;
@@ -770,6 +915,7 @@ handleQuery();
 :deep(.el-tooltip) {
 	padding: 0;
 }
+
 /deep/ .el-tabs--card {
 	.el-tabs__header {
 		margin: 0;
@@ -779,13 +925,22 @@ handleQuery();
 		height: 93%;
 	}
 }
+
 /deep/ .el-pagination {
 	margin: 22px 0 -10px 0 !important;
 }
+
 /deep/ .cell {
 	white-space: nowrap;
 }
+
 /deep/ .el-table td.el-table__cell div {
 	overflow: hidden;
+}
+/deep/ .el-textarea__inner {
+	box-shadow: initial;
+	padding: 0;
+	margin: 4px 0 4px 3px;
+	height:142px !important;
 }
 </style>

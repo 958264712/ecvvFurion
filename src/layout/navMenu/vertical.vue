@@ -16,7 +16,7 @@
 				<SubItem :chil="val.children" />
 			</el-sub-menu>
 			<template v-else>
-				<el-menu-item :index="val.path" :key="val.path">
+				<el-menu-item :index="tagsViewListOver ? null:val.path" :key="val.path" >
 					<SvgIcon :name="val.meta.icon" />
 					<template #title v-if="!val.meta.isLink || (val.meta.isLink && val.meta.isIframe)">
 						<span>{{ $t(val.meta.title) }}</span>
@@ -31,11 +31,12 @@
 </template>
 
 <script setup lang="ts" name="navMenuVertical">
-import { defineAsyncComponent, reactive, computed, onMounted, watch } from 'vue';
+import { ref,defineAsyncComponent, reactive, computed, onMounted, watch } from 'vue';
 import { useRoute, onBeforeRouteUpdate, RouteRecordRaw } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useThemeConfig } from '/@/stores/themeConfig';
 import other from '/@/utils/other';
+import { Session } from '/@/utils/storage';
 
 // 引入组件
 const SubItem = defineAsyncComponent(() => import('/@/layout/navMenu/subItem.vue'));
@@ -48,6 +49,7 @@ const props = defineProps({
 		default: () => [],
 	},
 });
+const tagsViewListOver = ref(false)
 
 // 定义变量内容
 const storesThemeConfig = useThemeConfig();
@@ -99,4 +101,18 @@ watch(
 		immediate: true,
 	}
 );
+// 面包屑条数限制
+watch(()=>route.path,
+()=>{
+	console.log(Session.get('tagsViewList')?.length);
+	
+	if(Session.get('tagsViewList')?.length > 14){
+		tagsViewListOver.value = true
+		Session.set('tagsViewListOver',tagsViewListOver)
+	}else{
+		tagsViewListOver.value = false
+		Session.set('tagsViewListOver',tagsViewListOver)
+	}
+}
+)
 </script>
