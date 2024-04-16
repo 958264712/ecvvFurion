@@ -76,7 +76,7 @@
 		</el-card>
 	</div>
 </template>
-<script lang="ts" setup>
+<script lang="ts" setup name="ASINListingTableUAEAdd">
 import { ref, watch, onBeforeUnmount } from 'vue';
 import router from '/@/router';
 import { ElMessage, FormRules, FormInstance } from 'element-plus';

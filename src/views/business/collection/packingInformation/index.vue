@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+<script lang="ts" setup name="packingInformation">
 import { ref, onMounted, reactive } from 'vue';
 import { ElMessageBox, ElMessage, ElNotification } from 'element-plus';
 import { getShipmentDetails, ExportShipmentDetails } from '/@/api/modular/main/collections.ts';

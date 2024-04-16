@@ -1,4 +1,4 @@
-﻿<script lang="ts" setup>
+﻿<script lang="ts" setup name="new_saudiPoData">
 import { ref } from 'vue';
 import { ElMessageBox, ElMessage } from 'element-plus';
 import { newSaudiPage, newUpdate, getConfirmedNewPOsPage, newMultipleExportByTemplate, getNewPoDataExportHistory, newDownLoadPOZip } from '/@/api/modular/main/aSINBasicData.ts';

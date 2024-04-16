@@ -1,4 +1,4 @@
-<script lang="ts" setup >
+<script lang="ts" setup name="eCVVHomeTaxonomicInfoEmit">
 import request from '/@/utils/request';
 import { ref } from "vue";
 import { ElMessageBox, ElMessage } from "element-plus";

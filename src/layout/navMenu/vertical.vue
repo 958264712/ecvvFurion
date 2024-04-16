@@ -16,7 +16,7 @@
 				<SubItem :chil="val.children" />
 			</el-sub-menu>
 			<template v-else>
-				<el-menu-item :index="tagsViewListOver ? null:val.path" :key="val.path" >
+				<el-menu-item :index="tagsViewListOver ? null:val.path" :key="val.path" @click="handleClick">
 					<SvgIcon :name="val.meta.icon" />
 					<template #title v-if="!val.meta.isLink || (val.meta.isLink && val.meta.isIframe)">
 						<span>{{ $t(val.meta.title) }}</span>
@@ -34,12 +34,14 @@
 import { ref,defineAsyncComponent, reactive, computed, onMounted, watch } from 'vue';
 import { useRoute, onBeforeRouteUpdate, RouteRecordRaw } from 'vue-router';
 import { storeToRefs } from 'pinia';
+import { useTagsViewRoutes } from '/@/stores/tagsViewRoutes';
 import { useThemeConfig } from '/@/stores/themeConfig';
 import other from '/@/utils/other';
 import { Session } from '/@/utils/storage';
 
 // 引入组件
 const SubItem = defineAsyncComponent(() => import('/@/layout/navMenu/subItem.vue'));
+const stores = useTagsViewRoutes();
 
 // 定义父组件传过来的值
 const props = defineProps({
@@ -80,6 +82,17 @@ const setParentHighlight = (currentRoute: RouteToFrom) => {
 const onALinkClick = (val: RouteItem) => {
 	other.handleOpenLink(val);
 };
+const handleClick = ()=>{
+	if(Session.get('tagsViewList')?.length < 15){
+		stores.setTagsViewListOver(false)
+		tagsViewListOver.value=false
+		Session.set('tagsViewListOver',false)
+	}else{
+		stores.setTagsViewListOver(true)
+		tagsViewListOver.value=true
+		Session.set('tagsViewListOver',true)
+	}
+}
 // 页面加载时
 onMounted(() => {
 	state.defaultActive = setParentHighlight(route);
@@ -104,14 +117,14 @@ watch(
 // 面包屑条数限制
 watch(()=>route.path,
 ()=>{
-	console.log(Session.get('tagsViewList')?.length);
-	
 	if(Session.get('tagsViewList')?.length > 14){
 		tagsViewListOver.value = true
-		Session.set('tagsViewListOver',tagsViewListOver)
+		stores.setTagsViewListOver(true)
+		Session.set('tagsViewListOver',true)
 	}else{
 		tagsViewListOver.value = false
-		Session.set('tagsViewListOver',tagsViewListOver)
+		stores.setTagsViewListOver(false)
+		Session.set('tagsViewListOver',false)
 	}
 }
 )

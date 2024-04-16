@@ -217,7 +217,7 @@
 	</div>
 </template>
 
-<script lang="ts" setup>
+<script lang="ts" setup name="ASINListingTableUAE">
 import { ref } from 'vue';
 import { ElMessageBox, ElMessage, ElNotification } from 'element-plus';
 import { auth } from '/@/utils/authFunction';

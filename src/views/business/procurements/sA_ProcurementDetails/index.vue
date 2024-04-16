@@ -1,4 +1,4 @@
-﻿<script lang="ts" setup="" name="uAE_ProcurementDetails">
+﻿<script lang="ts" setup="" name="sA_ProcurementDetails">
 import { ref } from 'vue';
 import { ElMessageBox, ElMessage } from 'element-plus';
 import { auth } from '/@/utils/authFunction';

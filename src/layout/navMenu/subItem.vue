@@ -8,7 +8,7 @@
 			<sub-item :chil="val.children" />
 		</el-sub-menu>
 		<template v-else>
-			<el-menu-item :index="tagsViewListOver ? null:val.path" :key="val.path" >
+			<el-menu-item :index="tagsViewListOver ? null:val.path" :key="val.path"  @click="handleClick">
 				<template v-if="!val.meta.isLink || (val.meta.isLink && val.meta.isIframe)">
 					<SvgIcon :name="val.meta.icon" />
 					<span>{{ $t(val.meta.title) }}</span>
@@ -27,6 +27,7 @@
 <script setup lang="ts" name="navMenuSubItem">
 import { ref,computed,watch } from 'vue';
 import { RouteRecordRaw,useRoute } from 'vue-router';
+import { useTagsViewRoutes } from '/@/stores/tagsViewRoutes';
 import other from '/@/utils/other';
 import { Session } from '/@/utils/storage';
 
@@ -38,6 +39,7 @@ const props = defineProps({
 		default: () => [],
 	},
 });
+const stores = useTagsViewRoutes();
 const route = useRoute()
 const tagsViewListOver = ref(false)
 // 获取父级菜单数据
@@ -48,15 +50,29 @@ const chils = computed(() => {
 const onALinkClick = (val: RouteItem) => {
 	other.handleOpenLink(val);
 };
+const handleClick = ()=>{
+	if(Session.get('tagsViewList')?.length < 15){
+		stores.setTagsViewListOver(false)
+		Session.set('tagsViewListOver',false)
+		tagsViewListOver.value=false
+	}else{
+		console.log(Session.get('tagsViewList')?.length);
+		stores.setTagsViewListOver(true)
+		tagsViewListOver.value=true
+		Session.set('tagsViewListOver',true)
+	}
 
+}
 watch(()=>route.path,
 ()=>{
-	if(Session.get('tagsViewList')?.length > 14){
-		tagsViewListOver.value = true
-		Session.set('tagsViewListOver',tagsViewListOver)
+	if(Session.get('tagsViewList')?.length < 15){
+		stores.setTagsViewListOver(false)
+		tagsViewListOver.value=false
+		Session.set('tagsViewListOver',false)
 	}else{
-		tagsViewListOver.value = false
-		Session.set('tagsViewListOver',tagsViewListOver)
+		stores.setTagsViewListOver(true)
+		tagsViewListOver.value=true
+		Session.set('tagsViewListOver',true)
 	}
 }
 )

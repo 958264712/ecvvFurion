@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+<script lang="ts" setup name="targetGrossProfit">
 import { ref, watch, onMounted } from 'vue';
 import editDialog from './components/index.vue';
 import { ElMessage } from 'element-plus';

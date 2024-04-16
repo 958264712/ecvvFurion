@@ -55,7 +55,7 @@
 		</el-container>
 	</div>
 </template>
-<script setup lang="ts">
+<script setup lang="ts" name="summary">
 import * as echarts from 'echarts';
 import { ref, Ref, onMounted, reactive, computed } from 'vue';
 import { getAPI } from '/@/utils/axios-utils';

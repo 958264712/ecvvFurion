@@ -38,6 +38,10 @@
 								<el-dropdown-menu>
 									<el-dropdown-item @click="SelectedExport">导出选中</el-dropdown-item>
 									<el-dropdown-item @click="AllExport">导出所有</el-dropdown-item>
+									<el-dropdown-item
+										@click="ExportPurchaseQuantity('UAE')">导出UAE采购数量</el-dropdown-item>
+									<el-dropdown-item @click="ExportPurchaseQuantity('SA')">导出 SA
+										采购数量</el-dropdown-item>
 								</el-dropdown-menu>
 							</template>
 						</el-dropdown>
@@ -99,7 +103,7 @@
 		</el-card>
 	</div>
 </template>
-<script lang="ts" setup="">
+<script lang="ts" setup="" name="InventoryManagement">
 import { ref } from 'vue';
 import { service } from '/@/utils/request';
 import { ElMessageBox, ElMessage, ElNotification } from 'element-plus';
@@ -538,6 +542,45 @@ function SelectedExport() {
 			Exportloading.value = false;
 		});
 }
+function ExportPurchaseQuantity(site) {
+	Exportloading.value = true;
+	const formData = {
+		type: 1,
+		IsImage: IsImage.value,
+	};
+	axios
+		.post((import.meta.env.VITE_API_URL as any) + `/api/inventoryManagement/exportPurchaseQuantity/` + site, formData, {
+			responseType: 'blob', // 将响应解析为二进制数据
+		})
+		.then((data) => {
+			downloadfile(data);
+			if (data.statusText == 'OK') {
+				ElNotification({
+					title: '系统提示',
+					message: '导出成功',
+					type: 'success',
+				});
+				ElMessage({
+					type: 'success',
+					message: '导出成功',
+				});
+			}
+			Exportloading.value = false;
+		})
+		.catch((arr) => {
+			ElNotification({
+				title: '系统提示',
+				message: '下载错误：获取文件流错误',
+				type: 'error',
+			});
+			ElMessage({
+				type: 'error',
+				message: '导出失败',
+			});
+			Exportloading.value = false;
+		});
+}
+
 const downloadfile = (res: any) => {
 	var blob = new Blob([res.data], {
 		type: 'application/octet-stream;charset=UTF-8',

@@ -1,4 +1,4 @@
-﻿<script lang="ts" setup>
+﻿<script lang="ts" setup name="asinBasicData">
 import { ref } from 'vue';
 import { ElMessageBox, ElMessage } from 'element-plus';
 import { auth } from '/@/utils/authFunction';

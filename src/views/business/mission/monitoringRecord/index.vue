@@ -1,4 +1,4 @@
-﻿<script lang="ts" setup>
+﻿<script lang="ts" setup name="monitoringRecord">
 import { ref } from "vue";
 import { pageMonitoringRecord, ListMonitoringRecord } from '/@/api/modular/main/missionControl';
 

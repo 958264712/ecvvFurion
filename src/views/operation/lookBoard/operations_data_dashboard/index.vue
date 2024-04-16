@@ -693,7 +693,7 @@
 		</div>
 	</el-card>
 </template>
-<script lang="ts" setup="">
+<script lang="ts" setup="" name="operations_data_dashboard">
 import * as echarts from 'echarts';
 import { ref, onMounted, watch } from 'vue';
 import { accumulatedForThisMonth, amazonSales, salesAmount, actualOutboundQuantity, outboundAmount, pOOrderQuantity, pOOrderAmount } from '/@/api/modular/main/operationsDataDashboard.ts';

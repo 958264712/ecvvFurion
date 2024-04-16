@@ -50,7 +50,7 @@
 	</div>
 </template>
 
-<script lang="ts" setup="" name="tableImport">
+<script lang="ts" setup="" name="DescriptionFile">
 import { ref } from 'vue';
 import { ElMessageBox, ElMessage } from 'element-plus';
 import { auth } from '/@/utils/authFunction';

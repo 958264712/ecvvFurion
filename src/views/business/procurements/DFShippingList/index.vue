@@ -114,7 +114,7 @@
 		</el-card>
 	</div>
 </template>
-<script lang="ts" setup="">
+<script lang="ts" setup="" name="DFShippingList">
 import { ref } from 'vue';
 import { service } from '/@/utils/request';
 import axios from 'axios';

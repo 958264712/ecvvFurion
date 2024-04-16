@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+<script lang="ts" setup name="stockSkuOperations">
 import { ref, watch, onMounted } from 'vue';
 import editDialog from './batchModify/index.vue';
 import other from '/@/utils/other.ts';

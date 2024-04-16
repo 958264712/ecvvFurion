@@ -1,4 +1,4 @@
-﻿<script lang="ts" setup="" name="oFSStockWarning">
+﻿<script lang="ts" setup="" name="sAInventorySKUBasicInfo">
 import { ref } from 'vue';
 import { ElMessageBox, ElMessage } from 'element-plus';
 import { auth } from '/@/utils/authFunction';

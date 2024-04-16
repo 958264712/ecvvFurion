@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup lang="ts" name="createcode">
 import request from '/@/utils/request';
 import { ref } from "vue";
 

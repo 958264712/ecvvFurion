@@ -20,7 +20,8 @@
 							/>
 						</el-scrollbar>
 						<div style="text-align: right; margin-top: 20px">
-							<el-button type="info" @click="queryParams.erpTextArea = ''">重置</el-button>
+							<span style="float:left">{{queryParams.erpSkuList?.length ?? 0}}/200</span>
+							<el-button type="info" @click="()=>{queryParams.erpTextArea = ''}">重置</el-button>
 							<el-button type="primary" @click="handleConfirm(1)">确定</el-button>
 						</div>
 						<template #reference>
@@ -44,7 +45,8 @@
 							/>
 						</el-scrollbar>
 						<div style="text-align: right; margin-top: 20px">
-							<el-button type="info" @click="queryParams.asinTextArea = ''">重置</el-button>
+							<span style="float:left">{{queryParams.aSINList?.length ?? 0 }}/200</span>
+							<el-button type="info" @click="()=>{queryParams.asinTextArea = ''}">重置</el-button>
 							<el-button type="primary" @click="handleConfirm(2)">确定</el-button>
 						</div>
 						<template #reference>
@@ -204,7 +206,7 @@
 	</div>
 </template>
 
-<script lang="ts" setup>
+<script lang="ts" setup name="asinData">
 import { ref, watch, h } from 'vue';
 import { ElMessageBox, ElMessage, ElNotification, ElTooltip } from 'element-plus';
 import { auth } from '/@/utils/authFunction';
@@ -824,12 +826,12 @@ const handleConfirm = (type) => {
 		}
 	});
 	if (type === 1) {
-		queryParams.value.erpTextArea = ''
 		queryParams.value.erpSkuList = arr
+		queryParams.value.erpAndGoodsName = arr + ''
 		visibleTextarea1.value = false
 	} else {
-		queryParams.value.asinTextArea = ''
 		queryParams.value.aSINList = arr
+		queryParams.value.aSIN = arr + ''
 		visibleTextarea2.value = false
 	}
 	// handleQuery()
@@ -858,7 +860,14 @@ const handleQuery = async () => {
 		return;
 	}
 	loading.value = true;
-	
+	if(queryParams.value.erpSkuList?.length > 0){
+		queryParams.value.erpTextArea = ''
+		queryParams.value.erpAndGoodsName = ''
+	}
+	if(queryParams.value.aSINList?.length > 0){
+		queryParams.value.asinTextArea = ''
+		queryParams.value.aSIN = ''
+	}
 	var res = await AsinDataPage(Object.assign(queryParams.value, tableParams.value));
 	tableData.value = res.data.result?.items ?? [];
 	tableParams.value.total = res.data.result?.total;
@@ -884,6 +893,36 @@ function handleSelectionChange(val: any) {
 	});
 }
 handleQuery();
+watch(()=> queryParams.value.erpTextArea,()=>{
+	let str_array = queryParams.value.erpTextArea?.split(/[(\r\n)\r\n]+/);
+	let arr = str_array?.map((item, index) => {
+		if (item === '') {
+			str_array.splice(index, 1);
+		}else{
+			return item.trim()
+		}
+	});
+	if(arr[0] !== undefined){
+		queryParams.value.erpSkuList = arr
+	}else{
+		queryParams.value.erpSkuList = []
+	}
+})
+watch(()=> queryParams.value.asinTextArea,()=>{
+	let str_array = queryParams.value.asinTextArea?.split(/[(\r\n)\r\n]+/);
+	let arr = str_array?.map((item, index) => {
+		if (item === '') {
+			str_array.splice(index, 1);
+		}else{
+			return item.trim()
+		}
+	});
+	if(arr[0] !== undefined){
+		queryParams.value.aSINList = arr
+	}else{
+		queryParams.value.aSINList = []
+	}
+})
 </script>
 
 <style lang="less" scoped>

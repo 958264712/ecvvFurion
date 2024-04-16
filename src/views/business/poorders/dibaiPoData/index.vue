@@ -1,4 +1,4 @@
-﻿<script lang="ts" setup>
+﻿<script lang="ts" setup name="dibaiPoData">
 import { ref } from 'vue';
 import { ElMessageBox, ElMessage } from 'element-plus';
 import { pagePoData, deletePoData, updateOrderDate, ImportPO, bulkImportOrderDate, multipleExportByTemplate, downLoadPOZip } from '/@/api/modular/main/aSINBasicData.ts';

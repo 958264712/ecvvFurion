@@ -48,7 +48,7 @@
 		</el-card>
 	</div>
 </template>
-<script lang="ts" setup="">
+<script lang="ts" setup="" name="amazon_orders">
 import { reactive, ref, onMounted } from 'vue';
 import { service } from '/@/utils/request';
 import { ElMessageBox, ElMessage, ElNotification, FormInstance, FormRules } from 'element-plus';

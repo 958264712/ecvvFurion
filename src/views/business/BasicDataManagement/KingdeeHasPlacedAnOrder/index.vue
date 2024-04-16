@@ -98,7 +98,7 @@
 		</el-card>
 	</div>
 </template>
-<script lang="ts" setup="" name="oFSStockWarning">
+<script lang="ts" setup="" name="KingdeeHasPlacedAnOrder">
 import { ref } from 'vue';
 import { service } from '/@/utils/request';
 import { ElMessageBox, ElMessage, ElNotification } from 'element-plus';

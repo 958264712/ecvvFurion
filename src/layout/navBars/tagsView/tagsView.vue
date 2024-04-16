@@ -1,10 +1,17 @@
 <template>
 	<div class="layout-navbars-tagsview" :class="{ 'layout-navbars-tagsview-shadow': getThemeConfig.layout === 'classic' }">
 		<el-scrollbar ref="scrollbarRef" @wheel.prevent="onHandleScroll">
-			<el-popover  :visible="state.tagsViewListOver" placement="bottom" :width="260" popper-class="popover" >
-				<p style="color:white">为了更好的体验，建议您关闭不常用页面，最多可打开15个页面</p>
+			<el-popover :visible="stores.tagsViewListOver" placement="bottom" :width="260" popper-class="popover">
+				<p style="color: white">为了更好的体验，建议您关闭不常用页面，最多可打开15个页面</p>
 				<div style="text-align: right; margin-top: 20px">
-					<el-button size="small"  @click="state.tagsViewListOver = false">知道了</el-button>
+					<el-button
+						size="small"
+						@click="
+							stores.setTagsViewListOver(false);
+							Session.set('tagsViewListOver', false);
+						"
+						>知道了</el-button
+					>
 				</div>
 				<template #reference>
 					<ul class="layout-navbars-tagsview-ul" :class="setTagsStyle" ref="tagsUlRef">
@@ -64,7 +71,6 @@ import { Session } from '/@/utils/storage';
 import { isObjectValueEqual } from '/@/utils/arrayOperation';
 import other from '/@/utils/other';
 import mittBus from '/@/utils/mitt';
-import { log } from 'console';
 import { ASINListingTableStore } from '/@/stores/ASINListingTable';
 
 // 引入组件
@@ -93,7 +99,6 @@ const state = reactive<TagsViewState>({
 	tagsRefsIndex: 0,
 	tagsViewList: [],
 	tagsViewRoutesList: [],
-	tagsViewListOver: false,
 });
 
 // 动态设置 tagsView 风格样式
@@ -142,7 +147,6 @@ const getTagsViewRoutes = async () => {
 const initTagsView = async () => {
 	if (Session.get('tagsViewList') && getThemeConfig.value.isCacheTagsView) {
 		state.tagsViewList = await Session.get('tagsViewList');
-		state.tagsViewListOver = await Session.get('tagsViewListOver');
 	} else {
 		await state.tagsViewRoutesList.map((v: RouteItem) => {
 			if (v.meta?.isAffix && !v.meta.isHide) {
@@ -617,28 +621,30 @@ watch(
 		deep: true,
 	}
 );
-watch(()=>route.path,
-()=>{
-	if(Session.get('tagsViewList')?.length > 14){
-		state.tagsViewListOver = true
-		Session.set('tagsViewListOver',state.tagsViewListOver)
-	}else{
-		state.tagsViewListOver = false
-		Session.set('tagsViewListOver',state.tagsViewListOver)
+
+watch(
+	() => state.tagsViewList,
+	() => {
+		if (state.tagsViewList?.length < 15) {
+			stores.setTagsViewListOver(false);
+			Session.set('tagsViewListOver', false);
+		} else {
+			stores.setTagsViewListOver(true);
+			Session.set('tagsViewListOver', true);
+		}
 	}
-}
-)
-watch(()=>state.tagsViewList,
-()=>{
-	if(state.tagsViewList?.length <15){
-		state.tagsViewListOver = false
-		Session.set('tagsViewListOver',state.tagsViewListOver)
-	}else{
-		state.tagsViewListOver = true
-		Session.set('tagsViewListOver',state.tagsViewListOver)
+);
+// 改成全局  路由禁止跳转
+watch(
+	() => stores.tagsViewListOver,
+	() => {
+		if (!Session.get('tagsViewListOver')) {
+			stores.setTagsViewListOver(false);
+		} else {
+			stores.setTagsViewListOver(true);
+		}
 	}
-}
-)
+);
 </script>
 
 <style scoped lang="scss">
@@ -801,15 +807,15 @@ watch(()=>state.tagsViewList,
 </style>
 <style>
 .popover.el-popper.is-light {
-  background: red !important;
-  inset:90px auto auto calc(50% - 130px) !important;
+	background: red !important;
+	inset: 90px auto auto calc(50% - 130px) !important;
 }
 //修改下面的小三角，属性名根据组件的placement位置做相应修改
-.popover .popper__arrow{
-  background: red !important;
+.popover .popper__arrow {
+	background: red !important;
 }
 .popover.el-popper .el-popper__arrow::before {
-  border-top-color: red !important;
-  background: red !important;
+	border-top-color: red !important;
+	background: red !important;
 }
 </style>

@@ -10,6 +10,7 @@ export const useTagsViewRoutes = defineStore('tagsViewRoutes', {
 	state: (): TagsViewRoutesState => ({
 		tagsViewRoutes: [],
 		isTagsViewCurrenFull: false,
+		tagsViewListOver:false,
 	}),
 	actions: {
 		async setTagsViewRoutes(data: Array<string>) {
@@ -18,6 +19,10 @@ export const useTagsViewRoutes = defineStore('tagsViewRoutes', {
 		setCurrenFullscreen(bool: Boolean) {
 			Session.set('isTagsViewCurrenFull', bool);
 			this.isTagsViewCurrenFull = bool;
+		},
+		setTagsViewListOver(bool: Boolean) {
+			Session.set('tagsViewListOver', bool);
+			this.tagsViewListOver = bool;
 		},
 	},
 });

@@ -85,7 +85,7 @@
 		</el-card>
 	</div>
 </template>
-<script lang="ts" setup>
+<script lang="ts" setup name="ASINListingTableCNAdd">
 import { ref, reactive, watch, onMounted } from 'vue';
 import router from '/@/router';
 import { ElMessage, FormRules, FormInstance } from 'element-plus';
