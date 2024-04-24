@@ -5,7 +5,6 @@ import { auth } from '/@/utils/authFunction';
 // import editDialog from './component/editDialog.vue'
 import { pageAmazonPriceRecordSA, deleteAmazonPriceRecordSA } from '/@/api/modular/main/amazonPagePriceRecord';
 
-
 // const editDialogRef = ref();
 const loading = ref(false);
 const tableData = ref<any>([]);
@@ -87,8 +86,8 @@ handleQuery();
       </el-form>
     </el-card>
     <el-card class="full-table" shadow="hover" style="margin-top: 8px">
-      <el-table :data="tableData" size="large" style="width: 100%" v-loading="loading" tooltip-effect="light" row-key="id"
-        border="">
+      <el-table :data="tableData" size="large" style="width: 100%" v-loading="loading" tooltip-effect="light"
+        row-key="id" border="">
         <el-table-column type="index" label="序号" width="55" align="center" />
         <el-table-column prop="asin" label="ASIN" align="center" width="150" show-overflow-tooltip="" />
         <el-table-column prop="sku" label="Sku" align="center" width="150" show-overflow-tooltip="" />
@@ -102,7 +101,8 @@ handleQuery();
         </el-table-column>
         <el-table-column prop="buyBoxOwner" label="BuyBoxOwner" align="center" sortable width="150"
           show-overflow-tooltip="" />
-        <el-table-column prop="currency" label="Currency" align="center" sortable width="150" show-overflow-tooltip="" />
+        <el-table-column prop="currency" label="Currency" align="center" sortable width="150"
+          show-overflow-tooltip="" />
         <el-table-column prop="buyboxPrice" label="BuyboxPrice" align="center" sortable width="150"
           show-overflow-tooltip="" />
         <el-table-column prop="shippingValue" label="ShippingValue" align="center" sortable width="150"
@@ -128,7 +128,8 @@ handleQuery();
           show-overflow-tooltip="" />
         <el-table-column prop="listPrice" label="ListPrice" align="center" sortable width="150"
           show-overflow-tooltip="" />
-        <el-table-column prop="itemCost" label="ItemCost" align="center" sortable width="150" show-overflow-tooltip="" />
+        <el-table-column prop="itemCost" label="ItemCost" align="center" sortable width="150"
+          show-overflow-tooltip="" />
         <el-table-column label="操作" width="140" align="center" fixed="right" show-overflow-tooltip="">
           <template #default="scope">
             <el-button icon="ele-Delete" size="small" text="" type="primary" @click="delAmazonPriceRecordSA(scope.row)">
@@ -144,7 +145,3 @@ handleQuery();
     </el-card>
   </div>
 </template>
-
-
-
-

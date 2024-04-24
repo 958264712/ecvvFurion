@@ -6,8 +6,10 @@ import other from '/@/utils/other.ts';
 import { ElMessage } from 'element-plus';
 import { useRouter } from 'vue-router';
 import { poFulfillingPage, Import, getPoFulfillingOrdersList, getConfirmedNewPOsPage, exportPoFulfillingOrders, exportConfirmedNewPOs } from '/@/api/modular/main/poFulfillingOrdersData';
-import InfoDataDialog from '/@/components/infoDataDialog/index.vue'
+import InfoDataDialog from '/@/components/infoDataDialog/index.vue';
 
+const timevalue1 = ref('');
+const timevalue2 = ref('');
 const router = useRouter();
 const queryParams = ref<any>({ site: null });
 const tableParams = ref<any>({ page: 1, pageSize: 20 });
@@ -22,7 +24,7 @@ const Exportloading = ref(false);
 const dialogFormVisible = ref(false);
 const dialogFormVisible1 = ref(false);
 const ifClose = ref(false);
-const pointerface = ref<any>(null)
+const pointerface = ref<any>(null);
 const orderFulfillmentId = ref<number>(0);
 const ifdisabled = ref(true);
 const sites = ref([
@@ -79,20 +81,31 @@ const handleQuery = async (): void => {
 	} else if (queryParams.value.exportStatus === '已导出') {
 		queryParams.value.exportStatus = 2;
 	}
+	queryParams.value.orderTimeStartTime = null;
+	queryParams.value.orderTimeEndtTime = null;
+	queryParams.value.exportStartTime = null;
+	queryParams.value.exportEndTime = null;
+	if (!timevalue1.value === '') {
+		(queryParams.value.orderTimeStartTime = timevalue1.value[0]), (queryParams.value.orderTimeEndtTime = timevalue1.value[1]);
+	}
+	if (!timevalue2.value === '') {
+		(queryParams.value.exportStartTime = timevalue2.value[0]), (queryParams.value.exportEndTime = timevalue2.value[1]);
+	}
+
 	var res = await poFulfillingPage(Object.assign(queryParams.value, tableParams.value));
 	tableData.value = res.data.result?.items ?? [];
 	tableParams.value.total = res.data.result?.total;
 	tableParams.value.PageNo = res.data.result?.page;
 	tableParams.value.PageSize = res.data.result?.pageSize;
 	if (queryParams.value.site === null) {
-		queryParams.value.site = '全部'
+		queryParams.value.site = '全部';
 	}
 	if (queryParams.value.exportStatus === -1) {
-		queryParams.value.exportStatus = '全部'
+		queryParams.value.exportStatus = '全部';
 	} else if (queryParams.value.exportStatus === 1) {
-		queryParams.value.exportStatus = '未导出'
+		queryParams.value.exportStatus = '未导出';
 	} else if (queryParams.value.exportStatus === 2) {
-		queryParams.value.exportStatus = '已导出'
+		queryParams.value.exportStatus = '已导出';
 	}
 	loading.value = false;
 };
@@ -140,27 +153,27 @@ const Imports = (file: any) => {
 const exportPo = async (id: any, type: any) => {
 	Exportloading.value = true;
 	if (type === 1) {
-		await exportPoFulfillingOrders({ id }, id).then(res => {
+		await exportPoFulfillingOrders({ id }, id).then((res) => {
 			other.downloadfile(res);
-		})
+		});
 	} else {
-		await exportConfirmedNewPOs({ id }, id).then(res => {
+		await exportConfirmedNewPOs({ id }, id).then((res) => {
 			other.downloadfile(res);
-		})
+		});
 	}
-	handleQuery()
+	handleQuery();
 	Exportloading.value = false;
-}
+};
 //打开详情弹窗
 const showModal = (id: any) => {
 	orderFulfillmentId.value = id;
-	pointerface.value = getPoFulfillingOrdersList
+	pointerface.value = getPoFulfillingOrdersList;
 	visible.value = true;
 	ifClose.value = true;
 };
 const showModal1 = (id: any) => {
 	orderFulfillmentId.value = id;
-	pointerface.value = getConfirmedNewPOsPage
+	pointerface.value = getConfirmedNewPOsPage;
 	visible1.value = true;
 	ifClose.value = true;
 };
@@ -195,122 +208,131 @@ const handleCurrentChange = (val: number): void => {
 const formList = ref<any>([
 	{
 		label: 'ASIN',
-		prop: 'asin'
-	}
-])
+		prop: 'asin',
+	},
+]);
 const dataList = ref<any>([
 	{
 		label: 'PO',
-		prop: 'po'
+		prop: 'po',
 	},
 	{
 		label: 'ASIN',
-		prop: 'asin'
+		prop: 'asin',
 	},
 	{
 		label: 'Quantity Requested',
-		prop: 'quantityRequested'
+		prop: 'quantityRequested',
 	},
 	{
 		label: 'ERP-SKU',
-		prop: 'erpSku'
+		prop: 'erpSku',
 	},
 	{
 		label: '采购国',
-		prop: 'purchasingCountry'
+		prop: 'purchasingCountry',
 	},
 	{
 		label: '打包数量',
-		prop: 'packagingQuantity'
+		prop: 'packagingQuantity',
 	},
 	{
 		label: '发货数量',
-		prop: 'shipmentQuantity'
+		prop: 'shipmentQuantity',
 	},
 	{
 		label: '库存数量',
-		prop: 'inventoryQuantity'
+		prop: 'inventoryQuantity',
 	},
 	{
 		label: '最近一批在途数量',
-		prop: 'latestQuantities'
+		prop: 'latestQuantities',
 	},
 	{
 		label: '预计到仓日期',
-		prop: 'warehouseArrivalDate'
+		prop: 'warehouseArrivalDate',
 	},
 	{
 		label: '最迟履单日期',
-		prop: 'latestDate'
+		prop: 'latestDate',
 	},
-])
+	{
+		label: '可履单数量',
+		prop: 'confirmQuantity',
+	},
+	{
+		label: '提示约仓时间',
+		prop: 'bookingTime',
+	},
+]);
 const dataList1 = ref<any>([
 	{
 		label: 'Order/PO Number',
-		prop: 'po'
+		prop: 'po',
 	},
 	{
 		label: 'External ID',
-		prop: 'externalID'
+		prop: 'externalID',
 	},
 	{
 		label: 'Model Number',
-		prop: 'modelNumber'
+		prop: 'modelNumber',
 	},
 	{
 		label: 'ASIN',
-		prop: 'asin'
+		prop: 'asin',
 	},
 	{
 		label: 'Merchant Sku',
-		prop: 'merchantSku'
+		prop: 'merchantSku',
 	},
 	{
 		label: 'Title',
-		prop: 'title'
+		prop: 'title',
 	},
 	{
 		label: 'List Price',
-		prop: 'listPrice'
+		prop: 'listPrice',
 	},
 	{
 		label: 'Discount',
-		prop: 'discount'
+		prop: 'discount',
 	},
 	{
 		label: 'Cost',
-		prop: 'cost'
+		prop: 'cost',
 	},
 	{
 		label: 'Quantity Ordered',
-		prop: 'quantityOrdered'
+		prop: 'quantityOrdered',
 	},
 	{
 		label: 'Quantity Confirmed',
-		prop: 'quantityConfirmed'
+		prop: 'quantityConfirmed',
 	},
 	{
 		label: 'Previously Confirmed Quantity',
-		prop: 'previouslyConfirmedQuantity'
+		prop: 'previouslyConfirmedQuantity',
 	},
 	{
 		label: 'Hand Off Start',
-		prop: 'handOffStart'
+		prop: 'handOffStart',
 	},
 	{
 		label: 'Hand Off End',
-		prop: 'handOffEnd'
+		prop: 'handOffEnd',
 	},
 	{
 		label: 'Hand Off Type',
-		prop: 'handOffType'
+		prop: 'handOffType',
 	},
 	{
 		label: 'Expected Hand Off Date',
-		prop: 'expectedHandOffDate'
-	}, {
+		prop: 'expectedHandOffDate',
+	},
+	{
 		label: 'Availability Status',
-		prop: 'availabilityStatus'
+		prop: 'availabilityStatus',
 	},
 	// {
 	// 	label:'Error From Previous Upload Attempt',
@@ -318,69 +340,73 @@ const dataList1 = ref<any>([
 	// },
 	{
 		label: 'Vendor Code',
-		prop: 'vendorCode'
-	}, {
+		prop: 'vendorCode',
+	},
+	{
 		label: 'Fulfillment Center',
-		prop: 'fulfillmentCenter'
-	}, {
+		prop: 'fulfillmentCenter',
+	},
+	{
 		label: 'Condition',
-		prop: 'condition'
-	}, {
+		prop: 'condition',
+	},
+	{
 		label: 'Order Date',
-		prop: 'orderDate'
+		prop: 'orderDate',
 	},
 	{
 		label: 'Is Back Order',
-		prop: 'isBackOrder'
+		prop: 'isBackOrder',
 	},
 	{
 		label: 'Freight Terms',
-		prop: 'freightTerms'
+		prop: 'freightTerms',
 	},
 	{
 		label: 'Payment Method',
-		prop: 'paymentMethod'
+		prop: 'paymentMethod',
 	},
 	{
 		label: 'Special Instructions',
-		prop: 'specialInstructions'
+		prop: 'specialInstructions',
 	},
 	{
 		label: 'Comments',
-		prop: 'comments'
+		prop: 'comments',
 	},
 	{
 		label: 'Legal Entity Id',
-		prop: 'legalEntityId'
+		prop: 'legalEntityId',
 	},
 	{
 		label: 'Currency Code',
-		prop: 'currencyCode'
+		prop: 'currencyCode',
 	},
 	{
 		label: 'External Id Type',
-		prop: 'externalIdType'
-	}, {
+		prop: 'externalIdType',
+	},
+	{
 		label: 'Item Package Quantity',
-		prop: 'itemPackageQuantity'
+		prop: 'itemPackageQuantity',
 	},
 	{
 		label: 'Aggregate Quantity',
-		prop: 'aggregateQuantity'
+		prop: 'aggregateQuantity',
 	},
 	{
 		label: 'Legal Entity Id',
-		prop: 'legalEntityId'
+		prop: 'legalEntityId',
 	},
 	{
 		label: 'Merchant Customer ID',
-		prop: 'merchantCustomerID'
+		prop: 'merchantCustomerID',
 	},
 	{
 		label: 'Merchant Sku ratio',
-		prop: 'merchantSkuratio'
+		prop: 'merchantSkuratio',
 	},
-])
+]);
 function changeSite() {
 	ifdisabled.value = false;
 }
@@ -398,32 +424,32 @@ onMounted(() => {
 			<el-form :model="queryParams" ref="queryForm" :inline="true">
 				<el-form-item label="站点">
 					<el-select clearable="" v-model="queryParams.site" placeholder="全部">
-						<el-option v-for="(item, index) in sites" :key="index" :value="item.value"
-							:label="item.label" />
+						<el-option v-for="(item, index) in sites" :key="index" :value="item.value" :label="item.label" />
 					</el-select>
 				</el-form-item>
 				<el-form-item label="订单时间">
-					<el-date-picker v-model="queryParams.exportStartTime" type="daterange"
-						start-placeholder="Start date" end-placeholder="End date" :default-time="defaultTime" />
+					<el-date-picker v-model="timevalue1" type="daterange" start-placeholder="Start date" end-placeholder="End date" :default-time="defaultTime" />
 				</el-form-item>
 				<el-form-item label="导入时间">
-					<el-date-picker v-model="queryParams.exportEndTime" type="daterange" start-placeholder="Start date"
-						end-placeholder="End date" :default-time="defaultTime" />
+					<el-date-picker v-model="timevalue2" type="daterange" start-placeholder="Start date" end-placeholder="End date" :default-time="defaultTime" />
 				</el-form-item>
 				<el-form-item label="导出状态">
 					<el-select clearable="" v-model="queryParams.exportStatus" placeholder="全部">
-						<el-option v-for="(item, index) in exportStatus" :key="index" :value="item.value"
-							:label="item.label" />
+						<el-option v-for="(item, index) in exportStatus" :key="index" :value="item.value" :label="item.label" />
 					</el-select>
 				</el-form-item>
 				<el-form-item>
 					<el-button-group>
 						<el-button type="primary" icon="ele-Search" @click="handleQuery"> 查询 </el-button>
-						<el-button icon="ele-Refresh" @click="() => {
-			queryParams = {};
-			handleQuery();
-		}
-			">
+						<el-button
+							icon="ele-Refresh"
+							@click="
+								() => {
+									queryParams = {};
+									handleQuery();
+								}
+							"
+						>
 							重置
 						</el-button>
 					</el-button-group>
@@ -438,44 +464,42 @@ onMounted(() => {
 					<template #footer>
 						<span class="dialog-footer">
 							<el-button size="default" type="info" @click="queryTableImport">未更新</el-button>
-							<el-button :loading="importloading" type="primary" size="default"
-								@click="opendialog1">已更新</el-button>
+							<el-button :loading="importloading" type="primary" size="default" @click="opendialog1">已更新</el-button>
 						</span>
 					</template>
 				</el-dialog>
 				<el-dialog v-model="dialogFormVisible1" title="PO订单数据导入" :width="600" @closed="closed">
 					<el-form label-width="200" label-position="right" :model="ruleForm" size="default">
-						<div
-							style="width: 100%; height: 35px; margin-bottom: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #ffffe0">
+						<div style="width: 100%; height: 35px; margin-bottom: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #ffffe0">
 							<el-text size="20">选择站点，点击"确定"后，选择需要导入的文件，将导入该数据</el-text>
 						</div>
-						<el-form-item label="站点" prop="site" :rules="[
-			{
-				required: true,
-				message: '站点不能为空',
-				trigger: 'blur',
-			},
-		]">
+						<el-form-item
+							label="站点"
+							prop="site"
+							:rules="[
+								{
+									required: true,
+									message: '站点不能为空',
+									trigger: 'blur',
+								},
+							]"
+						>
 							<el-select @change="changeSite" v-model="ruleForm.site" size="large">
-								<el-option v-for="item in options" :key="item.value" :label="item.label"
-									:value="item.value">
-								</el-option>
+								<el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"> </el-option>
 							</el-select>
 						</el-form-item>
 					</el-form>
 					<template #footer>
 						<span class="dialog-footer">
 							<el-button @click="cancel" size="default" type="info">取消</el-button>
-							<el-upload ref="uploadRef" v-bind:disabled="ifdisabled" :on-change="Imports"
-								:multiple="false" action="#" :show-file-list="false" :auto-upload="false" name="file">
+							<el-upload ref="uploadRef" v-bind:disabled="ifdisabled" :on-change="Imports" :multiple="false" action="#" :show-file-list="false" :auto-upload="false" name="file">
 								<el-button :loading="importloading" type="primary" size="default">确定</el-button>
 							</el-upload>
 						</span>
 					</template>
 				</el-dialog>
 			</div>
-			<el-table :data="tableData" style="height: 100%" v-loading="loading" tooltip-effect="light" row-key="id"
-				@selection-change="(selection: any) => selectChange(selection)">
+			<el-table :data="tableData" style="height: 100%" v-loading="loading" tooltip-effect="light" row-key="id" @selection-change="(selection: any) => selectChange(selection)">
 				<el-table-column prop="fileName" label="文件名" align="center" show-overflow-tooltip="" />
 				<el-table-column prop="batchId" label="批次号" align="center" />
 				<el-table-column prop="site" label="站点" align="center" />
@@ -497,8 +521,7 @@ onMounted(() => {
 							<template #dropdown>
 								<el-dropdown-menu>
 									<el-dropdown-item @click="showModal(scope.row.id)">POs PANEL</el-dropdown-item>
-									<el-dropdown-item @click="showModal1(scope.row.id)">Confirmed New
-										POs</el-dropdown-item>
+									<el-dropdown-item @click="showModal1(scope.row.id)">Confirmed New POs</el-dropdown-item>
 								</el-dropdown-menu>
 							</template>
 						</el-dropdown>
@@ -507,26 +530,30 @@ onMounted(() => {
 							<template #dropdown>
 								<el-dropdown-menu>
 									<el-dropdown-item @click="exportPo(scope.row.id, 1)">POs PANEL</el-dropdown-item>
-									<el-dropdown-item @click="exportPo(scope.row.id, 2)">Confirmed New
-										POs</el-dropdown-item>
+									<el-dropdown-item @click="exportPo(scope.row.id, 2)">Confirmed New POs</el-dropdown-item>
 								</el-dropdown-menu>
 							</template>
 						</el-dropdown>
 					</template>
 				</el-table-column>
 			</el-table>
-			<el-pagination v-model:currentPage="tableParams.PageNo" v-model:page-size="tableParams.PageSize"
-				:total="tableParams.total" :page-sizes="[10, 20, 50, 100, 500, 1000]" small="" background=""
-				@size-change="handleSizeChange" @current-change="handleCurrentChange"
-				layout="total, sizes, prev, pager, next, jumper" />
+			<el-pagination
+				v-model:currentPage="tableParams.PageNo"
+				v-model:page-size="tableParams.PageSize"
+				:total="tableParams.total"
+				:page-sizes="[10, 20, 50, 100, 500, 1000]"
+				small=""
+				background=""
+				@size-change="handleSizeChange"
+				@current-change="handleCurrentChange"
+				layout="total, sizes, prev, pager, next, jumper"
+			/>
 			<el-dialog v-model="visible" title="POs PANEL详情" @close="close" width="1000px">
 				<!-- <editDialog :id="orderFulfillmentId" /> -->
-				<InfoDataDialog :id="orderFulfillmentId" idName="poFulfillingOrderBatchId" :dataList="dataList"
-					:pointerface="pointerface" :formList="formList" :ifClose="ifClose" />
+				<InfoDataDialog :id="orderFulfillmentId" idName="poFulfillingOrderBatchId" :dataList="dataList" :pointerface="pointerface" :formList="formList" :ifClose="ifClose" />
 			</el-dialog>
 			<el-dialog v-model="visible1" title="Confirmed New POs详情" @close="close1" width="1000px">
-				<InfoDataDialog :id="orderFulfillmentId" idName="poFulfillingOrderBatchId" :dataList="dataList1"
-					:pointerface="pointerface" :formList="formList" :ifClose="ifClose" />
+				<InfoDataDialog :id="orderFulfillmentId" idName="poFulfillingOrderBatchId" :dataList="dataList1" :pointerface="pointerface" :formList="formList" :ifClose="ifClose" />
 			</el-dialog>
 		</el-card>
 	</div>

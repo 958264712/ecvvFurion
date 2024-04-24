@@ -104,6 +104,7 @@ import { ElMessageBox, ElMessage, ElNotification } from 'element-plus';
 import axios from 'axios';
 //import { formatDate } from '/@/utils/formatTime';
 import { InventorySummaryLedgerInfo, ImportInventorySummaryLedger } from '/@/api/modular/main/BasicDataManagement.ts';
+import { useDebounce } from '/@/utils/debounce';
 const loading = ref(false);
 const ImportsSalesloading = ref(false);
 const tableData = ref<any>([]);
@@ -117,7 +118,7 @@ const tableParams = ref({
 	Field: null
 });
 let selectedRows = ref<any>([]);
-function Imports(file: any) {
+const Imports = useDebounce((file: any) => {
 	ImportsSalesloading.value = true;
 	const formData = new FormData();
 	formData.append('file', file.raw);
@@ -133,7 +134,7 @@ function Imports(file: any) {
 				ElMessage.error('导入失败'); // + res.message
 			}
 		});
-}
+}, 500);
 
 // 改变页面容量
 const handleSizeChange = (val: number) => {

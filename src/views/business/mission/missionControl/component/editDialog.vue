@@ -1,38 +1,32 @@
 ﻿<script lang="ts" setup>
-import { ref } from "vue";
-import { ElMessage } from "element-plus";
-import type { FormRules } from "element-plus";
+import { ref } from 'vue';
+import { ElMessage } from 'element-plus';
+import type { FormRules } from 'element-plus';
 import { addMissionControl, updateMissionControl } from '/@/api/modular/main/missionControl';
 //父级传递来的参数
 var props = defineProps({
 	title: {
 		type: String,
-		default: "",
+		default: '',
 	},
 });
 //父级传递来的函数，用于回调
-const emit = defineEmits(["reloadTable"]);
+const emit = defineEmits(['reloadTable']);
 const ruleFormRef = ref();
 const isShowDialog = ref(false);
 const ruleForm = ref<any>({});
 //自行添加其他规则
-const rules = ref<FormRules>({
-});
+const rules = ref<FormRules>({});
 
 // 打开弹窗
 const openDialog = (row: any) => {
 	ruleForm.value = JSON.parse(JSON.stringify(row));
-	if (ruleForm.value.requestWay === 1) {
-		ruleForm.value.requestWay = 'Get'
-	} else {
-		ruleForm.value.requestWay = ' Post'
-	}
 	isShowDialog.value = true;
 };
 
 // 关闭弹窗
 const closeDialog = () => {
-	emit("reloadTable");
+	emit('reloadTable');
 	isShowDialog.value = false;
 };
 
@@ -55,21 +49,21 @@ const submit = async () => {
 		} else {
 			ElMessage({
 				message: `表单有${Object.keys(fields).length}处验证失败，请修改后再提交`,
-				type: "error",
+				type: 'error',
 			});
 		}
 	});
 };
-const change = (val: any) => {
-	switch (val) {
-		case 1:
-			ruleForm.value.requestWay = 'Get';
-			break;
-		case 2:
-			ruleForm.value.requestWay = 'Post'
-			break;
-	}
-}
+const options = [
+	{
+		value: 1,
+		label: 'Get',
+	},
+	{
+		value: 2,
+		label: 'Post',
+	},
+];
 //将属性或者函数暴露给父组件
 defineExpose({ openDialog });
 </script>
@@ -93,9 +87,8 @@ defineExpose({ openDialog });
 					</el-col>
 					<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
 						<el-form-item label="请求方式" prop="requestWay">
-							<el-select v-model="ruleForm.requestWay" placeholder="请选择请求方式" @change="(val) => change(val)">
-								<el-option :value="1">Get</el-option>
-								<el-option :value="2">Post</el-option>
+							<el-select v-model="ruleForm.requestWay" placeholder="请选择请求方式" style="width: 240px">
+								<el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
 							</el-select>
 						</el-form-item>
 					</el-col>
@@ -120,9 +113,3 @@ defineExpose({ openDialog });
 		</el-dialog>
 	</div>
 </template>
-
-
-
-
-
-

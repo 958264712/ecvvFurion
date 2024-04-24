@@ -37,18 +37,14 @@
 		<el-card class="full-table" shadow="hover" style="margin-top: 8px">
 			<el-form-item><el-button @click="opendialog" type="primary"> 导入 </el-button></el-form-item>
 			<el-dialog v-model="dialogFormVisible" title="CostpriceBatch导入" width="600px" center>
-					<importDialog :type="importType" text="选择站点，点击'确定'后，选择需要导入的文件，将导入该数据"  :formList="importFormList" :importsInterface="Import" @close="importClose" @importQuery="importQuery" />
-				<!-- <span class="itemlabel">站点：</span>
-				<el-select v-model="site" size="large">
-					<el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"> </el-option>
-				</el-select>
-				<template #footer>
-					<span class="dialog-footer">
-						<el-upload :on-change="Imports" :multiple="false" action="#" :show-file-list="false" :auto-upload="false" name="file">
-							<el-button :loading="importloading" type="primary" size="default">导入数据</el-button>
-						</el-upload>
-					</span>
-				</template> -->
+				<importDialog
+					:type="importType"
+					text="选择站点，点击'确定'后，选择需要导入的文件，将导入该数据"
+					:formList="importFormList"
+					:importsInterface="Import"
+					@close="importClose"
+					@importQuery="importQuery"
+				/>
 			</el-dialog>
 			<el-table :data="tableData" style="width: 100%" v-loading="loading" tooltip-effect="light" row-key="id" border="">
 				<el-table-column type="index" label="序号" width="55" align="center" />
@@ -97,7 +93,7 @@ import { pageCostpeice_Batch, deleteCostpeice_Batch, Import } from '/@/api/opera
 import { pageCostpeice } from '/@/api/operation/costprice';
 import { getDictDataList } from '/@/api/system/admin';
 import importDialog from '/@/components/importDialog/index.vue';
-import InfoDataDialog from '/@/components/infoDataDialog/index.vue'
+import InfoDataDialog from '/@/components/infoDataDialog/index.vue';
 
 const ifClose = ref(false);
 //打开弹窗
@@ -115,60 +111,60 @@ function close() {
 // infoDataDialog 配套参数
 const formList = ref<any>([
 	{
-		label:'ASIN',
-		prop:'aSIN'
-	}
-])
+		label: 'ASIN',
+		prop: 'aSIN',
+	},
+]);
 const dataList = ref<any>([
 	{
-		label:'Vendor',
-		prop:'vendor'
+		label: 'Vendor',
+		prop: 'vendor',
 	},
 	{
-		label:'ASIN',
-		prop:'asin'
+		label: 'ASIN',
+		prop: 'asin',
 	},
 	{
-		label:'EAN_UPC',
-		prop:'eaN_UPC'
+		label: 'EAN_UPC',
+		prop: 'eaN_UPC',
 	},
 	{
-		label:'ERP-SKU',
-		prop:'erpSku'
+		label: 'ERP-SKU',
+		prop: 'erpSku',
 	},
 	{
-		label:'Model',
-		prop:'model'
+		label: 'Model',
+		prop: 'model',
 	},
 	{
-		label:'ProductDescription',
-		prop:'productDescription'
+		label: 'ProductDescription',
+		prop: 'productDescription',
 	},
 	{
-		label:'ReplenishmentStatus',
-		prop:'replenishmentStatus'
+		label: 'ReplenishmentStatus',
+		prop: 'replenishmentStatus',
 	},
 	{
-		label:'EffectiveDate',
-		prop:'effectiveDate'
+		label: 'EffectiveDate',
+		prop: 'effectiveDate',
 	},
 	{
-		label:'CurrentCost',
-		prop:'currentCost'
+		label: 'CurrentCost',
+		prop: 'currentCost',
 	},
 	{
-		label:'NewCost',
-		prop:'newCost'
+		label: 'NewCost',
+		prop: 'newCost',
 	},
 	{
-		label:'CurrentCostCurrency',
-		prop:'currentCostCurrency'
+		label: 'CurrentCostCurrency',
+		prop: 'currentCostCurrency',
 	},
 	{
-		label:'NewCostCurrency',
-		prop:'newCostCurrency'
+		label: 'NewCostCurrency',
+		prop: 'newCostCurrency',
 	},
-])
+]);
 var costpriceBatchId = ref<number>(0);
 const visible = ref(false); //列表弹窗
 const site = ref<any>(''); //站点
@@ -205,14 +201,13 @@ const importFormList = ref<any>([
 		select: 'Site',
 		selectList: options.value,
 	},
-
 ]);
-const importClose = (bol:boolean) => {
-	dialogFormVisible.value = bol
-}
-const importQuery = ()=>{
-	handleQuery()
-}
+const importClose = (bol: boolean) => {
+	dialogFormVisible.value = bol;
+};
+const importQuery = () => {
+	handleQuery();
+};
 // 导入
 // const Imports = (file: any) => {
 // 	if (site.value == '') {

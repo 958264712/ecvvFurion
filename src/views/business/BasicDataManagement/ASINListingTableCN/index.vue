@@ -515,25 +515,46 @@ function Imports(file: any) {
 	formData.append('file', file.raw);
 	formData.append('Site', area.value);
 	if (area.value == 'CN') {
-		ImportCN(formData).then((res: any) => {
-			if (res.data.code == 200) {
-				ElMessage.success('Import succeeded');
-				handleQuery();
-			} else {
-				ElMessage.error(res.message); // + res.message
-			}
-		});
+
+		axios
+			.post((import.meta.env.VITE_API_URL as any) + `/api/aSINListingTable/importCN/` + area.value, formData)
+			.then((res) => {
+				if (res.data.code == 200) {
+					ElMessage.success('Import succeeded');
+					handleQuery();
+					loading3.value = false;
+				} else {
+					ElMessage.error(res.message); // + res.message
+					loading3.value = false;
+				}
+
+			});
+		// ImportCN(formData).then((res: any) => {
+		// 	if (res.data.code == 200) {
+		// 		ElMessage.success('Import succeeded');
+		// 		handleQuery();
+		// 		loading3.value = false;
+		// 	} else {
+		// 		ElMessage.error(res.message); // + res.message
+		// 		loading3.value = false;
+		// 	}
+		// });
 	} else {
-		ImportUAE(formData).then((res: any) => {
-			if (res.data.code == 200) {
-				ElMessage.success('Import succeeded');
-				handleQuery();
-			} else {
-				ElMessage.error(res.message); // + res.message
-			}
-		});
+		axios
+			.post((import.meta.env.VITE_API_URL as any) + `/api/aSINListingTable/importUAE/` + area.value, formData)
+			.then((res) => {
+				if (res.data.code == 200) {
+					ElMessage.success('Import succeeded');
+					handleQuery();
+					loading3.value = false;
+				} else {
+					ElMessage.error(res.message); // + res.message
+					loading3.value = false;
+				}
+
+			});
 	}
-	loading3.value = false;
+
 }
 //选中的数据
 function handleSelectionChange(val: any) {

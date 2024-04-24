@@ -12,7 +12,7 @@ import {
 	AmazonProductPricebaseAdjustPriceSA,
 	AmazonProductBatchDeleteSA,
 } from '/@/api/modular/main/amazonPagePriceRecord';
-
+import { useDebounce } from '/@/utils/debounce';
 // const editDialogRef = ref();
 const loading = ref(false);
 const tableData = ref<any>([]);
@@ -90,7 +90,7 @@ const loading1 = ref(false);
 const loading2 = ref(false);
 const selectedRowKeys = ref([]);
 //导入
-const Amazonimport = (file: any) => {
+const Amazonimport = useDebounce((file: any) => {
 	loadingUp.value = true;
 	const formData = new FormData();
 	formData.append('file', file.raw);
@@ -103,7 +103,7 @@ const Amazonimport = (file: any) => {
 			ElMessage.error('上传失败：' + res.message);
 		}
 	});
-};
+},500);
 // 导出用户文件
 const AmazonExport = () => {
 	loading1.value = true;

@@ -1,37 +1,32 @@
 <template>
 	<el-form label-width="150" label-position="right" size="large" :model="ImportParams" ref="ruleFormRef">
-		<div style="width: 100%; height: 35px; margin-bottom: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #ffffe0">
+		<div
+			style="width: 100%; height: 35px; margin-bottom: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #ffffe0">
 			<el-text size="20">{{ props.text }}</el-text>
 		</div>
-		<el-form-item
-			v-for="item in props.formList"
-			:label="item.label + '：'"
-			:prop="item.prop"
-			:rules="[
-				{
-					required: true,
-					message: `${item.label}不能为空`,
-					trigger: 'blur',
-				},
-			]"
-		>
-			<el-select
-				v-if="item.type === 'select'"
-				v-model="ImportParams[item?.select]"
-				size="large"
-				style="width: 300px"
-				@focus="(val) => blurItem(val)"
-				@blur="(val) => blurItem(val)"
-				@change="(val) => item?.change(val)"
-			>
-				<el-option v-for="optionItem in item?.selectList" :value="optionItem.value" :label="optionItem.label" :disabled="optionItem?.disabled ?? false"></el-option>
+		<el-form-item v-for="item in props.formList" :label="item.label + '：'" :prop="item.prop" :rules="[
+		{
+			required: true,
+			message: `${item.label}不能为空`,
+			trigger: 'blur',
+		},
+	]">
+			<el-select v-if="item.type === 'select'" v-model="ImportParams[item?.select]" size="large"
+				style="width: 300px" @focus="(val) => blurItem(val)" @blur="(val) => blurItem(val)"
+				@change="(val) => item?.change(val)">
+				<el-option v-for="optionItem in item?.selectList" :value="optionItem.value" :label="optionItem.label"
+					:disabled="optionItem?.disabled ?? false"></el-option>
 			</el-select>
-			<el-date-picker v-else-if="item.type === 'datePicker'" style="width: 300px" size="large" v-model="ImportParams.Time" :type="item?.dateType" placeholder="请选择" />
+			<el-date-picker v-else-if="item.type === 'datePicker'" style="width: 300px" size="large"
+				v-model="ImportParams.Time" :type="item?.dateType" placeholder="请选择" />
 		</el-form-item>
 		<el-form-item>
-			<el-button :loading="ImportsSalesloading" style="width: 65px; height: 32px; margin-left: 150px; margin-right: 20px" type="info" @click="close">取消</el-button>
-			<el-upload ref="uploadRef" :disabled="ifdisabled" :on-change="Imports" :multiple="false" action="#" :show-file-list="false" :auto-upload="false" name="file">
-				<el-button style="width: 65px; height: 32px" :loading="ImportsSalesloading" type="primary">确定</el-button>
+			<el-button style="width: 65px; height: 32px; margin-left: 150px; margin-right: 20px" type="info"
+				@click="close">取消</el-button>
+			<el-upload ref="uploadRef" :disabled="ifdisabled" :on-change="Imports" :multiple="false" action="#"
+				:show-file-list="false" :auto-upload="false" name="file">
+				<el-button style="width: 65px; height: 32px" :loading="ImportsSalesloading"
+					type="primary">确定</el-button>
 			</el-upload>
 		</el-form-item>
 		<errorDialog ref="errorDialogRef" :title="errorDTitle" />
@@ -42,6 +37,7 @@
 import { ref, onMounted, watch } from 'vue';
 import { ElMessageBox, ElMessage } from 'element-plus';
 import errorDialog from '/@/views/business/procurements/InventoryManagement/component/error_table.vue';
+import { useDebounce } from '/@/utils/debounce';
 /**
  * 和弹窗组件el-dialog配套使用，外部弹窗控制大小，本组件主要用于详情，带查询表格展示，不带弹窗
  * importDialog 配套参数
@@ -86,7 +82,7 @@ const blurItem = (val) => {
 	}
 };
 // 导入
-const Imports = (file: any) => {
+const Imports = useDebounce((file: any) => {
 	ImportParams.value.TimeQuantum = props?.weeks ?? '';
 	const dateObject = new Date(ImportParams.value?.Time ?? null);
 	const options = { year: 'numeric', month: 'long' };
@@ -94,6 +90,7 @@ const Imports = (file: any) => {
 	let obj = {};
 	// 格式化日期
 	ImportsSalesloading.value = true;
+	ifdisabled.value = true;
 	const formData = new FormData();
 	formData.append('file', file.raw);
 	if (props.type === 'inventoryManagement') {
@@ -118,6 +115,7 @@ const Imports = (file: any) => {
 		.importsInterface(formData, obj)
 		.then((res: any) => {
 			ImportsSalesloading.value = false;
+			ifdisabled.value = false;
 			if (res.data.code == 200) {
 				if (res.data.result == null) {
 					ElMessage.success('导入成功');
@@ -130,6 +128,7 @@ const Imports = (file: any) => {
 				}
 			} else {
 				ImportsSalesloading.value = false;
+				ifdisabled.value = false;
 				ElMessage.error('导入失败'); // + res.message
 			}
 			emit('close', false);
@@ -137,14 +136,15 @@ const Imports = (file: any) => {
 		})
 		.catch(() => {
 			ImportsSalesloading.value = false;
+			ifdisabled.value = false;
 		});
-};
+}, 500);
 
-onMounted(()=>{
-	if(props.formList?.length !== ImportParams.value.length){
-		ifdisabled.value = true
-	}else{
-		ifdisabled.value = false
+onMounted(() => {
+	if (props.formList?.length !== ImportParams.value.length) {
+		ifdisabled.value = true;
+	} else {
+		ifdisabled.value = false;
 	}
-})
+});
 </script>

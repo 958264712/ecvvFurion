@@ -37,18 +37,14 @@
 		<el-card class="full-table" shadow="hover" style="margin-top: 8px">
 			<el-form-item><el-button @click="opendialog" type="primary"> 导入 </el-button></el-form-item>
 			<el-dialog v-model="dialogFormVisible" title="DFInventoryBatch导入" :width="600" center>
-				<importDialog :type="importType" text="选择站点，点击'确定'后，选择需要导入的文件，将导入该数据"  :formList="importFormList" :importsInterface="Import" @close="importClose" @importQuery="importQuery" />
-				<!-- <span class="itemlabel">站点：</span>
-				<el-select v-model="site" size="large">
-					<el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"> </el-option>
-				</el-select>
-				<template #footer>
-					<span class="dialog-footer">
-						<el-upload :on-change="Imports" :multiple="false" action="#" :show-file-list="false" :auto-upload="false" name="file">
-							<el-button :loading="importloading" type="primary" size="default">导入数据</el-button>
-						</el-upload>
-					</span>
-				</template> -->
+				<importDialog
+					:type="importType"
+					text="选择站点，点击'确定'后，选择需要导入的文件，将导入该数据"
+					:formList="importFormList"
+					:importsInterface="Import"
+					@close="importClose"
+					@importQuery="importQuery"
+				/>
 			</el-dialog>
 			<el-table :data="tableData" style="width: 100%" v-loading="loading" tooltip-effect="light" row-key="id" border="">
 				<el-table-column type="index" label="序号" width="55" align="center" />
@@ -79,7 +75,7 @@
 			<editDialog ref="editDialogRef" :title="editDFInventory_BatchTitle" @reloadTable="handleQuery" />
 		</el-card>
 		<el-dialog v-model="visible" title="DFInventory List" @close="close" width="1000px">
-			<InfoDataDialog :id="dFInventoryBatchId" idName="dFInventoryBatchId" :dataList="dataList" :ifClose="ifClose"  :pointerface="pageDFInventory" :formList="formList" />
+			<InfoDataDialog :id="dFInventoryBatchId" idName="dFInventoryBatchId" :dataList="dataList" :ifClose="ifClose" :pointerface="pageDFInventory" :formList="formList" />
 			<!-- <dFInventory :id="dFInventoryBatchId"></dFInventory> -->
 		</el-dialog>
 	</div>
@@ -95,7 +91,7 @@ import dFInventory from './component/dFInventory.vue';
 import { pageDFInventory } from '/@/api/operation/dFInventory';
 import { pageDFInventory_Batch, deleteDFInventory_Batch, Import } from '/@/api/operation/dFInventory_Batch';
 import { getDictDataList } from '/@/api/system/admin';
-import InfoDataDialog from '/@/components/infoDataDialog/index.vue'
+import InfoDataDialog from '/@/components/infoDataDialog/index.vue';
 import importDialog from '/@/components/importDialog/index.vue';
 
 const getsiteData = ref<any>([]);
@@ -113,45 +109,44 @@ const editDFInventory_BatchTitle = ref('');
 // infoDataDialog 配套参数
 const formList = ref<any>([
 	{
-		label:'ASIN',
-		prop:'aSIN'
-	}
-])
+		label: 'ASIN',
+		prop: 'aSIN',
+	},
+]);
 const dataList = ref<any>([
 	{
-		label:'SKU',
-		prop:'sku'
+		label: 'SKU',
+		prop: 'sku',
 	},
 	{
-		label:'UPC',
-		prop:'upc'
+		label: 'UPC',
+		prop: 'upc',
 	},
 	{
-		label:'ASIN',
-		prop:'asin'
+		label: 'ASIN',
+		prop: 'asin',
 	},
 	{
-		label:'Title',
-		prop:'title'
+		label: 'Title',
+		prop: 'title',
 	},
 	{
-		label:'Warehouse',
-		prop:'warehouse'
+		label: 'Warehouse',
+		prop: 'warehouse',
 	},
 	{
-		label:'Warehouse name',
-		prop:'warehouseName'
+		label: 'Warehouse name',
+		prop: 'warehouseName',
 	},
 	{
-		label:'AvailableUnits',
-		prop:'availableUnits'
+		label: 'AvailableUnits',
+		prop: 'availableUnits',
 	},
 	{
-		label:'Status',
-		prop:'status'
+		label: 'Status',
+		prop: 'status',
 	},
-	
-])
+]);
 var dFInventoryBatchId = ref<number>(0);
 const importloading = ref(false);
 const dialogFormVisible = ref(false);
@@ -193,14 +188,13 @@ const importFormList = ref<any>([
 		select: 'Site',
 		selectList: options.value,
 	},
-
 ]);
-const importClose = (bol:boolean) => {
-	dialogFormVisible.value = bol
-}
-const importQuery = ()=>{
-	handleQuery()
-}
+const importClose = (bol: boolean) => {
+	dialogFormVisible.value = bol;
+};
+const importQuery = () => {
+	handleQuery();
+};
 // 导入
 const Imports = (file: any) => {
 	if (site.value == '') {

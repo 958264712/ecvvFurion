@@ -8,7 +8,17 @@
 				<el-form-item>
 					<el-button-group>
 						<el-button type="primary" icon="ele-Search" @click="handleQuery"> 查询 </el-button>
-						<el-button icon="ele-Refresh" @click="() => {queryParams = { poFulfillingOrderBatchId: props.id };handleQuery()}"> 重置 </el-button>
+						<el-button
+							icon="ele-Refresh"
+							@click="
+								() => {
+									queryParams = { poFulfillingOrderBatchId: props.id };
+									handleQuery();
+								}
+							"
+						>
+							重置
+						</el-button>
 					</el-button-group>
 				</el-form-item>
 			</el-form>
@@ -26,8 +36,8 @@
 				<el-table-column align="center" prop="latestQuantities" label="最近一批在途数量" width="130" />
 				<el-table-column align="center" prop="warehouseArrivalDate" label="预计到仓日期" width="135" />
 				<el-table-column align="center" prop="latestDate" label="最迟履单日期" width="155" />
-				<!-- <el-table-column align="center" prop="sellableOnHandUnits" label="可履单数量" width="135" /> -->
-				<!-- <el-table-column align="center" prop="unsellableOnHandInventory" label="提示约仓时间" width="120" /> -->
+				<!-- <el-table-column align="center" prop="confirmQuantity" label="可履单数量" width="135" />
+				<el-table-column align="center" prop="bookingTime" label="提示约仓时间" width="120" /> -->
 			</el-table>
 			<el-pagination
 				v-model:currentPage="tableParams.page"
@@ -47,8 +57,7 @@
 <script lang="ts" setup="" name="amzinventory">
 import { ref, watch } from 'vue';
 import { ElMessageBox, ElMessage } from 'element-plus';
-import {  getPoFulfillingOrdersList } from '/@/api/modular/main/poFulfillingOrdersData';
-
+import { getPoFulfillingOrdersList } from '/@/api/modular/main/poFulfillingOrdersData';
 
 const props = defineProps(['id']);
 const editDialogRef = ref();
@@ -70,7 +79,6 @@ const handleQuery = async () => {
 	tableParams.value.total = res.data.result?.total;
 	loading.value = false;
 };
-
 
 // 改变页面容量
 const handleSizeChange = (val: number) => {

@@ -435,19 +435,20 @@ const openEdit = async (id: any, row): void => {
 		disabledList.value.splice(index, 1);
 	} else {
 		if (id > 0) {
-			var obj = {};
-			if (row.invoicedStatus?.length) {
+			let obj = {};
+			if (row.invoicedStatus>=0) {
 				obj.invoicedStatus = row.invoicedStatus;
 			}
-			if (row.contractedWarehouseTime?.length) {
+			if (row.contractedWarehouseTime) {
 				obj.contractedWarehouseTime = moment(row.contractedWarehouseTime).format();
 			}
-			if (row.actualDate?.length) {
+			if (row.actualDate) {
 				obj.actualDate = moment(row.actualDate).format();
 			}
-			if (row.state?.length) {
+			if (row.state >= 0) {
 				obj.state = row.state;
 			}
+			obj.id = row.id
 			newUpdate(Object.assign(obj))
 				.then((res) => {
 					if (res.data.type === 'success') {

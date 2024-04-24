@@ -83,8 +83,8 @@ handleQuery();
       </el-form>
     </el-card>
     <el-card class="full-table" shadow="hover" style="margin-top: 8px">
-      <el-table :data="tableData" size="lagre" style="width: 100%" v-loading="loading" tooltip-effect="light" row-key="id"
-        border="">
+      <el-table :data="tableData" size="lagre" style="width: 100%" v-loading="loading" tooltip-effect="light"
+        row-key="id" border="">
         <el-table-column type="index" label="序号" width="55" align="center" />
         <el-table-column prop="asin" label="ASIN" align="center" width="150" show-overflow-tooltip="" />
         <el-table-column prop="sku" label="Sku" align="center" width="150" show-overflow-tooltip="" />
@@ -104,8 +104,10 @@ handleQuery();
         <el-table-column prop="buyBoxOwner" label="BuyBoxOwner" align="center" width="150" show-overflow-tooltip="" />
         <el-table-column prop="buyboxSum" label="BuyboxSum" align="center" sortable width="150"
           show-overflow-tooltip="" />
-        <el-table-column prop="currency" label="Currency" align="center" sortable width="150" show-overflow-tooltip="" />
-        <el-table-column prop="itemCost" label="ItemCost" align="center" sortable width="150" show-overflow-tooltip="" />
+        <el-table-column prop="currency" label="Currency" align="center" sortable width="150"
+          show-overflow-tooltip="" />
+        <el-table-column prop="itemCost" label="ItemCost" align="center" sortable width="150"
+          show-overflow-tooltip="" />
         <el-table-column prop="listPrice" label="ListPrice" align="center" sortable width="150"
           show-overflow-tooltip="" />
         <el-table-column prop="maxItemCost" label="MaxItemCost" align="center" sortable width="150"
@@ -127,19 +129,17 @@ handleQuery();
           show-overflow-tooltip="" />
         <el-table-column label="操作" width="140" align="center" fixed="right" show-overflow-tooltip="">
           <template #default="scope">
-            <el-button icon="ele-Delete" size="small" text="" type="primary" @click="delAmazonPagePriceRecord(scope.row)">
+            <el-button icon="ele-Delete" size="small" text="" type="primary"
+              @click="delAmazonPagePriceRecord(scope.row)">
               删除 </el-button>
           </template>
         </el-table-column>
       </el-table>
       <el-pagination v-model:currentPage="tableParams.page" v-model:page-size="tableParams.pageSize"
-        :total="tableParams.total" :page-sizes="[50, 100, 500, 1000]" small="" background="" @size-change="handleSizeChange"
-        @current-change="handleCurrentChange" layout="total, sizes, prev, pager, next, jumper" />
+        :total="tableParams.total" :page-sizes="[50, 100, 500, 1000]" small="" background=""
+        @size-change="handleSizeChange" @current-change="handleCurrentChange"
+        layout="total, sizes, prev, pager, next, jumper" />
       <!-- <editDialog ref="editDialogRef" :title="editAmazonPagePriceRecordTitle" @reloadTable="handleQuery" /> -->
     </el-card>
   </div>
 </template>
-
-
-
-
