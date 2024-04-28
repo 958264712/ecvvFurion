@@ -20,6 +20,7 @@ const loading = ref<any>(false);
 const loading1 = ref<any>(false);
 const loading2 = ref<any>(false);
 const loading3 = ref<any>(false);
+const loading4 = ref<any>(false);
 const optionsList = ref<any>([
 	{
 		label: '全部',
@@ -141,7 +142,7 @@ const ScheduledFulfillmentList = async (site:string,type:number,item:any) => {
 }
 const AppointmentList = async (site:string,type:number,item:any) => {
 	if(type === 1){
-		loading.value = true
+		loading4.value = true
 		site = queryParams.value.aThisWeek
 		if(queryParams.value.aThisWeek === '全部'){
 			site = null
@@ -157,7 +158,7 @@ const AppointmentList = async (site:string,type:number,item:any) => {
 		if (res.data.type === 'success') {
 			if(item === 'tableData'){
 				tableData.value = res.data.result ?? []
-				loading.value = false
+				loading4.value = false
 			}else{
 				tableData2.value = res.data.result ?? []
 				loading2.value = false
@@ -236,7 +237,7 @@ AppointmentList(null,2,'tableData2')
 						</el-select>
 					</div>
 					<div style="height: 350px; margin-top: 20px">
-						<el-table :data="tableData" style="height: 100%" v-loading="loading" tooltip-effect="light" row-key="id" border>
+						<el-table :data="tableData" style="height: 100%" v-loading="loading4" tooltip-effect="light" row-key="id" border>
 							<el-table-column v-for="(item, index) in TableList" :key="index" :prop="item.dataIndex" :label="item.title_CN"  align="center"  show-overflow-tooltip=""/>
 						</el-table>
 					</div>

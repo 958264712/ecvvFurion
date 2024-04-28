@@ -33,7 +33,7 @@
 							<el-button type="primary" @click="handleConfirm(1)">确定</el-button>
 						</div>
 						<template #reference>
-							<el-input v-model="queryParams.erpAndGoodsName" clearable="" placeholder="请输入,点击展开可输多个" @clear="clearObj" @blur="clearObj">
+							<el-input v-model="erpAndGoodsName" clearable="" placeholder="请输入,点击展开可输多个" @clear="clearObj" @blur="clearObj">
 								<template #suffix>
 									<el-icon class="el-input__icon"
 										><ArrowDownBold @click="showTextarea(1, visibleTextarea1)" v-if="!visibleTextarea1" /><ArrowUpBold @click="showTextarea(1, visibleTextarea1)" v-else
@@ -68,7 +68,7 @@
 							<el-button type="primary" @click="handleConfirm(2)">确定</el-button>
 						</div>
 						<template #reference>
-							<el-input v-model="queryParams.aSIN" clearable="" placeholder="请输入,点击展开可输多个" @clear="clearObj" @blur="clearObj">
+							<el-input v-model="aSIN" clearable="" placeholder="请输入,点击展开可输多个" @clear="clearObj" @blur="clearObj">
 								<template #suffix>
 									<el-icon class="el-input__icon"
 										><ArrowDownBold @click="showTextarea(2, visibleTextarea2)" v-if="!visibleTextarea2" /><ArrowUpBold @click="showTextarea(2, visibleTextarea2)" v-else
@@ -116,18 +116,7 @@
 				<el-form-item>
 					<el-button-group>
 						<el-button type="primary" icon="ele-Search" @click="handleQuery"> 查询 </el-button>
-						<el-button
-							icon="ele-Refresh"
-							@click="
-								() => {
-									queryParams = { country: 'UAE' };
-									Session.set('queryObj', {});
-									handleQuery();
-								}
-							"
-						>
-							重置
-						</el-button>
+						<el-button icon="ele-Refresh" @click="reset"> 重置 </el-button>
 					</el-button-group>
 				</el-form-item>
 			</el-form>
@@ -252,6 +241,8 @@ const exportVisible = ref(false);
 const ifClose = ref(false);
 const visibleTextarea1 = ref(false);
 const visibleTextarea2 = ref(false);
+const erpAndGoodsName = ref('');
+const aSIN = ref('');
 const Typevalue = ref<any>('UAE');
 const timer = ref<any>();
 
@@ -848,11 +839,11 @@ const handleConfirm = (type) => {
 	});
 	if (type === 1) {
 		queryParams.value.erpSkuList = arr;
-		queryParams.value.erpAndGoodsName = arr + '';
+		erpAndGoodsName.value = arr + '';
 		visibleTextarea1.value = false;
 	} else {
 		queryParams.value.aSINList = arr;
-		queryParams.value.aSIN = arr + '';
+		aSIN.value = arr + '';
 		visibleTextarea2.value = false;
 	}
 	// handleQuery()
@@ -865,6 +856,14 @@ const handleCurrentChange1 = (val: number) => {
 };
 const clearObj = () => {
 	Session.set('queryObj', { ifquery: true });
+};
+// 重置
+const reset = () => {
+	queryParams.value = { country: 'UAE' };
+	aSIN.value = '';
+	erpAndGoodsName.value = '';
+	Session.set('queryObj', {});
+	handleQuery();
 };
 // 查询操作
 const handleQuery = async () => {
@@ -882,14 +881,20 @@ const handleQuery = async () => {
 	}
 	loading.value = true;
 	// 工作人员选中手动清除，所以注释
-	// if (queryParams.value.erpSkuList?.length > 0) {
-	// 	queryParams.value.erpTextArea = '';
-	// 	queryParams.value.erpAndGoodsName = '';
-	// }
-	// if (queryParams.value.aSINList?.length > 0) {
-	// 	queryParams.value.asinTextArea = '';
-	// 	queryParams.value.aSIN = '';
-	// }
+	if (queryParams.value.erpSkuList?.length > 0) {
+		queryParams.value.erpTextArea = '';
+		queryParams.value.erpAndGoodsName = '';
+	} else {
+		queryParams.value.erpAndGoodsName = erpAndGoodsName.value;
+		queryParams.value.erpSkuList = null;
+	}
+	if (queryParams.value.aSINList?.length > 0) {
+		queryParams.value.asinTextArea = '';
+		queryParams.value.aSIN = '';
+	} else {
+		queryParams.value.aSIN = aSIN.value;
+		queryParams.value.aSINList = null;
+	}
 	var res = await AsinDataPage(Object.assign(queryParams.value, tableParams.value));
 	tableData.value = res.data.result?.items ?? [];
 	tableParams.value.total = res.data.result?.total;
@@ -926,10 +931,12 @@ watch(
 				return item.trim();
 			}
 		});
-		if (arr[0] !== undefined) {
-			queryParams.value.erpSkuList = arr;
-		} else {
-			queryParams.value.erpSkuList = [];
+		if(arr?.length > 0){
+			if (arr[0] !== undefined) {
+				queryParams.value.erpSkuList = arr;
+			} else {
+				queryParams.value.erpSkuList = null
+			}
 		}
 	}
 );
@@ -944,10 +951,12 @@ watch(
 				return item.trim();
 			}
 		});
-		if (arr[0] !== undefined) {
-			queryParams.value.aSINList = arr;
-		} else {
-			queryParams.value.aSINList = [];
+		if(arr?.length > 0){
+			if (arr[0] !== undefined) {
+				queryParams.value.aSINList = arr;
+			} else {
+				queryParams.value.aSINList = null
+			}
 		}
 	}
 );

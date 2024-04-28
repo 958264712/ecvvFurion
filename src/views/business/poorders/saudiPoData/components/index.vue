@@ -607,19 +607,9 @@ handleQuery();
 				<el-button type="primary">Export</el-button>
 				<template #dropdown>
 					<el-dropdown-menu>
-						<el-dropdown-item>
-							<el-dropdown placement="right-start">
-								PO Picking List
-								<template #dropdown>
-									<el-dropdown-menu>
-										<el-dropdown-item @click="multipleExport">Export Section</el-dropdown-item>
-										<el-dropdown-item @click="multipleExport">Export All </el-dropdown-item>
-									</el-dropdown-menu>
-								</template>
-							</el-dropdown>
-						</el-dropdown-item>
-						<el-dropdown-item> PO Panel </el-dropdown-item>
-						<el-dropdown-item @click="showModal2"> 导出历史记录 </el-dropdown-item>
+						<el-dropdown-item @click="multipleExport">Export PO </el-dropdown-item>
+						<!-- <el-dropdown-item> PO Panel </el-dropdown-item> -->
+						<el-dropdown-item @click="showModal2"> Export History </el-dropdown-item>
 					</el-dropdown-menu>
 				</template>
 			</el-dropdown>

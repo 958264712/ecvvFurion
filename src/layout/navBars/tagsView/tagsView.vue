@@ -807,15 +807,15 @@ watch(
 </style>
 <style>
 .popover.el-popper.is-light {
-	background: red !important;
+	background: #de2910 !important;
 	inset: 90px auto auto calc(50% - 130px) !important;
 }
 //修改下面的小三角，属性名根据组件的placement位置做相应修改
 .popover .popper__arrow {
-	background: red !important;
+	background: #de2910 !important;
 }
 .popover.el-popper .el-popper__arrow::before {
-	border-top-color: red !important;
-	background: red !important;
+	border-top-color: #de2910 !important;
+	background: #de2910 !important;
 }
 </style>

@@ -75,6 +75,12 @@ const TableData = ref<any>([
 		fixed: false,
 	},
 	{
+		titleCN: '总净重KG',
+		dataIndex: 'totalNetWeightKG',
+		checked: true,
+		fixed: false,
+	},
+	{
 		titleCN: '整箱毛重KG',
 		dataIndex: 'fclGrossWeightKG',
 		checked: true,

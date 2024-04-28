@@ -104,8 +104,8 @@ handleQuery();
 			<div class="settingf">历史记录</div>
 			<el-table :data="tableData" style="height: 100%" v-loading="loading" tooltip-effect="light" row-key="id" @selection-change="(selection: any) => selectChange(selection)">
 				<el-table-column sortable prop="site" label="站点" align="center" show-overflow-tooltip="" />
-				<el-table-column prop="beforeModificationRateStr" label="修改前毛利率（%）" align="center" />
-				<el-table-column prop="afterModificationRateRateStr" label="修改后毛利率（%）" align="center" />
+				<el-table-column prop="beforeModificationRateStr" label="修改前佣金（%）" align="center" />
+				<el-table-column prop="afterModificationRateRateStr" label="修改后佣金（%）" align="center" />
 				<el-table-column prop="operationTime" label="操作时间 " align="center" />
 				<el-table-column prop="creator" label="操作人 " align="center" />
 			</el-table>
