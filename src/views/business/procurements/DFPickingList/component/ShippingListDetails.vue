@@ -14,10 +14,10 @@
 							<el-button type="primary" icon="ele-Search" @click="handleQuery"
 								v-auth="'uAE_ProcurementDetails:page'"> 查询 </el-button>
 							<el-button icon="ele-Refresh" @click="() => {
-								queryParams = {};
-								handleQuery();
-							}
-								">
+			queryParams = {};
+			handleQuery();
+		}
+			">
 								重置
 							</el-button>
 						</el-button-group>
@@ -29,7 +29,8 @@
 					@sort-change="sortfun" @selection-change="handleSelectionChange"
 					:header-cell-style="customHeaderCellStyle" :cell-style="customCellStyle" row-key="id" border="">
 					<el-table-column type="selection" width="55" class-name="custom-header" />
-					<el-table-column prop="images" label="图片" width="120" align="center" sortableshow-overflow-tooltip="">
+					<el-table-column prop="images" label="图片" width="120" align="center"
+						sortableshow-overflow-tooltip="">
 						<template #default="scope">
 							<el-image style="width: 40px; height: 40px"
 								:src="'https://raw.githubusercontent.com/okbuynow/OKPIC/main/50x50/' + scope.row.erpsku + '.jpg'"
@@ -55,7 +56,13 @@
 							{{ scope.row.trackingID }}
 						</div>
 						<span v-else>{{ scope.row.trackingID }}</span> -->
-							<span>{{ scope.row.trackingID }}</span>
+							<div style="width:150px;height:60px;text-align: center; line-height: 60px;"
+								@dblclick="openEdit(scope.row)">
+								<el-input style="" lass="custom-input" v-if="scope.row.IsEdit" type="text"
+									v-model="scope.row.trackingID" clearable="" @keyup.enter.native="keyDown" />
+								<div v-else>{{ scope.row.trackingID }}</div>
+							</div>
+							<!-- <span>{{ scope.row.trackingID }}</span> -->
 						</template>
 					</el-table-column>
 				</el-table>
@@ -74,10 +81,10 @@ import { service } from '/@/utils/request';
 import axios from 'axios';
 import { ElMessageBox, ElMessage, ElNotification } from 'element-plus';
 //import { formatDate } from '/@/utils/formatTime';
-import { DFShippingListInfo } from '/@/api/modular/main/BasicDataManagement.ts';
+import { DFShippingListInfo, updateTrackingID } from '/@/api/modular/main/BasicDataManagement.ts';
 const loading = ref(false);
 const tableData = ref<any>([]);
-
+let IsEdit = ref<any>(false);
 const queryParams = ref<inventoryParamsType>({});
 const tableParams = ref({
 	pageNo: 1,
@@ -122,13 +129,32 @@ const handleCurrentChange = (val: number) => {
 	tableParams.value.pageNo = val;
 	handleQuery();
 };
-
+//打开编辑
+const openEdit = (row: any) => {
+	if (!IsEdit.value) {
+		row.IsEdit = true;
+		IsEdit.value = true;
+	}
+}
+const keyDown = (e: any) => {
+	if (e.keyCode == 13 || e.keyCode == 100) {
+		Seva();
+	}
+};
+const Seva = async () => {
+	const Shipping = tableData.value.find((obj: any) => obj.IsEdit === true);
+	await updateTrackingID(Shipping);
+	ElMessage.success('修改成功');
+	IsEdit.value = false;
+	Shipping.IsEdit = false;
+}
 // 查询操作
 const handleQuery = async () => {
 	loading.value = true;
 	var res = await DFShippingListInfo(Object.assign(queryParams.value, tableParams.value, ruleForm.value));
 	tableData.value = res.data.result?.items ?? [];
 	tableParams.value.total = res.data.result?.total;
+	IsEdit.value = false;
 	loading.value = false;
 };
 //选中的数据
@@ -183,5 +209,9 @@ defineExpose({ openDialog });
 	font-size: 16px;
 	width: 20%;
 	text-align: right;
+}
+
+:deep(.el-table .cell) {
+	padding: 0;
 }
 </style>

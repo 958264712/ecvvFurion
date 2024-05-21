@@ -84,7 +84,7 @@
 									clearable="" placeholder="请输入交仓地址" />
 							</el-form-item>
 							<el-form-item label="开船／起飞日期" style="width: 90%">
-								<el-date-picker :disabled="!compile" v-model="collectionOrderInfo.actualArrivalDate"
+								<el-date-picker @change="actualArrivalDateChange" :disabled="!compile" v-model="collectionOrderInfo.actualArrivalDate"
 									type="date" placeholder="请选择日期" />
 							</el-form-item>
 							<el-form-item label="国际物流支付方" style="width: 90%">
@@ -2136,6 +2136,28 @@ function departureDateChange(val: any) {
 		}
 	}
 }
+//起飞开船日期改变获得预计送仓日期
+function actualArrivalDateChange(val: any) {
+	if (collectionOrderInfo.shippingMethod) {
+		var addDay =
+			collectionOrderInfo.shippingMethod == '海运'
+				? collectionOrderInfo.destination == '迪拜'
+					? 35
+					: 40
+				: collectionOrderInfo.shippingMethod == '空运'
+					? collectionOrderInfo.destination == '迪拜'
+						? 6
+						: 7
+					: 0;
+		if (addDay) {
+			var date1 = new Date(val);
+			new Date(date1.setDate(date1.getDate() + addDay)).toLocaleDateString();
+			collectionOrderInfo.estimatedArrivalDate = date1;
+		}
+	}
+}
+
+
 </script>
 
 <style scoped lang="less">

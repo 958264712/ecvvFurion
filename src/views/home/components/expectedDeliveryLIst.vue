@@ -27,14 +27,17 @@ handleQuery()
 <template>
     <el-table :data="tableData" height="350" style="width: 100%" v-loading="loading" tooltip-effect="light" row-key="id"
         border="">
-        <el-table-column type="index" label="序号" width="60" align="center" sortable show-overflow-tooltip="" />
+        <el-table-column type="index" label="序号" width="40" align="center" sortable show-overflow-tooltip="" />
         <el-table-column prop="DocumentNo" label="单据编号" align="center" sortable show-overflow-tooltip="">
             <template #default="scope">
                 <el-button size="small" text type="primary" @click="examine(scope)"> {{ scope.row.DocumentNo }}
                 </el-button>
             </template>
         </el-table-column>
+        <el-table-column prop="InWareHouseNo" label="货代入仓号" align="center" sortable width="105"
+            show-overflow-tooltip="" />
         <el-table-column prop="Destination" label="目的地" align="center" sortable show-overflow-tooltip="" />
+
         <el-table-column prop="ShippingMethod" label="运输方式" align="center" sortable show-overflow-tooltip="" />
         <el-table-column prop="DepartureDate" label="出发日期" align="center" sortable show-overflow-tooltip="" />
         <el-table-column prop="EstimatedDeliveryDate" label="预计到仓" align="center" sortable show-overflow-tooltip="" />

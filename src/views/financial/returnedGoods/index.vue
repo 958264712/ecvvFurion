@@ -1,15 +1,9 @@
-<script lang="ts" setup name="packingInformation">
+<script lang="ts" setup name="returned_goods">
 import { ref, onMounted, watch } from 'vue';
-import { ElMessageBox, ElMessage, ElNotification } from 'element-plus';
 import { returnedGoods, exportReturnedGoods } from '/@/api/modular/main/financial.ts';
 import other from '/@/utils/other.ts';
-import moment from 'moment';
-import { SysCodeGenConfigApi, SysConstApi, SysDictDataApi, SysDictTypeApi, SysEnumApi } from '/@/api-services/api';
-import { getAPI } from '/@/utils/axios-utils';
-
-const tagoptions = ref<any>([]);
 const tableData: any[] = ref([]);
-const queryParams = ref<any>({Site:''});
+const queryParams = ref<any>({Site:'',StartTime:'',EnbTime:''});
 const tableParams = ref({
 	page: 1,
 	pageSize: 50,
@@ -21,6 +15,7 @@ const selectedRows = ref([]);
 const selectedRowKeys = ref([]);
 const selectedRowsites = ref([]);
 const selectedRowtimes = ref([]);
+const selectExport = ref([]);
 const area = ref('CN');
 const TableData = ref<any>([
 	{
@@ -42,7 +37,7 @@ const TableData = ref<any>([
 		fixed: false,
 	},
 	{
-		titleCN: '站点',
+		titleCN: '销售平台',
 		dataIndex: 'site',
 		checked: true,
 		fixed: false,
@@ -87,32 +82,19 @@ const getAppPage = async (): void => {
 	loading.value = false;
 };
 
-//重置
-const resetfun = (): void => {
-	Object.keys(queryParams).forEach((key: any) => {
-		queryParams[key] = '';
-	});
-	getAppPage();
-};
 onMounted(() => {
 	getAppPage();
 });
 
-// 改变页面容量
-const handleSizeChange = (val: number): void => {
-	tableParams.value.pageSize = val;
-	getAppPage();
-};
-
 // 获取keys
 const selectChange = (selection: any) => {
-	selectedRowKeys.value = [];
-	selectedRows.value = [];
-	selectedRows.value = selection;
+	selectExport.value.splice(0, selectExport.value.length);
 	selection.map((item: any) => {
-		selectedRowKeys.value.push(item.asin);
-		selectedRowsites.value.push(item.site);
-		selectedRowtimes.value.push(item.returnTime);
+		selectExport.value.push({
+			ArrASIN: item.asin,
+			rowSite: item.site,
+			rowTime: item.returnTime
+		});
 	});
 };
 // 改变页码序号
@@ -123,7 +105,7 @@ const handleCurrentChange = (val: number): void => {
 // 导出选中
 const SelectedExport = async (coltype) => {
 	cardLoading.value = true;
-	await exportReturnedGoods(Object.assign({ArrASIN:selectedRowKeys.value,rowSite:selectedRowsites.value,rowTime:selectedRowtimes.value,type:1},queryParams.value)).then((res) => {
+	await exportReturnedGoods(Object.assign({type:1,selectExports:selectExport.value},queryParams.value)).then((res) => {
 		cardLoading.value = false;
 		other.downloadfile(res);
 	});
@@ -143,10 +125,11 @@ const AllExport = async (coltype) => {
 	<div class="collectionOrderInfo-container">
 		<el-card shadow="hover" :body-style="{ paddingBottom: '0' }">
 			<el-form :model="queryParams" :inline="true">
-				<el-form-item label="站点">
+				<el-form-item label="销售平台">
 				<el-select clearable="" @change="getAppPage()" v-model="queryParams.Site">
-					<el-option value="UAE" label="UAE"></el-option>
-					<el-option value="SA" label="SA"></el-option>
+					<el-option value="UAE-SC" label="UAE-SC"></el-option>
+					<el-option value="UAE-SHOWAY" label="UAE-SHOWAY"></el-option>
+					<el-option value="SA-DDP AE" label="SA-DDP AE"></el-option>
 				</el-select>
 			</el-form-item>
 			<el-form-item label="退款时间">
@@ -162,7 +145,10 @@ const AllExport = async (coltype) => {
 					<el-button-group>
 						<el-button v-auth="'shippingDetails:page'" type="primary" icon="ele-Search"
 							@click="getAppPage()" style="width: 70px; margin-right: 2px"> 查询 </el-button>
-						<el-button icon="ele-Refresh" @click="resetfun()" style="width: 70px; margin-right: 2px"> 重置
+						<el-button icon="ele-Refresh" @click="() => {
+			queryParams = {};
+			getAppPage();
+		}" style="width: 70px; margin-right: 2px"> 重置
 						</el-button>
 						
 					</el-button-group>
@@ -196,7 +182,7 @@ const AllExport = async (coltype) => {
 			</el-table>
 			<el-pagination v-model:currentPage="tableParams.page" v-model:page-size="tableParams.pageSize"
 				:total="tableParams.total" :page-sizes="[50, 100, 500, 1000]" small="" background=""
-				@size-change="handleSizeChange" @current-change="handleCurrentChange"
+				 @current-change="handleCurrentChange"
 				layout="total, sizes, prev, pager, next, jumper" />
 		</el-card>
 	</div>

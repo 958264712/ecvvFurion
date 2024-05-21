@@ -105,6 +105,8 @@ const Imports = useDebounce((file: any) => {
 		}
 	} else if (props.type === 'costprice_batch' || props.type === 'dFInventory_batch') {
 		formData.append('site', ImportParams.value?.Site ?? null);
+	} else if (props.type === 'purchase_order') {
+		formData.append('Time', formattedDate);
 	} else {
 		formData.append('Site', ImportParams.value?.Site ?? null);
 		formData.append('TimeQuantum', props.weeks);
@@ -141,7 +143,11 @@ const Imports = useDebounce((file: any) => {
 }, 500);
 
 onMounted(() => {
-	if (props.formList?.length !== ImportParams.value.length) {
+	let num = 0
+	for (let key in ImportParams.value) {
+		num++
+	}
+	if (props.formList?.length !== num) {
 		ifdisabled.value = true;
 	} else {
 		ifdisabled.value = false;
