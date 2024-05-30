@@ -99,7 +99,7 @@ import { getDictDataList } from '/@/api/system/admin';
 
 //打开弹窗
 function showModal(id: any) {
-	aMZInventoryBatchId = id;
+	aMZInventoryBatchId.value = id;
 	visible.value = true;
 }
 

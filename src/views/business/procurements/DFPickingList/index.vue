@@ -57,9 +57,9 @@
 							v-auth="'uAE_ProcurementDetails:page'"> 查询 </el-button>
 						<el-button icon="ele-Refresh" @click="() => {
 
-							QueryRole();
-						}
-							">
+			QueryRole();
+		}
+			">
 							重置
 						</el-button>
 					</el-button-group>
@@ -104,12 +104,13 @@
 			</div> -->
 			</div>
 			<el-table :data="tableData" size="lagre" style="width: 100%" v-loading="loading" tooltip-effect="light"
-				:header-cell-style="customHeaderCellStyle" @sort-change="sortfun" @selection-change="handleSelectionChange"
-				:cell-style="customCellStyle" row-key="id" border="">
+				:header-cell-style="customHeaderCellStyle" @sort-change="sortfun"
+				@selection-change="handleSelectionChange" :cell-style="customCellStyle" row-key="id" border="">
 				<el-table-column type="selection" width="55" class-name="custom-header" show-overflow-tooltip="" />
 				<el-table-column prop="fileName" label="拣货单文件名" align="center" sortable show-overflow-tooltip=""
 					width="200" />
-				<el-table-column prop="batchId" label="批次号" align="center" width="95" sortable show-overflow-tooltip="" />
+				<el-table-column prop="batchId" label="批次号" align="center" width="95" sortable
+					show-overflow-tooltip="" />
 				<el-table-column prop="site" label="站点" align="center" sortable show-overflow-tooltip="" />
 				<el-table-column prop="pickingImportTime" label="拣货单导入时间" align="center" sortable width="148"
 					show-overflow-tooltip="" />
@@ -165,8 +166,8 @@
 														@click="ExportDFPickingYes(scope.row)">导出（带图片）</el-dropdown-item>
 												</el-dropdown-menu>
 											</template>
-										</el-dropdown>
-									</el-dropdown-item> -->
+</el-dropdown>
+</el-dropdown-item> -->
 									<el-upload @click="batchId = scope.row.batchId" style="display: block;"
 										:on-change="ImportDFShippingLists" :multiple="false" action="#"
 										:show-file-list="false" :auto-upload="false" name="file">
@@ -181,7 +182,8 @@
 											</span>
 											<template #dropdown>
 												<el-dropdown-menu>
-													<el-dropdown-item @click="exportDFShippingListNo(scope.row)">Export(no
+													<el-dropdown-item
+														@click="exportDFShippingListNo(scope.row)">Export(no
 														images)</el-dropdown-item>
 													<el-dropdown-item
 														@click="exportDFShippingListYes(scope.row)">Export(with
@@ -190,7 +192,8 @@
 											</template>
 										</el-dropdown>
 									</el-dropdown-item>
-									<el-dropdown-item :disabled="disableditem" @click="DFDeliveryExport(scope.row)"> Export
+									<el-dropdown-item :disabled="disableditem" @click="DFDeliveryExport(scope.row)">
+										Export
 										Delivery List
 									</el-dropdown-item>
 								</el-dropdown-menu>
@@ -275,7 +278,7 @@ function Imports(file: any) {
 	});
 }
 function OpendropdownClick(batchId) {
-	;
+	
 	axios.get(import.meta.env.VITE_API_URL as any + '/api/dFShippingList/isTrackingID/' + batchId)
 		.then(res => {
 			disableditem.value = res.data.result;
@@ -349,7 +352,7 @@ function handleSelectionChange(val: any) {
 	});
 }
 //导入发货单
-function ImportDFShippingLists(file: any) {
+const ImportDFShippingLists = async (file: any) => {
 	ElMessage.success('正在导入发货单，请不要重复点击');
 	const formData = new FormData();
 	formData.append('file', file.raw);
@@ -383,14 +386,14 @@ function exportDFShippingListNo(row: any) {
 	exportDFShippingList(formData);
 }
 //导出发货单
-function exportDFShippingList(formData: any) {
+const exportDFShippingList = async (formData: any) => {
 	ElMessage.success('正在生成表格，请不要重复点击');
 	axios.post(import.meta.env.VITE_API_URL as any + `/api/dFShippingList/exportDFShippingList`, formData, {
 		responseType: 'blob' // 将响应解析为二进制数据
 	})
-		.then((data) => {
-			downloadfile(data);
-			if (data.statusText == 'OK') {
+		.then(async (data) => {
+			const dtrue = await downloadfile(data);
+			if (data.statusText == 'OK' && dtrue) {
 				ElNotification({
 					title: '系统提示',
 					message: '导出发货单成功',
@@ -402,6 +405,7 @@ function exportDFShippingList(formData: any) {
 				});
 				handleQuery();
 			}
+
 		})
 		.catch((arr) => {
 			ElNotification({
@@ -416,7 +420,7 @@ function exportDFShippingList(formData: any) {
 		});
 }
 //导出出库单
-function DFDeliveryExport(row: any) {
+const DFDeliveryExport = async (row: any) => {
 	ElMessage.success('正在生成表格，请不要重复点击');
 	const formData = {
 		batchId: row.batchId,
@@ -431,9 +435,9 @@ function DFDeliveryExport(row: any) {
 		// 	data: formData,
 		// 	responseType: 'blob',
 		// })
-		.then((data) => {
-			downloadfile(data);
-			if (data.statusText == 'OK') {
+		.then(async (data) => {
+			const btrue = await downloadfile(data);
+			if (data.statusText == 'OK' && btrue) {
 				ElNotification({
 					title: '系统提示',
 					message: '导出出库单成功',
@@ -456,7 +460,7 @@ function DFDeliveryExport(row: any) {
 				type: 'error',
 				message: '导出失败',
 			});
-		});
+		})
 }
 function ExportDFPickingYes(row: any) {
 	const formData = {
@@ -495,17 +499,6 @@ function ExportDFPicking(formData: any) {
 				handleQuery();
 			}
 		})
-		.catch((arr) => {
-			ElNotification({
-				title: '系统提示',
-				message: '下载错误：获取文件流错误',
-				type: 'error',
-			});
-			ElMessage({
-				type: 'error',
-				message: '导出失败',
-			});
-		});
 }
 function SelectedExport() {
 	if (selectedRows.value.length === 0) {
@@ -541,9 +534,12 @@ function SelectedExport() {
 				startTime.value = new Date().getTime(); // 获取触发轮询时的时间
 				inquireData(); // 调用轮询接口,开始进行轮询
 			}
-		});
+		})
+		.catch(err => {
+			console.log(err);
+		})
 }
-const inquireData = () => {
+const inquireData = async () => {
 	const reload = () => {
 		clearTimeout(timer.value); // 清除定时器
 		// 超过30分钟则停止轮询
@@ -582,13 +578,31 @@ const inquireData = () => {
 		});
 };
 
-const downloadfile = (res: any) => {
+const downloadfile = async (res: any) => {
 	var blob = new Blob([res.data], {
 		type: 'application/octet-stream;charset=UTF-8',
 	});
 	var contentDisposition = res.headers['content-disposition'];
 	var patt = new RegExp('filename=([^;]+\\.[^\\.;]+);*');
 	var result = patt.exec(contentDisposition);
+	if (result == null) {
+		// 将 Blob 数据转换为文本
+		const text = await res.data.text();
+		// 将文本解析为 JSON 对象
+		const jsonData = JSON.parse(text);
+		if (jsonData.result) {
+			ElNotification({
+				title: '系统提示',
+				message: jsonData.result,
+				type: 'error',
+			});
+			ElMessage({
+				type: 'error',
+				message: jsonData.result,
+			});
+		}
+		return false;
+	}
 	var filename = result[1];
 	var downloadElement = document.createElement('a');
 	var href = window.URL.createObjectURL(blob); // 创建下载的链接
@@ -600,6 +614,7 @@ const downloadfile = (res: any) => {
 	downloadElement.click(); // 点击下载
 	document.body.removeChild(downloadElement); // 下载完成移除元素
 	window.URL.revokeObjectURL(href);
+	return true;
 };
 //排序
 function sortfun(v: any) {

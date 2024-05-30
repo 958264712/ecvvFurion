@@ -98,7 +98,7 @@ import InfoDataDialog from '/@/components/infoDataDialog/index.vue';
 const ifClose = ref(false);
 //打开弹窗
 function showModal(id: any) {
-	costpriceBatchId = id;
+	costpriceBatchId.value = id;
 	ifClose.value = true;
 	visible.value = true;
 }

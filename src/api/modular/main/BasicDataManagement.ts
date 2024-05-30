@@ -13,7 +13,8 @@ enum Api {
 	ExportHistory = '/api/dFShippingList/exportHistory',
 	downLoadPOZip = '/api/dFPickingList/downLoadPOZip',
 	delete = '/api/dFPickingList/delete',
-	GetUserRole = '/api/dFPickingList/getUserRole'
+	GetUserRole = '/api/dFPickingList/getUserRole',
+	updateTrackingID = '/api/dFShippingList/updateTrackingID'
 }
 //获取DF用户的角色信息
 export const GetUserRole = (params?: any) =>
@@ -124,6 +125,13 @@ export const GetHistoryList = (params?: any) =>
 export const ExportHistory = (params?: any) =>
 	request({
 		url: Api.ExportHistory,
+		method: 'post',
+		data: params,
+	});
+//updateTrackingID
+export const updateTrackingID = (params?: any) =>
+	request({
+		url: Api.updateTrackingID,
 		method: 'post',
 		data: params,
 	});

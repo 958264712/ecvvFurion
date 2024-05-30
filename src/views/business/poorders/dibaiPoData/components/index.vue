@@ -435,7 +435,7 @@ const openEdit = async (id: any, row): void => {
 	} else {
 		if (id > 0) {
 			let obj = {};
-			if (row.invoicedStatus>=0) {
+			if (row.invoicedStatus >= 0) {
 				obj.invoicedStatus = row.invoicedStatus;
 			}
 			if (row.contractedWarehouseTime) {
@@ -447,7 +447,7 @@ const openEdit = async (id: any, row): void => {
 			if (row.state >= 0) {
 				obj.state = row.state;
 			}
-			obj.id = row.id
+			obj.id = row.id;
 			newUpdate(Object.assign(obj))
 				.then((res) => {
 					if (res.data.type === 'success') {
@@ -615,7 +615,7 @@ handleQuery();
 			<el-table :data="tableData" style="width: 100%" v-loading="loading" tooltip-effect="light" row-key="id" size="lagre" border="" @selection-change="(selection: any) => selectChange(selection)">
 				<el-table-column type="selection" width="55" />
 				<template v-for="item in tabelList">
-					<el-table-column v-if="item.dataIndex === 'shipToLocation'" :prop="item.dataIndex" :label="item.titleCN" align="center" show-overflow-tooltip="">
+					<el-table-column v-if="item.dataIndex === 'shipToLocation'" width="135px" :prop="item.dataIndex" :label="item.titleCN" align="center" show-overflow-tooltip="">
 						<template #default="scope">
 							{{ scope.row.shipToLocation.substring(0, 4) }}
 						</template>

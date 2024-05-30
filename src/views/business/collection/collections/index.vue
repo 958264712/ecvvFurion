@@ -834,7 +834,7 @@ const tableRowClassName = ({
 }: {
 	rowIndex: number
 }) => {
-	if (tableData._rawValue[rowIndex].warnTagCount) {
+	if (tableData?._rawValue[rowIndex].warnTagCount) {
 		return 'warnTag'
 	}
 	return ''

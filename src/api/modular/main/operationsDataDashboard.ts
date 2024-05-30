@@ -1,12 +1,12 @@
 import request from '/@/utils/request';
 enum Api {
-    accumulatedForThisMonth = '/api/operationsDataDashboard/accumulatedForThisMonth',
-    amazonSales = '/api/operationsDataDashboard/amazonSales',
-    salesAmount = '/api/operationsDataDashboard/salesAmount',
-    actualOutboundQuantity = '/api/operationsDataDashboard/actualOutboundQuantity',
-    outboundAmount = '/api/operationsDataDashboard/outboundAmount',
-    pOOrderQuantity = '/api/operationsDataDashboard/pOOrderQuantity',
-    pOOrderAmount = '/api/operationsDataDashboard/pOOrderAmount',
+    accumulatedForThisMonth = '/api/operationsDataDashboard/getAccumulatedHeaderInfo',
+    amazonSales = '/api/operationsDataDashboard/getAmazonSalesWeek',
+    salesAmount = '/api/operationsDataDashboard/getSalesAmount',
+    actualOutboundQuantity = '/api/operationsDataDashboard/getActualOutboundQuantity',
+    outboundAmount = '/api/operationsDataDashboard/getOutboundAmount',
+    pOOrderQuantity = '/api/operationsDataDashboard/getPOOrderQuantity',
+    pOOrderAmount = '/api/operationsDataDashboard/getPOOrderAmount',
 }
 export const accumulatedForThisMonth = (params?: any) =>
     request({

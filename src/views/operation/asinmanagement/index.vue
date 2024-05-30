@@ -26,6 +26,7 @@
 								@click="
 									() => {
 										queryParams.erpTextArea = '';
+										erpAndGoodsName = '';
 									}
 								"
 								>重置</el-button
@@ -33,7 +34,7 @@
 							<el-button type="primary" @click="handleConfirm(1)">确定</el-button>
 						</div>
 						<template #reference>
-							<el-input v-model="erpAndGoodsName" clearable="" placeholder="请输入,点击展开可输多个" @clear="clearObj" @blur="clearObj">
+							<el-input v-model="erpAndGoodsName" clearable="" placeholder="请输入,点击展开可输多个" @clear="clearErp" @blur="clearObj">
 								<template #suffix>
 									<el-icon class="el-input__icon"
 										><ArrowDownBold @click="showTextarea(1, visibleTextarea1)" v-if="!visibleTextarea1" /><ArrowUpBold @click="showTextarea(1, visibleTextarea1)" v-else
@@ -61,6 +62,7 @@
 								@click="
 									() => {
 										queryParams.asinTextArea = '';
+										aSIN = '';
 									}
 								"
 								>重置</el-button
@@ -68,7 +70,7 @@
 							<el-button type="primary" @click="handleConfirm(2)">确定</el-button>
 						</div>
 						<template #reference>
-							<el-input v-model="aSIN" clearable="" placeholder="请输入,点击展开可输多个" @clear="clearObj" @blur="clearObj">
+							<el-input v-model="aSIN" clearable="" placeholder="请输入,点击展开可输多个" @clear="clearAsin" @blur="clearObj">
 								<template #suffix>
 									<el-icon class="el-input__icon"
 										><ArrowDownBold @click="showTextarea(2, visibleTextarea2)" v-if="!visibleTextarea2" /><ArrowUpBold @click="showTextarea(2, visibleTextarea2)" v-else
@@ -143,17 +145,48 @@
 			</div>
 			<el-tabs v-model="selectcountry" type="card" style="height: 85%" @tab-click="handleClick">
 				<el-tab-pane :label="item.label" :name="item.name" style="height: 100%" v-for="item in tabsList">
-					<el-table :data="tableData" style="height: 100%" v-loading="loading" tooltip-effect="light" row-key="id" border="" @selection-change="handleSelectionChange">
+					<el-table :data="tableData" style="height: 100%" v-loading="loading" tooltip-effect="light" row-key="id" border="" @selection-change="handleSelectionChange" @sort-change="handleSortChange">
 						<el-table-column type="selection" width="40" align="center" />
 						<!-- <el-table-column prop="no" label="序号" align="center" /> -->
 						<template v-for="(item, index) in TableData" :key="index">
 							<el-table-column
-								v-if="item.dataIndex === 'rank' && item.checked"
-								:width="item.width"
+								v-if="item.dataIndex === 'rankOne' && item.checked"
+								width="150"
 								:fixed="item.fixed"
 								:prop="item.dataIndex"
 								:label="area == 'CN' ? item.titleCN : item.titleEN"
 								align="center"
+								sortable="custom"
+								:formatter="splitRank"
+								/>
+							<el-table-column
+								v-else-if="item.dataIndex === 'backRankOne' && item.checked"
+								width="150"
+								:fixed="item.fixed"
+								:prop="item.dataIndex"
+								:label="area == 'CN' ? item.titleCN : item.titleEN"
+								align="center"
+								sortable="custom"
+								:formatter="splitRank"
+							/>
+							<el-table-column
+								v-else-if="item.dataIndex === 'rankTwo' && item.checked"
+								width="150"
+								:fixed="item.fixed"
+								:prop="item.dataIndex"
+								:label="area == 'CN' ? item.titleCN : item.titleEN"
+								align="center"
+								sortable="custom"
+								:formatter="splitRank"
+								/>
+							<el-table-column
+								v-else-if="item.dataIndex === 'backRankTwo' && item.checked"
+								width="150"
+								:fixed="item.fixed"
+								:prop="item.dataIndex"
+								:label="area == 'CN' ? item.titleCN : item.titleEN"
+								align="center"
+								sortable="custom"
 								:formatter="splitRank"
 							/>
 							<el-table-column
@@ -228,6 +261,9 @@ import other from '/@/utils/other.ts';
 import { Session } from '/@/utils/storage';
 import tabDragColum from '/@/components/tabDragColum/index.vue';
 import { useDebounce } from '/@/utils/debounce';
+import down from '/@/assets/down.png';
+import up from '/@/assets/up.png';
+
 
 const loading = ref(false);
 const Exportloading = ref(false);
@@ -378,7 +414,7 @@ const TableData = ref<any>([
 		titleCN: 'Update date',
 		dataIndex: 'updateDateTow',
 		titleEN: 'Update date',
-		width: '85',
+		width: '125',
 		checked: true,
 		fixed: false,
 	},
@@ -399,10 +435,34 @@ const TableData = ref<any>([
 		fixed: false,
 	},
 	{
-		titleCN: 'RANK',
-		dataIndex: 'rank',
-		width: '250',
-		titleEN: 'RANK',
+		titleCN: '大类排名(本次)',
+		dataIndex: 'rankOne',
+		titleEN: 'Rank One',
+		width: '125',
+		checked: true,
+		fixed: false,
+	},
+	{
+		titleCN: '大类排名(上次)',
+		dataIndex: 'backRankOne',
+		titleEN: 'Back Rank One',
+		width: '125',
+		checked: true,
+		fixed: false,
+	},
+	{
+		titleCN: '小类排名(本次)',
+		dataIndex: 'rankTwo',
+		titleEN: 'Rank Two',
+		width: '125',
+		checked: true,
+		fixed: false,
+	},
+	{
+		titleCN: '小类排名(上次)',
+		dataIndex: 'backRankTwo',
+		titleEN: 'Back Rank Two',
+		width: '125',
 		checked: true,
 		fixed: false,
 	},
@@ -637,8 +697,11 @@ const handleData = (list: any) => {
 	}
 };
 const splitRank = (row, column) => {
-	if (row.rank) {
-		let list = row.rank.split('#');
+	if (column.property) {
+		let list = [];
+		if(row[column.property]){
+			list = row[column.property].split('#')
+		}
 		let content = `<div>`;
 		let hArr = [];
 		list.map((item, index) => {
@@ -652,6 +715,22 @@ const splitRank = (row, column) => {
 							// str += `<div><span>#${item}</span>`;
 							// arr.push(h('span', null, '#'+item));
 						} else {
+							if(column.property === 'rankOne' && !(row.rankOneNumber===0 && row.backRankOneNumber===0)){
+								str += `<img src="${row.rankOneNumber > row.backRankOneNumber ? down : up}"/>`
+								if(row.rankOneNumber > row.backRankOneNumber){
+									arr.push(h('img', { src: down }));
+								}else{
+									arr.push(h('img', { src: up }));
+								}
+							}
+							if(column.property === 'rankTwo'  && !(row.rankTwoNumber===0 && row.backRankTwoNumber===0)){
+								str += `<img src="${row.rankTwoNumber > row.backRankTwoNumber ? down : up}"/>`
+								if(row.rankTwoNumber > row.backRankTwoNumber){
+									arr.push(h('img', { src: down }));
+								}else{
+									arr.push(h('img', { src: up }));
+								}
+							}
 							str += `<a href="${item}" target="_blank">#${iArr[index - 1]}</a></div>`;
 							arr.push(h('a', { href: item, target: '_blank' }, '#' + iArr[index - 1]));
 							let countArr = h('div', null, arr);
@@ -664,9 +743,25 @@ const splitRank = (row, column) => {
 			} else {
 				let arr = [];
 				iArr.map((item, index) => {
-					let str = '';
+					let str = '<div>';
 					if (index % 2 === 0 && item?.length) {
-						str += `<div>#${item}</div>`;
+						if(column.property === 'rankOne' && !(row.rankOneNumber===0 && row.backRankOneNumber===0)){
+								str += `<img src="${row.rankOneNumber > row.backRankOneNumber ? down : up}"/>`
+								if(row.rankOneNumber < row.backRankOneNumber){
+									arr.push(h('img', { src: down}));
+								}else{
+									arr.push(h('img', { src: up }));
+								}
+							}
+							if(column.property === 'rankTwo'  && !(row.rankTwoNumber===0 && row.backRankTwoNumber===0)){
+								str += `<img src="${row.rankTwoNumber > row.backRankTwoNumber ? down :up}"/>`
+								if(row.rankTwoNumber > row.backRankTwoNumber){
+									arr.push(h('img', { src: down }));
+								}else{
+									arr.push(h('img', { src: up }));
+								}
+							}
+						str += `#${item}</div>`;
 						arr.push(h('span', null, '#' + item));
 						let countArr = h('div', null, arr);
 						hArr.push(countArr);
@@ -854,6 +949,18 @@ const handleCurrentChange1 = (val: number) => {
 	tableParams1.value.page = val;
 	multipleExport();
 };
+const clearAsin = () => {
+	aSIN.value = '';
+	queryParams.value.asinTextArea = '';
+	queryParams.value.aSINList = null;
+	Session.set('queryObj', { ifquery: true });
+};
+const clearErp = () => {
+	erpAndGoodsName.value = '';
+	queryParams.value.erpTextArea = '';
+	queryParams.value.erpSkuList = null;
+	Session.set('queryObj', { ifquery: true });
+};
 const clearObj = () => {
 	Session.set('queryObj', { ifquery: true });
 };
@@ -864,6 +971,20 @@ const reset = () => {
 	erpAndGoodsName.value = '';
 	Session.set('queryObj', {});
 	handleQuery();
+};
+const handleSortChange = ({ column, prop, order }) => {
+	if (order !== null) {
+		if (order === 'descending') {
+			queryParams.value.order = 'Desc';
+		} else if (order === 'ascending') {
+			queryParams.value.order = 'Asc';
+		}
+		queryParams.value.field = prop;
+	} else {
+		queryParams.value.field = null;
+		queryParams.value.order = null;
+	}
+	handleQuery()
 };
 // 查询操作
 const handleQuery = async () => {
@@ -882,14 +1003,14 @@ const handleQuery = async () => {
 	loading.value = true;
 	// 工作人员选中手动清除，所以注释
 	if (queryParams.value.erpSkuList?.length > 0) {
-		queryParams.value.erpTextArea = '';
+		// queryParams.value.erpTextArea = '';
 		queryParams.value.erpAndGoodsName = '';
 	} else {
 		queryParams.value.erpAndGoodsName = erpAndGoodsName.value;
 		queryParams.value.erpSkuList = null;
 	}
 	if (queryParams.value.aSINList?.length > 0) {
-		queryParams.value.asinTextArea = '';
+		// queryParams.value.asinTextArea = '';
 		queryParams.value.aSIN = '';
 	} else {
 		queryParams.value.aSIN = aSIN.value;
@@ -931,11 +1052,11 @@ watch(
 				return item.trim();
 			}
 		});
-		if(arr?.length > 0){
+		if (arr?.length > 0) {
 			if (arr[0] !== undefined) {
 				queryParams.value.erpSkuList = arr;
 			} else {
-				queryParams.value.erpSkuList = null
+				queryParams.value.erpSkuList = null;
 			}
 		}
 	}
@@ -951,11 +1072,11 @@ watch(
 				return item.trim();
 			}
 		});
-		if(arr?.length > 0){
+		if (arr?.length > 0) {
 			if (arr[0] !== undefined) {
 				queryParams.value.aSINList = arr;
 			} else {
-				queryParams.value.aSINList = null
+				queryParams.value.aSINList = null;
 			}
 		}
 	}

@@ -3,23 +3,22 @@
 		<el-card shadow="hover" :body-style="{ paddingBottom: '0' }">
 			<el-form :model="queryParams" ref="queryForm" :inline="true">
 				<el-form-item label="日期">
-					<el-date-picker style="width: 250px" start-placeholder=" 开始时间" end-placeholder="结束时间" type="monthrange" v-model="queryParams.dateTime" format="YYYY-MM" />
+					<el-date-picker style="width: 250px" start-placeholder=" 开始时间" end-placeholder="结束时间"
+						type="monthrange" v-model="queryParams.dateTime" format="YYYY-MM" />
 				</el-form-item>
 				<el-form-item label="导入时间">
-					<el-date-picker style="width: 250px" start-placeholder=" 开始时间" end-placeholder="结束时间" type="daterange" v-model="queryParams.ImportTime" format="YYYY-MM-DD" />
+					<el-date-picker style="width: 250px" start-placeholder=" 开始时间" end-placeholder="结束时间"
+						type="daterange" v-model="queryParams.ImportTime" format="YYYY-MM-DD" />
 				</el-form-item>
 				<el-form-item>
 					<el-button-group>
-						<el-button type="primary" icon="ele-Search" @click="handleQuery" v-auth="'uAE_ProcurementDetails:page'"> 查询 </el-button>
-						<el-button
-							icon="ele-Refresh"
-							@click="
-								() => {
-									queryParams = {};
-									handleQuery();
-								}
-							"
-						>
+						<el-button type="primary" icon="ele-Search" @click="handleQuery"
+							v-auth="'uAE_ProcurementDetails:page'"> 查询 </el-button>
+						<el-button icon="ele-Refresh" @click="() => {
+				queryParams = {};
+				handleQuery();
+			}
+			">
 							重置
 						</el-button>
 					</el-button-group>
@@ -30,65 +29,45 @@
 			<div style="width: 10%">
 				<el-button @click="dialogFormVisible = true" type="primary"> 导入 </el-button>
 				<el-dialog v-model="dialogFormVisible" title="普源云库存数据导入" width="600px" center>
-					<importDialog
-						:type="importType"
-						:text="importText"
-						:weeks="weeks"
-						:formList="importFormList"
-						:importsInterface="puyuanCloudInventoryimport"
-						@close="importClose"
-						@importQuery="importQuery"
-					/>
+					<importDialog :type="importType" :text="importText" :weeks="weeks" :formList="importFormList"
+						:importsInterface="puyuanCloudInventoryimport" @close="importClose"
+						@importQuery="importQuery" />
 				</el-dialog>
 			</div>
 			<div style="margin-top: 5px">
 				<el-button-group>
-					<el-button
-						style="width: 80px; height: 27px"
-						@click="
-							weeks = '周';
-							handleQuery();
-						"
-						:class="{ buttonBackground: weeks == '周' }"
-						>周</el-button
-					>
-					<el-button
-						style="width: 80px; height: 27px"
-						@click="
-							weeks = '月';
-							handleQuery();
-						"
-						:class="{ buttonBackground: weeks == '月' }"
-						>月</el-button
-					>
+					<el-button style="width: 80px; height: 27px" @click="
+			weeks = '周';
+		handleQuery();
+		" :class="{ buttonBackground: weeks == '周' }">周</el-button>
+					<el-button style="width: 80px; height: 27px" @click="
+			weeks = '月';
+		handleQuery();
+		" :class="{ buttonBackground: weeks == '月' }">月</el-button>
 				</el-button-group>
 			</div>
-			<el-table :data="tableData" size="lagre" style="width: 100%" v-loading="loading" tooltip-effect="light" :header-cell-style="customHeaderCellStyle" row-key="id" border="">
+			<el-table :data="tableData" size="lagre" style="width: 100%" v-loading="loading" tooltip-effect="light"
+				:header-cell-style="customHeaderCellStyle" row-key="id" border="">
 				<el-table-column type="index" label="序号" align="center" show-overflow-tooltip="" />
 				<el-table-column prop="fileName" label="文件名" align="center" show-overflow-tooltip="" />
 				<el-table-column prop="puyuanCloudInventoryTime" label="日期" align="center" show-overflow-tooltip="" />
 				<el-table-column v-if="weeks === '周'" prop="weeks" label="周数" align="center" show-overflow-tooltip="" />
 				<el-table-column prop="createTime" label="导入时间" align="center" show-overflow-tooltip="" />
 				<el-table-column prop="creator" label="操作人" align="center" show-overflow-tooltip="" />
-				<el-table-column  label="操作" align="center"  >
+				<el-table-column label="操作" align="center">
 					<template #default="scope">
-						<el-button icon="ele-Document" size="small" text="" type="primary" @click="showModal(scope.row.id)"> 详情 </el-button>
+						<el-button icon="ele-Document" size="small" text="" type="primary"
+							@click="showModal(scope.row.id)"> 详情 </el-button>
 					</template>
 				</el-table-column>
 			</el-table>
-			<el-pagination
-				v-model:currentPage="tableParams.page"
-				v-model:page-size="tableParams.pageSize"
-				:total="tableParams.total"
-				:page-sizes="[10, 20, 50, 100, 500, 1000]"
-				small=""
-				background=""
-				@size-change="handleSizeChange"
-				@current-change="handleCurrentChange"
-				layout="total, sizes, prev, pager, next, jumper"
-			/>
+			<el-pagination v-model:currentPage="tableParams.page" v-model:page-size="tableParams.pageSize"
+				:total="tableParams.total" :page-sizes="[10, 20, 50, 100, 500, 1000]" small="" background=""
+				@size-change="handleSizeChange" @current-change="handleCurrentChange"
+				layout="total, sizes, prev, pager, next, jumper" />
 			<el-dialog v-model="visible" title="详情" @close="close" width="1000px">
-				<infoDataDialog :id="puyuanyunId" idName="BatchId" :weeks="weeks" :dataList="dataList" :ifClose="ifClose" :pointerface="puyuanCloudInventoryPage" :formList="formList" />
+				<infoDataDialog :id="puyuanyunId" idName="BatchId" :weeks="weeks" :dataList="dataList"
+					:ifClose="ifClose" :pointerface="puyuanCloudInventoryPage" :formList="formList" />
 			</el-dialog>
 		</el-card>
 	</div>
@@ -99,7 +78,7 @@ import { service } from '/@/utils/request';
 import { ElMessageBox, ElMessage, ElNotification, FormInstance } from 'element-plus';
 import axios from 'axios';
 //import { formatDate } from '/@/utils/formatTime';
-import { puyuanCloudInventoryPage, puyuanCloudInventoryimport,batchPuyuanCloudInventoryPage } from '/@/api/modular/main/OperationManagement.ts';
+import { puyuanCloudInventoryPage, puyuanCloudInventoryimport, batchPuyuanCloudInventoryPage } from '/@/api/modular/main/OperationManagement.ts';
 import importDialog from '/@/components/importDialog/index.vue';
 import infoDataDialog from '/@/components/infoDataDialog/index.vue';
 
@@ -127,7 +106,7 @@ const tableParams = ref({
 	Field: null,
 });
 //打开弹窗
-function showModal(id:any) {
+function showModal(id: any) {
 	puyuanyunId.value = id;
 	ifClose.value = true;
 	visible.value = true;
@@ -141,8 +120,8 @@ function close() {
 // infoDataDialog 配套参数
 const formList = ref<any>([
 	{
-		label:'库存SKU',
-		prop:'inventorySKU'
+		label: '库存SKU',
+		prop: 'inventorySKU'
 	}
 ]);
 const dataList = ref<any>([
@@ -218,7 +197,7 @@ const dataList = ref<any>([
 		label: '操作人',
 		prop: 'creator',
 	},
-	
+
 ]);
 let selectedRows = ref<any>([]);
 const uploadRef = ref<any>(null);
@@ -232,7 +211,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 	});
 };
 const importType = ref('puyuanCloudInventory');
-const importText = ref(weeks === '周' ? '选择站点、日期、周，点击"确定"后，选择需要导入的文件，将导入该数据' : '选择站点、日期，点击"确定"后，选择需要导入的文件，将导入该数据');
+const importText = ref(weeks.value === '周' ? '选择站点、日期、周，点击"确定"后，选择需要导入的文件，将导入该数据' : '选择站点、日期，点击"确定"后，选择需要导入的文件，将导入该数据');
 const options1 = ref([
 	{
 		value: '第一周',
@@ -315,8 +294,7 @@ const handleQuery = async () => {
 	queryParams.value.EndImportTime = queryParams.value.ImportTime ? queryParams.value.ImportTime[1] : null;
 	queryParams.value.StartDateTime = queryParams.value.dateTime ? queryParams.value.dateTime[0] : null;
 	queryParams.value.EndDateTime = queryParams.value.dateTime ? queryParams.value.dateTime[1] : null;
-	console.log(queryParams.value.dateTime,queryParams.value.ImportTime);
-	
+
 	if (queryParams.value.StartImportTime) {
 		const date1 = new Date(queryParams.value.StartImportTime);
 		const year1 = date1.getFullYear();
@@ -349,10 +327,10 @@ const handleQuery = async () => {
 	weeks.value === '周' ? '选择站点、日期、周，点击"确定"后，选择需要导入的文件，将导入该数据' : '选择站点、日期，点击"确定"后，选择需要导入的文件，将导入该数据';
 	let monthData = []
 	tableData.value = []
-	arrList.map((item,index)=>{
-		if((item.timeQuantum === '月' && weeks.value !== '周') || !item.weeks){
+	arrList.map((item, index) => {
+		if ((item.timeQuantum === '月' && weeks.value !== '周') || !item.weeks) {
 			monthData.push(item)
-		}else if(item.timeQuantum === '周' && weeks.value === '周' && item.weeks){
+		} else if (item.timeQuantum === '周' && weeks.value === '周' && item.weeks) {
 			tableData.value.push(item)
 			tableParams.value.total = tableData.value?.length
 		}
@@ -396,7 +374,7 @@ handleQuery();
 	color: white;
 }
 
-.example-showcase .el-dropdown + .el-dropdown {
+.example-showcase .el-dropdown+.el-dropdown {
 	margin-left: 15px;
 }
 

@@ -169,7 +169,7 @@ const opendialog = () => {
 const ifClose = ref(false);
 //打开弹窗
 function showModal(id: any) {
-	dFInventoryBatchId = id;
+	dFInventoryBatchId.value = id;
 	ifClose.value = true;
 	visible.value = true;
 }

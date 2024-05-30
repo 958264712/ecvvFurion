@@ -143,7 +143,7 @@ service.interceptors.response.use(
 
 		// 对响应错误做点什么
 		if (error.message.indexOf('timeout') != -1) {
-			ElMessage.error('网络超时');
+			ElMessage.error('正在拼命统计中,请耐心等待');
 		} else if (error.message == 'Network Error') {
 			ElMessage.error('网络连接错误');
 		} else {

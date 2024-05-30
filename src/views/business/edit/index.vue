@@ -812,7 +812,7 @@ function handleMouseScroll(e: any) {
 }
 // 风险标签改变
 const WarnTagChange = (data: any, index: number) => {
-	selectedWarnTag = data.warnTag;
+	selectedWarnTag.value = data.warnTag;
 };
 const tableRowClassName = ({ rowIndex }: { rowIndex: number }) => {
 	if (collectionGoodsInfolist[rowIndex].warnTag) {
@@ -826,12 +826,12 @@ const tableRowClassName = ({ rowIndex }: { rowIndex: number }) => {
 function querySearchAsync(queryString: any, cb: any) {
 	let restaurant = restaurants.value;
 	let results = queryString ? restaurant.filter(createStateFilter(queryString)) : restaurant;
-	if (warnTagList?.length) {
+	if (warnTagList.value?.length) {
 		restaurant?.map((item) => {
 			let list = [];
 			let tagList = item.warnTag?.split(",")
 			tagList?.map((it) => {
-				warnTagList?.map((i) => {
+				warnTagList.value?.map((i) => {
 					if (i.value === it) {
 						let obj = {
 							color: i.code,
@@ -846,7 +846,7 @@ function querySearchAsync(queryString: any, cb: any) {
 
 	}
 	clearTimeout(timeout);
-	timeout = setTimeout(() => {
+	timeout.value = setTimeout(() => {
 		cb(results);
 	}, 1000 * Math.random());
 }
@@ -1068,7 +1068,7 @@ async function getAppPage() {
 					if (element.warnTag != null && element.warnTag != "") {
 						let tag = element.warnTag?.split(',');
 						let list = [];
-						if (tag?.length && warnTagList?.length) {
+						if (tag?.length && warnTagList.value?.length) {
 							tag?.map((item) => {
 								list.push(item);
 							});
@@ -1186,7 +1186,7 @@ onMounted(async () => {
 	handleQuery();
 	cacheLable();
 	var res = await getAPI(SysDictDataApi).apiSysDictDataDataListCodeGet('warn_tag');
-	warnTagList = res.data.result;
+	warnTagList.value = res.data.result;
 	getAppPage();
 });
 //新增一行
@@ -1749,7 +1749,7 @@ function downloadfile(res) {
 }
 //判断标签是否存在于集合中
 function IsTag(tag: any) {
-	const element = warnTagList.find(item => item.value === tag);
+	const element = warnTagList.value.find(item => item.value === tag);
 	if (element) {
 		return element.code;
 	}

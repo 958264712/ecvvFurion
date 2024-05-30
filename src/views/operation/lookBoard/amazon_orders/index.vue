@@ -96,7 +96,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
 	});
 };
 const importType = ref('amazonOrders');
-const importText = ref(weeks === '周' ? '选择站点、日期、周，点击"确定"后，选择需要导入的文件，将导入该数据' : '选择站点、日期，点击"确定"后，选择需要导入的文件，将导入该数据')
+const importText = ref(weeks.value === '周' ? '选择站点、日期、周，点击"确定"后，选择需要导入的文件，将导入该数据' : '选择站点、日期，点击"确定"后，选择需要导入的文件，将导入该数据')
 const options = ref([
 	{
 		value: 'UAE',

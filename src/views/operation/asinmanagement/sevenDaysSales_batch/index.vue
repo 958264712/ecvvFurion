@@ -178,7 +178,7 @@ const opendialog = () => {
 const ifClose = ref(false);
 //打开弹窗
 function showModal(id: any) {
-	sevenDaysSalesId = id;
+	sevenDaysSalesId.value = id;
 	ifClose.value = true;
 	visible.value = true;
 }
