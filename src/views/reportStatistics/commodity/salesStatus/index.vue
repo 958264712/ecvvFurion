@@ -1,4 +1,4 @@
-<script lang="ts" setup name="asinData">
+<script lang="ts" setup name="sales_status">
 import { ref } from 'vue';
 import moment from 'moment';
 import tabDragColum from '/@/components/tabDragColum/index.vue';
@@ -212,7 +212,20 @@ handleQuery();
 				<el-table-column type="index" label="排名" align="center" width="50"/>
 				<template v-for="(item, index) in TableData" :key="index">
 					<el-table-column
-						v-if="item.checked"
+						v-if="item.dataIndex == 'salesProportion'"
+						:fixed="item.fixed"
+						:width="item.width"
+						:prop="item.dataIndex"
+						show-overflow-tooltip
+						:label="area == 'CN' ? item.titleCN : item.titleEN"
+						align="center"
+					>
+						<template #default="scope">
+							{{(scope.row.salesProportion*100).toFixed(1)+'%'}}
+						</template>
+					</el-table-column>
+					<el-table-column
+						v-else-if="item.checked"
 						:fixed="item.fixed"
 						:width="item.width"
 						:prop="item.dataIndex"
@@ -248,9 +261,9 @@ handleQuery();
 }
 .radio-group {
 	height: 24px;
-	margin: 0 20px;
+	margin: 0 10px;
 	:deep(.el-radio-button__inner) {
-		padding: 4px 19px;
+		padding: 4px 13px;
 	}
 }
 

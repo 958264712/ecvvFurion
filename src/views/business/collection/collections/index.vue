@@ -930,6 +930,7 @@ function exportfun() {
 					});
 					getAppPage();
 				}
+				isExProtAll.value = false;
 				Exportloading.value = false;
 			})
 			.catch((arr) => {
@@ -942,6 +943,7 @@ function exportfun() {
 					type: 'error',
 					message: '导出失败',
 				});
+				isExProtAll.value = false;
 				Exportloading.value = false;
 			});
 	} else if (selectedRows.value.length > 0) {

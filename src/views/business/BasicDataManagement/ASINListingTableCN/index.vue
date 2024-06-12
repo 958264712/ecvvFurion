@@ -3,8 +3,42 @@
 		<el-card shadow="hover" :body-style="{ paddingBottom: '0' }">
 			<el-form :model="queryParams" ref="queryForm" :inline="true">
 				<el-form-item label="ASIN">
-					<el-input v-model="queryParams.aSIN" clearable=""
-						:placeholder="area == 'CN' ? '请输入ASIN' : 'Please enter ASIN'" />
+					<el-popover :visible="visibleTextarea2" placement="bottom" :width="250">
+						<el-scrollbar height="150px" style="border: 1px solid var(--el-border-color)">
+							<el-input
+								v-model="queryParams.asinTextArea"
+								style="width: 215px"
+								:autosize="{ minRows: 1, maxRows: 200 }"
+								type="textarea"
+								:placeholder="area=='CN'?'可输入多个ERP-SKU精确查询，每行一个，最多支持200个':'Multiple ASINs can be entered forprecise queries,one per line, with amaximum support of 200'"
+							/>
+						</el-scrollbar>
+						<div style="text-align: right; margin-top: 20px">
+							<span style="float: left">{{ queryParams.aSINList?.length ?? 0 }}/200</span>
+							<el-button
+								type="info"
+								@click="
+									() => {
+										queryParams.asinTextArea = '';
+										aSIN = '';
+									}
+								"
+								>{{area=='CN'?'重置':'Reset'}}</el-button
+							>
+							<el-button type="primary" @click="handleConfirm(2)">{{area=='CN'?'确定':'Confirm'}}</el-button>
+						</div>
+						<template #reference>
+							<el-input v-model="aSIN" clearable="" :placeholder="area=='CN'?'请输入,点击展开可输多个':'Please input, click to expand to input multiple'" @clear="clearAsin" @blur="clearObj">
+								<template #suffix>
+									<el-icon class="el-input__icon"
+										><ArrowDownBold @click="visibleTextarea2 = !visibleTextarea2" v-if="!visibleTextarea2" /><ArrowUpBold @click="visibleTextarea2 = !visibleTextarea2" v-else
+									/></el-icon>
+								</template>
+							</el-input>
+						</template>
+					</el-popover>
+					<!-- <el-input v-model="queryParams.aSIN" clearable=""
+						:placeholder="area == 'CN' ? '请输入ASIN' : 'Please enter ASIN'" /> -->
 				</el-form-item>
 				<el-form-item :label="area == 'CN' ? '店铺SKU' : 'StoreSKU'">
 					<el-input v-model="queryParams.storeSKU" clearable=""
@@ -42,8 +76,7 @@
 						<el-button type="primary" icon="ele-Search"
 							@click="handleQuery">{{ area == 'CN' ? '查询' : 'Search' }} </el-button>
 						<el-button icon="ele-Refresh" @click="() => {
-			queryParams = {};
-			handleQuery();
+			aSIN = '';queryParams.asinTextArea = '';queryParams = {};handleQuery();		
 		}
 			">
 							{{ area == 'CN' ? '重置' : 'Reset' }}
@@ -310,12 +343,13 @@
 </template>
 
 <script lang="ts" setup name="ASINListingTableCN">
-import { ref } from 'vue';
+import { ref,watch } from 'vue';
 import { ElMessageBox, ElMessage, ElNotification } from 'element-plus';
 import { auth } from '/@/utils/authFunction';
 //import { formatDate } from '/@/utils/formatTime';
 import { SAINListingTablePage, Save, ImportCN, ImportUAE, Delete, Update, GetUserRole } from '/@/api/modular/main/SAINListingTable.ts';
 import axios from 'axios';
+import { ArrowDownBold, ArrowUpBold } from '@element-plus/icons-vue';
 import router from '/@/router';
 import other from '/@/utils/other.ts';
 import tabDragColum from '/@/components/tabDragColum/index.vue'
@@ -331,6 +365,8 @@ const selectedRows = ref<any>([]);
 const addData = ref<any>([]);
 const IsEdit = ref<any>(false);
 const IsAdmin = ref<any>(false);
+const visibleTextarea2 = ref(false);
+const aSIN = ref('');
 const queryParams = ref<AsinParamsType>({});
 const area = ref<any>('CN');
 const tableParams = ref({
@@ -469,11 +505,24 @@ const handleData = (list: any) => {
 		TableData.value = list
 	}
 }
-
+const clearAsin = () => {
+	aSIN.value = '';
+	queryParams.value.asinTextArea = '';
+	queryParams.value.aSINList = null;
+};
 // 查询操作
 const handleQuery = async () => {
 	loading.value = true;
 	tableParams.value.Site = area.value;
+	
+	if (queryParams.value.aSINList?.length > 0) {
+		// queryParams.value.asinTextArea = '';
+		queryParams.value.aSIN = '';
+	} else {
+		queryParams.value.aSIN = aSIN.value;
+		queryParams.value.aSINList = null;
+	}
+
 	var res = await SAINListingTablePage(Object.assign(queryParams.value, tableParams.value));
 	tableData.value = res.data.result?.items ?? [];
 	tableData.value.forEach((element: any) => {
@@ -507,7 +556,21 @@ const handleCurrentChange = (val: number) => {
 	tableParams.value.page = val;
 	handleQuery();
 };
-
+const handleConfirm = () => {
+	let str_array = [];
+	str_array = queryParams.value.asinTextArea?.split(/[(\r\n)\r\n]+/);
+	let arr = str_array?.map((item, index) => {
+		if (item === '') {
+			str_array.splice(index, 1);
+		} else {
+			return item.trim();
+		}
+	});
+	queryParams.value.aSINList = arr;
+	aSIN.value = arr + '';
+	visibleTextarea2.value = false;
+	// handleQuery()
+}
 // 导入ASINListingTableCN
 function Imports(file: any) {
 	loading3.value = true;
@@ -902,6 +965,26 @@ const validateEan = () => {
 	}
 };
 Getarea();
+watch(
+	() => queryParams.value.asinTextArea,
+	() => {
+		let str_array = queryParams.value.asinTextArea?.split(/[(\r\n)\r\n]+/);
+		let arr = str_array?.map((item, index) => {
+			if (item === '') {
+				str_array.splice(index, 1);
+			} else {
+				return item.trim();
+			}
+		});
+		if (arr?.length > 0) {
+			if (arr[0] !== undefined) {
+				queryParams.value.aSINList = arr;
+			} else {
+				queryParams.value.aSINList = null;
+			}
+		}
+	}
+);
 </script>
 
 <style lang="less" scoped>
@@ -944,5 +1027,14 @@ Getarea();
 
 :deep(.el-tooltip) {
 	padding: 0;
+}
+/deep/ .el-table td.el-table__cell div {
+	overflow: hidden;
+}
+/deep/ .el-textarea__inner {
+	box-shadow: initial;
+	padding: 0;
+	margin: 4px 0 4px 3px;
+	height: 142px !important;
 }
 </style>

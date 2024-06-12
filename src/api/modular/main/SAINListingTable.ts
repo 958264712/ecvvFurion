@@ -20,8 +20,8 @@ export const GetUserRole = (params?: any) =>
 export const SAINListingTablePage = (params?: any) =>
 	request({
 		url: Api.SAINListingTablePage,
-		method: 'get',
-		params: params,
+		method: 'post',
+		data: params,
 	});
 export const ImportCN = (params?: any) =>
 	request({

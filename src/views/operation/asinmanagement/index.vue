@@ -158,7 +158,7 @@
 								align="center"
 								sortable="custom"
 								:formatter="splitRank"
-								/>
+							/>
 							<el-table-column
 								v-else-if="item.dataIndex === 'backRankOne' && item.checked"
 								width="150"
@@ -178,7 +178,7 @@
 								align="center"
 								sortable="custom"
 								:formatter="splitRank"
-								/>
+							/>
 							<el-table-column
 								v-else-if="item.dataIndex === 'backRankTwo' && item.checked"
 								width="150"
@@ -189,6 +189,40 @@
 								sortable="custom"
 								:formatter="splitRank"
 							/>
+							<el-table-column
+								v-else-if="item.dataIndex === 'days7Sales' && item.checked"
+								width="150"
+								:fixed="item.fixed"
+								:prop="item.dataIndex"
+								:label="area == 'CN' ? item.titleCN : item.titleEN"
+								align="center"
+							>
+								<template #header>
+									<el-tooltip effect="dark" placement="bottom">
+										<div style="display:flex;align-items:center;justify-content:center">{{ area == 'CN' ? item.titleCN : item.titleEN }}<QuestionFilled  width="14" style="color: #ccc" /></div>
+										<template #content>
+											<p >统计近7天可获取到的数据汇总</p>
+										</template>
+									</el-tooltip>
+								</template>
+							</el-table-column>
+							<el-table-column
+								v-else-if="item.dataIndex === 'days30Sales' && item.checked"
+								width="150"
+								:fixed="item.fixed"
+								:prop="item.dataIndex"
+								:label="area == 'CN' ? item.titleCN : item.titleEN"
+								align="center"
+							>
+								<template #header>
+									<el-tooltip effect="dark" placement="bottom">
+										<div style="display:flex;align-items:center;justify-content:center">{{ area == 'CN' ? item.titleCN : item.titleEN }}<QuestionFilled  width="14" style="color: #ccc" /></div>
+										<template #content>
+											<p >统计近30天可获取到的数据汇总</p>
+										</template>
+									</el-tooltip>
+								</template>
+							</el-table-column>
 							<el-table-column
 								v-else-if="item.checked"
 								:fixed="item.fixed"
@@ -254,7 +288,7 @@ import { ElMessageBox, ElMessage, ElNotification, ElTooltip } from 'element-plus
 import { auth } from '/@/utils/authFunction';
 //import { formatDate } from '/@/utils/formatTime';
 import { AsinDataPage, GetNotImportedList, ExportEnglish, ExportChinese, GetASINDataExportRecord } from '/@/api/modular/main/ASINManagement.ts';
-import { ArrowDownBold, ArrowUpBold } from '@element-plus/icons-vue';
+import { ArrowDownBold, ArrowUpBold, QuestionFilled } from '@element-plus/icons-vue';
 import axios from 'axios';
 import router from '/@/router';
 import other from '/@/utils/other.ts';
@@ -263,7 +297,6 @@ import tabDragColum from '/@/components/tabDragColum/index.vue';
 import { useDebounce } from '/@/utils/debounce';
 import down from '/@/assets/down.png';
 import up from '/@/assets/up.png';
-
 
 const loading = ref(false);
 const Exportloading = ref(false);
@@ -699,8 +732,8 @@ const handleData = (list: any) => {
 const splitRank = (row, column) => {
 	if (column.property) {
 		let list = [];
-		if(row[column.property]){
-			list = row[column.property].split('#')
+		if (row[column.property]) {
+			list = row[column.property].split('#');
 		}
 		let content = `<div>`;
 		let hArr = [];
@@ -715,19 +748,19 @@ const splitRank = (row, column) => {
 							// str += `<div><span>#${item}</span>`;
 							// arr.push(h('span', null, '#'+item));
 						} else {
-							if(column.property === 'rankOne' && !(row.rankOneNumber===0 && row.backRankOneNumber===0)){
-								str += `<img src="${row.rankOneNumber > row.backRankOneNumber ? down : up}"/>`
-								if(row.rankOneNumber > row.backRankOneNumber){
+							if (column.property === 'rankOne' && !(row.rankOneNumber === 0 && row.backRankOneNumber === 0)) {
+								str += `<img src="${row.rankOneNumber > row.backRankOneNumber ? down : up}"/>`;
+								if (row.rankOneNumber > row.backRankOneNumber) {
 									arr.push(h('img', { src: down }));
-								}else{
+								} else {
 									arr.push(h('img', { src: up }));
 								}
 							}
-							if(column.property === 'rankTwo'  && !(row.rankTwoNumber===0 && row.backRankTwoNumber===0)){
-								str += `<img src="${row.rankTwoNumber > row.backRankTwoNumber ? down : up}"/>`
-								if(row.rankTwoNumber > row.backRankTwoNumber){
+							if (column.property === 'rankTwo' && !(row.rankTwoNumber === 0 && row.backRankTwoNumber === 0)) {
+								str += `<img src="${row.rankTwoNumber > row.backRankTwoNumber ? down : up}"/>`;
+								if (row.rankTwoNumber > row.backRankTwoNumber) {
 									arr.push(h('img', { src: down }));
-								}else{
+								} else {
 									arr.push(h('img', { src: up }));
 								}
 							}
@@ -745,22 +778,22 @@ const splitRank = (row, column) => {
 				iArr.map((item, index) => {
 					let str = '<div>';
 					if (index % 2 === 0 && item?.length) {
-						if(column.property === 'rankOne' && !(row.rankOneNumber===0 && row.backRankOneNumber===0)){
-								str += `<img src="${row.rankOneNumber > row.backRankOneNumber ? down : up}"/>`
-								if(row.rankOneNumber < row.backRankOneNumber){
-									arr.push(h('img', { src: down}));
-								}else{
-									arr.push(h('img', { src: up }));
-								}
+						if (column.property === 'rankOne' && !(row.rankOneNumber === 0 && row.backRankOneNumber === 0)) {
+							str += `<img src="${row.rankOneNumber > row.backRankOneNumber ? down : up}"/>`;
+							if (row.rankOneNumber < row.backRankOneNumber) {
+								arr.push(h('img', { src: down }));
+							} else {
+								arr.push(h('img', { src: up }));
 							}
-							if(column.property === 'rankTwo'  && !(row.rankTwoNumber===0 && row.backRankTwoNumber===0)){
-								str += `<img src="${row.rankTwoNumber > row.backRankTwoNumber ? down :up}"/>`
-								if(row.rankTwoNumber > row.backRankTwoNumber){
-									arr.push(h('img', { src: down }));
-								}else{
-									arr.push(h('img', { src: up }));
-								}
+						}
+						if (column.property === 'rankTwo' && !(row.rankTwoNumber === 0 && row.backRankTwoNumber === 0)) {
+							str += `<img src="${row.rankTwoNumber > row.backRankTwoNumber ? down : up}"/>`;
+							if (row.rankTwoNumber > row.backRankTwoNumber) {
+								arr.push(h('img', { src: down }));
+							} else {
+								arr.push(h('img', { src: up }));
 							}
+						}
 						str += `#${item}</div>`;
 						arr.push(h('span', null, '#' + item));
 						let countArr = h('div', null, arr);
@@ -984,7 +1017,7 @@ const handleSortChange = ({ column, prop, order }) => {
 		queryParams.value.field = null;
 		queryParams.value.order = null;
 	}
-	handleQuery()
+	handleQuery();
 };
 // 查询操作
 const handleQuery = async () => {

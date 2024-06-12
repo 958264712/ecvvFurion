@@ -48,7 +48,7 @@
 			</div>
 			<el-table :data="tableData" size="lagre" style="width: 100%" v-loading="loading" tooltip-effect="light"
 				:header-cell-style="customHeaderCellStyle" row-key="id" border="">
-				<el-table-column type="index" label="序号" align="center" show-overflow-tooltip="" />
+				<el-table-column type="index" label="序号" align="center" width="60" show-overflow-tooltip="" />
 				<el-table-column prop="fileName" label="文件名" align="center" show-overflow-tooltip="" />
 				<el-table-column prop="puyuanCloudInventoryTime" label="日期" align="center" show-overflow-tooltip="" />
 				<el-table-column v-if="weeks === '周'" prop="weeks" label="周数" align="center" show-overflow-tooltip="" />
@@ -73,7 +73,7 @@
 	</div>
 </template>
 <script lang="ts" setup="" name="puyuan_cloud_inventory">
-import { ref } from 'vue';
+import { ref,watch } from 'vue';
 import { service } from '/@/utils/request';
 import { ElMessageBox, ElMessage, ElNotification, FormInstance } from 'element-plus';
 import axios from 'axios';
@@ -244,6 +244,7 @@ const importFormList = ref<any>([
 ]);
 const importClose = (bol: boolean) => {
 	dialogFormVisible.value = bol;
+	
 };
 const importQuery = () => {
 	handleQuery();
@@ -335,7 +336,9 @@ const handleQuery = async () => {
 			tableParams.value.total = tableData.value?.length
 		}
 	})
-	if (weeks.value === '周') {
+	tableData.value = monthData
+	tableParams.value.total = tableData.value?.length
+	if (weeks.value === '周'&&importFormList.value.length === 1 ) {
 		importFormList.value.push({
 			label: '周',
 			prop: 'Week',
@@ -343,9 +346,7 @@ const handleQuery = async () => {
 			select: 'Week',
 			selectList: options1.value,
 		});
-	} else {
-		tableData.value = monthData
-		tableParams.value.total = tableData.value?.length
+	} else if (weeks.value !== '周'&&importFormList.value.length === 2 ){
 		importFormList.value.pop();
 	}
 	loading.value = false;
@@ -357,6 +358,7 @@ function customHeaderCellStyle({ column, $index }) {
 		backgroundColor: '#e9e9e9	', // 设置表头背景颜色为蓝色
 	};
 }
+
 handleQuery();
 </script>
 <style lang="less" scoped>
