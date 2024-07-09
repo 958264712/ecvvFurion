@@ -5,7 +5,7 @@ import { auth } from '/@/utils/authFunction';
 //import { formatDate } from '/@/utils/formatTime';
 import editDialog from './component/editDialog.vue';
 import { pageASINBasicData, Import, ExportASIN, deleteASINBasicData, addASINBasicData, updateASINBasicData, batchDeleteASINBasicData } from '/@/api/modular/main/aSINBasicData.ts';
-import other from '/@/utils/other.ts'
+import other from '/@/utils/other.ts';
 const displayDel = ref(true);
 const editDialogRef = ref();
 const loading = ref(false);
@@ -14,17 +14,23 @@ const loading3 = ref(false);
 let IsEdit = ref<any>(false);
 let selectedRows = ref<any>([]);
 const tableData = ref<any>([]);
+const area = ref<any>('UAE');
 const queryParams = ref<AsinParamsType>({});
 const tableParams = ref({
 	page: 1,
 	pageSize: 50,
 	total: 0,
+	Site: area.value,
 });
 const editASINBasicDataTitle = ref('');
-
+const switchLanguage = () => {
+	queryParams.value = {};
+	handleQuery();
+};
 // 查询操作
 const handleQuery = async () => {
 	loading.value = true;
+	tableParams.value.Site = area.value;
 	var res = await pageASINBasicData(Object.assign(queryParams.value, tableParams.value));
 	tableData.value = res.data.result?.items ?? [];
 	IsEdit.value = false;
@@ -55,7 +61,7 @@ function BatchDelete() {
 			ElMessage.success('删除成功');
 			handleQuery();
 		})
-		.catch(() => { });
+		.catch(() => {});
 }
 // 打开新增页面
 const openAddASINBasicData = () => {
@@ -77,7 +83,7 @@ const AddRow = () => {
 		});
 		IsEdit.value = true;
 	}
-}
+};
 
 // 改变页面容量
 const handleSizeChange = (val: number) => {
@@ -96,6 +102,7 @@ function Imports(file: any) {
 	loading3.value = true;
 	const formData = new FormData();
 	formData.append('file', file.raw);
+	formData.append('Site', area.value);
 	Import(formData).then((res: any) => {
 		loading3.value = false;
 		if (res.data.code == 200) {
@@ -112,11 +119,11 @@ const openEdit = (row: any) => {
 		row.IsEdit = true;
 		IsEdit.value = true;
 	}
-}
+};
 // 导出ASIN
 function Export() {
 	loading1.value = true;
-	ExportASIN().then((res: any) => {
+	ExportASIN({ site: area.value }).then((res: any) => {
 		loading1.value = false;
 		other.downloadfile(res);
 		handleQuery();
@@ -145,15 +152,14 @@ const delASINBasicData = (row: any) => {
 		.then(async () => {
 			if (row.id != null) {
 				await deleteASINBasicData(row);
-				tableData.value = tableData.value.filter(i => i !== row);
+				tableData.value = tableData.value.filter((i) => i !== row);
 				ElMessage.success('删除成功');
-
 			} else {
-				tableData.value = tableData.value.filter(i => i !== row);
+				tableData.value = tableData.value.filter((i) => i !== row);
 				IsEdit.value = false;
 			}
 		})
-		.catch(() => { });
+		.catch(() => {});
 };
 const validateASIN = () => {
 	const objectWithIsEditTrue = tableData.value.find((obj: any) => obj.IsEdit === true);
@@ -177,18 +183,22 @@ const validateStoreSKU = () => {
 		ElMessage.error('storeSKU不能为空');
 		return false;
 	}
-}
+};
 const validateSingleOrderQTY = () => {
 	const objectWithIsEditTrue = tableData.value.find((obj: any) => obj.IsEdit === true);
-	if (objectWithIsEditTrue.unit != '') {
+	if (objectWithIsEditTrue.unit != '' && !isNaN(objectWithIsEditTrue.unit)) {
 		tableData.value.find((obj: any) => obj.IsEdit === true).IsSingleOrderQTY = false;
 		return true;
+	} else if (isNaN(objectWithIsEditTrue.unit)) {
+		tableData.value.find((obj: any) => obj.IsEdit === true).IsSingleOrderQTY = true;
+		ElMessage.error('singleOrderQTY只能输入数字');
+		return false;
 	} else {
 		tableData.value.find((obj: any) => obj.IsEdit === true).IsSingleOrderQTY = true;
 		ElMessage.error('singleOrderQTY不能为空');
 		return false;
 	}
-}
+};
 const validateErpSku = () => {
 	const objectWithIsEditTrue = tableData.value.find((obj: any) => obj.IsEdit === true);
 	if (objectWithIsEditTrue.erpSku != '') {
@@ -199,7 +209,7 @@ const validateErpSku = () => {
 		ElMessage.error('erpSku不能为空');
 		return false;
 	}
-}
+};
 function Check() {
 	var b1 = false;
 	if (validateASIN()) {
@@ -224,23 +234,22 @@ function Check() {
 }
 const SAVE = (row: any) => {
 	if (Check()) {
+		row.site = area.value;
 		if (row.id == null) {
 			//添加操作
-			addASINBasicData(row).then(res => {
+			addASINBasicData(row).then((res) => {
 				ElMessage.success('添加成功');
 				handleQuery();
 			});
-
 		} else {
 			//修改操作
-			updateASINBasicData(row).then(res => {
+			updateASINBasicData(row).then((res) => {
 				ElMessage.success('修改成功');
 				handleQuery();
 			});
-
 		}
 	}
-}
+};
 
 handleQuery();
 </script>
@@ -266,11 +275,15 @@ handleQuery();
 				<el-form-item>
 					<el-button-group>
 						<el-button type="primary" icon="ele-Search" @click="handleQuery"> 查询 </el-button>
-						<el-button icon="ele-Refresh" @click="() => {
-							queryParams = {};
-							handleQuery();
-						}
-							">
+						<el-button
+							icon="ele-Refresh"
+							@click="
+								() => {
+									queryParams = {};
+									handleQuery();
+								}
+							"
+						>
 							重置
 						</el-button>
 					</el-button-group>
@@ -281,37 +294,60 @@ handleQuery();
 			<div class="importDiv">
 				<!-- <el-button type="primary" icon="ele-Plus" @click="openAddASINBasicData"> 新增 </el-button> -->
 				<!-- <el-button type="primary" icon="ele-Plus" @click="openaddASINBasicData()" v-auth="'sysMenu:add'"> 新增 </el-button> -->
-				<el-upload :on-change="Imports" :multiple="false" action="#" :show-file-list="false" :auto-upload="false"
-					name="file">
+				<el-upload :on-change="Imports" :multiple="false" action="#" :show-file-list="false" :auto-upload="false" name="file">
 					<el-button :loading="loading3" type="primary">ASIN基础数据导入</el-button>
 				</el-upload>
 				<el-button @click="Export" :loading="loading1" type="primary">导出全部ASIN</el-button>
 				<el-button @click="BatchDelete" :disabled="displayDel" :loading="loading1" type="primary">批量删除</el-button>
 				<el-link href="https://sa1api.ecvv.com/ExcelTemplate/ASIN.xlsx"> 下载ASIN上传模板</el-link>
 			</div>
-			<el-table :data="tableData" @selection-change="handleSelectionChange" size="lagre" style="width: 100%"
-				v-loading="loading" tooltip-effect="light" row-key="id" border="">
+			<div style="margin-top: 5px; display: flex; justify-content: space-between">
+				<el-button-group>
+					<el-button
+						style="width: 80px; height: 27px"
+						:class="{ buttonBackground: area == 'UAE' }"
+						@click="
+							area = 'UAE';
+							switchLanguage();
+						"
+						>UAE</el-button
+					>
+					<el-button
+						style="width: 80px; height: 27px"
+						:class="{ buttonBackground: area == 'SA' }"
+						@click="
+							area = 'SA';
+							switchLanguage();
+						"
+						>SA</el-button
+					>
+				</el-button-group>
+			</div>
+			<el-table :data="tableData" @selection-change="handleSelectionChange" size="lagre" style="width: 100%" v-loading="loading" tooltip-effect="light" row-key="id" border="">
 				<el-table-column width="140" align="center" fixed="left" show-overflow-tooltip="">
 					<template #header>
-						<el-button style="background-color: transparent;border: none;color: #DF1515;"
-							icon="ele-Setting"></el-button>
+						<el-button style="background-color: transparent; border: none; color: #df1515" icon="ele-Setting"></el-button>
 					</template>
 					<template #default="scope">
-						<el-button icon="ele-CirclePlus" size="small" text="" type="primary" @click="AddRow()"></el-button>
-						<el-button v-if="scope.row.IsEdit" icon="ele-Document" size="small" text="" type="primary"
-							@click="SAVE(scope.row)"></el-button>
-						<el-button v-if="!scope.row.IsEdit" icon="ele-Edit" size="small" text="" type="primary"
-							@click="openEdit(scope.row)"></el-button>
-						<el-button icon="ele-Delete" size="small" text="" type="primary"
-							@click="delASINBasicData(scope.row)"> </el-button>
+						<el-tooltip class="box-item" effect="dark" content="新增" placement="bottom">
+							<el-button icon="ele-CirclePlus" size="small" text="" type="primary" @click="AddRow()"></el-button>
+						</el-tooltip>
+						<el-tooltip class="box-item" effect="dark" content="保存" placement="bottom">
+							<el-button v-if="scope.row.IsEdit" icon="ele-Document" size="small" text="" type="primary" @click="SAVE(scope.row)"></el-button>
+						</el-tooltip>
+						<el-tooltip class="box-item" effect="dark" content="编辑" placement="bottom">
+							<el-button v-if="!scope.row.IsEdit" icon="ele-Edit" size="small" text="" type="primary" @click="openEdit(scope.row)"></el-button>
+						</el-tooltip>
+						<el-tooltip class="box-item" effect="dark" content="删除" placement="bottom">
+							<el-button icon="ele-Delete" size="small" text="" type="primary" @click="delASINBasicData(scope.row)"> </el-button>
+						</el-tooltip>
 					</template>
 				</el-table-column>
 				<el-table-column type="selection" width="40" />
 				<el-table-column prop="asin" label="ASIN" align="center" show-overflow-tooltip="">
 					<template #default="scope">
 						<div @dblclick="openEdit(scope.row)">
-							<el-input :class="{ 'sku-input': scope.row.IsASIN }" class="custom-input"
-								v-if="scope.row.IsEdit" type="text" v-model="scope.row.asin" clearable="" />
+							<el-input :class="{ 'sku-input': scope.row.IsASIN }" class="custom-input" v-if="scope.row.IsEdit" type="text" v-model="scope.row.asin" clearable="" />
 							<div v-else>{{ scope.row.asin }}</div>
 						</div>
 					</template>
@@ -319,8 +355,7 @@ handleQuery();
 				<el-table-column prop="storeSKU" label="StoreSKU" align="center" show-overflow-tooltip="">
 					<template #default="scope">
 						<div @dblclick="openEdit(scope.row)">
-							<el-input :class="{ 'sku-input': scope.row.IsstoreSKU }" class="custom-input"
-								v-if="scope.row.IsEdit" type="text" v-model="scope.row.storeSKU" clearable="" />
+							<el-input :class="{ 'sku-input': scope.row.IsstoreSKU }" class="custom-input" v-if="scope.row.IsEdit" type="text" v-model="scope.row.storeSKU" clearable="" />
 							<div v-else>{{ scope.row.storeSKU }}</div>
 						</div>
 					</template>
@@ -328,8 +363,7 @@ handleQuery();
 				<el-table-column prop="erpSku" label="ERP-SKU" align="center" show-overflow-tooltip="">
 					<template #default="scope">
 						<div @dblclick="openEdit(scope.row)">
-							<el-input :class="{ 'sku-input': scope.row.IserpSku }" class="custom-input"
-								v-if="scope.row.IsEdit" type="text" v-model="scope.row.erpSku" clearable="" />
+							<el-input :class="{ 'sku-input': scope.row.IserpSku }" class="custom-input" v-if="scope.row.IsEdit" type="text" v-model="scope.row.erpSku" clearable="" />
 							<div v-else>{{ scope.row.erpSku }}</div>
 						</div>
 					</template>
@@ -341,8 +375,7 @@ handleQuery();
 				<el-table-column prop="unit" label="Single Order QTY" align="center" show-overflow-tooltip="">
 					<template #default="scope">
 						<div @dblclick="openEdit(scope.row)">
-							<el-input :class="{ 'sku-input': scope.row.IsSingleOrderQTY }" class="custom-input"
-								v-if="scope.row.IsEdit" type="text" v-model="scope.row.unit" clearable="" />
+							<el-input :class="{ 'sku-input': scope.row.IsSingleOrderQTY }" class="custom-input" v-if="scope.row.IsEdit" type="text" v-model="scope.row.unit" clearable="" />
 							<div v-else>{{ scope.row.unit }}</div>
 						</div>
 					</template>
@@ -352,12 +385,18 @@ handleQuery();
 				<!-- <el-table-column prop="saudiBottomPrice_R96EP" align="center" label="SaudiBottomPrice_R96EP" width="190" show-overflow-tooltip="" />
 				<el-table-column prop="saudiBottomPrice_63FV3" align="center" label="SaudiBottomPrice_63FV3" width="190" show-overflow-tooltip="" />
 				<el-table-column prop="saudiBottomPrice_YZ6VH" align="center" label="SaudiBottomPrice_YZ6VH" width="190" show-overflow-tooltip="" /> -->
-
 			</el-table>
-			<el-pagination v-model:currentPage="tableParams.page" v-model:page-size="tableParams.pageSize"
-				:total="tableParams.total" :page-sizes="[50, 100, 500, 1000]" small="" background=""
-				@size-change="handleSizeChange" @current-change="handleCurrentChange"
-				layout="total, sizes, prev, pager, next, jumper" />
+			<el-pagination
+				v-model:currentPage="tableParams.page"
+				v-model:page-size="tableParams.pageSize"
+				:total="tableParams.total"
+				:page-sizes="[50, 100, 500, 1000]"
+				small=""
+				background=""
+				@size-change="handleSizeChange"
+				@current-change="handleCurrentChange"
+				layout="total, sizes, prev, pager, next, jumper"
+			/>
 			<editDialog ref="editDialogRef" :title="editASINBasicDataTitle" @reloadTable="handleQuery()" />
 		</el-card>
 	</div>
@@ -374,7 +413,13 @@ handleQuery();
 
 .sku-input {
 	:deep(.el-input__wrapper) {
-		box-shadow: 0 0 0 1px #DE2910 inset;
+		box-shadow: 0 0 0 1px #de2910 inset;
 	}
+}
+
+.buttonBackground {
+	background-color: #e76957;
+	box-shadow: 0 0 0 1px #e76957 inset;
+	color: white;
 }
 </style>

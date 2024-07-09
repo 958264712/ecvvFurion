@@ -78,6 +78,6 @@ export const performanceGetCompletion = (params?: any) =>
 export const performanceGetCompletionDetails = (params?: any) =>
     request({
         url: Api.performanceGetCompletionDetails,
-        method: 'get',
-        params: params,
+        method: 'post',
+        data: params,
     });

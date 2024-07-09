@@ -4,7 +4,13 @@ import axios from 'axios';
 import { ElMessageBox, ElMessage, ElNotification } from 'element-plus';
 import { auth } from '/@/utils/authFunction';
 import editDialog from './component/editDialog.vue';
-import { pageCN_OperationalProductAttributes, deleteCN_OperationalProductAttributes, Import, addCN_OperationalProductAttributes, updateCN_OperationalProductAttributes } from '/@/api/modular/main/uAE_ProcurementDetails.ts';
+import {
+	pageCN_OperationalProductAttributes,
+	deleteCN_OperationalProductAttributes,
+	Import,
+	addCN_OperationalProductAttributes,
+	updateCN_OperationalProductAttributes,
+} from '/@/api/modular/main/uAE_ProcurementDetails.ts';
 
 const editDialogRef = ref();
 const loading = ref(false);
@@ -27,14 +33,14 @@ const AddRow = () => {
 		});
 		IsEdit.value = true;
 	}
-}
+};
 //打开编辑
 const openEdit = (row: any) => {
 	if (!IsEdit.value) {
 		row.IsEdit = true;
 		IsEdit.value = true;
 	}
-}
+};
 // 查询操作
 const handleQuery = async () => {
 	loading.value = true;
@@ -61,14 +67,14 @@ const delCN_OperationalProductAttributes = (row: any) => {
 		.then(async () => {
 			if (row.id != null) {
 				await deleteCN_OperationalProductAttributes(row);
-				tableData.value = tableData.value.filter(i => i !== row);
+				tableData.value = tableData.value.filter((i) => i !== row);
 				ElMessage.success('删除成功');
 			} else {
-				tableData.value = tableData.value.filter(i => i !== row);
+				tableData.value = tableData.value.filter((i) => i !== row);
 				IsEdit.value = false;
 			}
 		})
-		.catch(() => { });
+		.catch(() => {});
 };
 const validateinventorySKU = () => {
 	const objectWithIsEditTrue = tableData.value.find((obj: any) => obj.IsEdit === true);
@@ -80,7 +86,7 @@ const validateinventorySKU = () => {
 		ElMessage.error('库存SKU不能为空');
 		return false;
 	}
-}
+};
 const validateinventoryProductName = () => {
 	const objectWithIsEditTrue = tableData.value.find((obj: any) => obj.IsEdit === true);
 	if (objectWithIsEditTrue.inventoryProductName != '') {
@@ -91,7 +97,7 @@ const validateinventoryProductName = () => {
 		ElMessage.error('库存品名不能为空');
 		return false;
 	}
-}
+};
 const validatesalesAttributes = () => {
 	const objectWithIsEditTrue = tableData.value.find((obj: any) => obj.IsEdit === true);
 	if (objectWithIsEditTrue.salesAttributes != '') {
@@ -102,7 +108,7 @@ const validatesalesAttributes = () => {
 		ElMessage.error('销售属性不能为空');
 		return false;
 	}
-}
+};
 const validateproductCAT = () => {
 	const objectWithIsEditTrue = tableData.value.find((obj: any) => obj.IsEdit === true);
 	if (objectWithIsEditTrue.productCAT != '') {
@@ -113,7 +119,7 @@ const validateproductCAT = () => {
 		ElMessage.error('产品CAT不能为空');
 		return false;
 	}
-}
+};
 const validatepurchasingCountry = () => {
 	const objectWithIsEditTrue = tableData.value.find((obj: any) => obj.IsEdit === true);
 	if (objectWithIsEditTrue.purchasingCountry != '') {
@@ -124,7 +130,7 @@ const validatepurchasingCountry = () => {
 		ElMessage.error('采购国不能为空');
 		return false;
 	}
-}
+};
 const validatespecsUnit = () => {
 	const objectWithIsEditTrue = tableData.value.find((obj: any) => obj.IsEdit === true);
 	if (objectWithIsEditTrue.specsUnit != '') {
@@ -135,7 +141,7 @@ const validatespecsUnit = () => {
 		ElMessage.error('SpecsUnit不能为空');
 		return false;
 	}
-}
+};
 function Check() {
 	var b1 = false;
 	if (validateinventorySKU()) {
@@ -170,21 +176,19 @@ const SAVE = (row: any) => {
 	if (Check()) {
 		if (row.id == null) {
 			//添加操作
-			addCN_OperationalProductAttributes(row).then(res => {
+			addCN_OperationalProductAttributes(row).then((res) => {
 				ElMessage.success('添加成功');
 				handleQuery();
 			});
-
 		} else {
 			//修改操作
-			updateCN_OperationalProductAttributes(row).then(res => {
+			updateCN_OperationalProductAttributes(row).then((res) => {
 				ElMessage.success('修改成功');
 				handleQuery();
 			});
-
 		}
 	}
-}
+};
 // 改变页面容量
 const handleSizeChange = (val: number) => {
 	tableParams.value.pageSize = val;
@@ -218,16 +222,16 @@ function handleSelectionChange(val: any) {
 	val.forEach((element: any) => {
 		selectedRows.value.push(element.inventorySKU);
 	});
-
 }
 function AllExport() {
 	Exportloading.value = true;
 	const formData = {
 		type: 1,
 	};
-	axios.post(import.meta.env.VITE_API_URL as any + `/api/cN_OperationalProductAttributes/export`, formData, {
-		responseType: 'blob' // 将响应解析为二进制数据
-	})
+	axios
+		.post((import.meta.env.VITE_API_URL as any) + `/api/cN_OperationalProductAttributes/export`, formData, {
+			responseType: 'blob', // 将响应解析为二进制数据
+		})
 		// service({
 		.then((data) => {
 			downloadfile(data);
@@ -264,9 +268,10 @@ function SelectedExport() {
 		type: 0,
 		ErpSku: selectedRows.value,
 	};
-	axios.post(import.meta.env.VITE_API_URL as any + `/api/cN_OperationalProductAttributes/export`, formData, {
-		responseType: 'blob' // 将响应解析为二进制数据
-	})
+	axios
+		.post((import.meta.env.VITE_API_URL as any) + `/api/cN_OperationalProductAttributes/export`, formData, {
+			responseType: 'blob', // 将响应解析为二进制数据
+		})
 		.then((data) => {
 			downloadfile(data);
 			if (data.statusText == 'OK') {
@@ -342,11 +347,15 @@ handleQuery();
 				<el-form-item>
 					<el-button-group>
 						<el-button type="primary" icon="ele-Search" @click="handleQuery"> 查询 </el-button>
-						<el-button icon="ele-Refresh" @click="() => {
-							queryParams = {};
-							handleQuery();
-						}
-							">
+						<el-button
+							icon="ele-Refresh"
+							@click="
+								() => {
+									queryParams = {};
+									handleQuery();
+								}
+							"
+						>
 							重置
 						</el-button>
 					</el-button-group>
@@ -355,15 +364,12 @@ handleQuery();
 		</el-card>
 		<el-card class="full-table" shadow="hover" style="margin-top: 8px">
 			<div>
-				<el-upload style="float: left;" :on-change="Imports" :multiple="false" action="#" :show-file-list="false"
-					:auto-upload="false" name="file">
+				<el-upload style="float: left" :on-change="Imports" :multiple="false" action="#" :show-file-list="false" :auto-upload="false" name="file">
 					<el-button :loading="loading" type="primary">导入</el-button>
 				</el-upload>
-				<div class="flex flex-wrap items-center" style="float: left;margin-left: 10px;">
+				<div class="flex flex-wrap items-center" style="float: left; margin-left: 10px">
 					<el-dropdown>
-						<el-button type="primary" :loading="Exportloading">
-							导出
-						</el-button>
+						<el-button type="primary" :loading="Exportloading"> 导出 </el-button>
 						<template #dropdown>
 							<el-dropdown-menu>
 								<el-dropdown-item @click="SelectedExport">导出选中</el-dropdown-item>
@@ -373,29 +379,31 @@ handleQuery();
 					</el-dropdown>
 				</div>
 			</div>
-			<el-table :data="tableData" size="lagre" style="width: 100%" v-loading="loading" tooltip-effect="light"
-				@selection-change="handleSelectionChange" row-key="id" border="">
+			<el-table :data="tableData" size="lagre" style="width: 100%" v-loading="loading" tooltip-effect="light" @selection-change="handleSelectionChange" row-key="id" border="">
 				<el-table-column width="140" align="center" fixed="left" show-overflow-tooltip="">
 					<template #header>
-						<el-button style="background-color: transparent;border: none;color: #DF1515;"
-							icon="ele-Setting"></el-button>
+						<el-button style="background-color: transparent; border: none; color: #df1515" icon="ele-Setting"></el-button>
 					</template>
 					<template #default="scope">
-						<el-button icon="ele-CirclePlus" size="small" text="" type="primary" @click="AddRow()"></el-button>
-						<el-button v-if="scope.row.IsEdit" icon="ele-Document" size="small" text="" type="primary"
-							@click="SAVE(scope.row)"></el-button>
-						<el-button v-if="!scope.row.IsEdit" icon="ele-Edit" size="small" text="" type="primary"
-							@click="openEdit(scope.row)"></el-button>
-						<el-button icon="ele-Delete" size="small" text="" type="primary"
-							@click="delCN_OperationalProductAttributes(scope.row)"> </el-button>
+						<el-tooltip class="box-item" effect="dark" content="新增" placement="bottom">
+							<el-button icon="ele-CirclePlus" size="small" text="" type="primary" @click="AddRow()"></el-button>
+						</el-tooltip>
+						<el-tooltip class="box-item" effect="dark" content="保存" placement="bottom">
+							<el-button v-if="scope.row.IsEdit" icon="ele-Document" size="small" text="" type="primary" @click="SAVE(scope.row)"></el-button>
+						</el-tooltip>
+						<el-tooltip class="box-item" effect="dark" content="编辑" placement="bottom">
+							<el-button v-if="!scope.row.IsEdit" icon="ele-Edit" size="small" text="" type="primary" @click="openEdit(scope.row)"></el-button>
+						</el-tooltip>
+						<el-tooltip class="box-item" effect="dark" content="删除" placement="bottom">
+							<el-button icon="ele-Delete" size="small" text="" type="primary" @click="delCN_OperationalProductAttributes(scope.row)"> </el-button>
+						</el-tooltip>
 					</template>
 				</el-table-column>
 				<el-table-column type="selection" width="55" class-name="custom-header" />
 				<el-table-column prop="inventorySKU" label="库存SKU" align="center" sortable show-overflow-tooltip="">
 					<template #default="scope">
 						<div @dblclick="openEdit(scope.row)">
-							<el-input :class="{ 'sku-input': scope.row.IsinventorySKU }" class="custom-input"
-								v-if="scope.row.IsEdit" type="text" v-model="scope.row.inventorySKU" clearable="" />
+							<el-input :class="{ 'sku-input': scope.row.IsinventorySKU }" class="custom-input" v-if="scope.row.IsEdit" type="text" v-model="scope.row.inventorySKU" clearable="" />
 							<div v-else>{{ scope.row.inventorySKU }}</div>
 						</div>
 					</template>
@@ -403,8 +411,7 @@ handleQuery();
 				<el-table-column prop="inventoryProductName" label="库存品名" align="center" sortable show-overflow-tooltip="">
 					<template #default="scope">
 						<div @dblclick="openEdit(scope.row)">
-							<el-input :class="{ 'sku-input': scope.row.IsinventoryProductName }" class="custom-input"
-								v-if="scope.row.IsEdit" type="text" v-model="scope.row.inventoryProductName" clearable="" />
+							<el-input :class="{ 'sku-input': scope.row.IsinventoryProductName }" class="custom-input" v-if="scope.row.IsEdit" type="text" v-model="scope.row.inventoryProductName" clearable="" />
 							<div v-else>{{ scope.row.inventoryProductName }}</div>
 						</div>
 					</template>
@@ -412,8 +419,7 @@ handleQuery();
 				<el-table-column prop="salesAttributes" label="销售属性" align="center" sortable show-overflow-tooltip="">
 					<template #default="scope">
 						<div @dblclick="openEdit(scope.row)">
-							<el-input :class="{ 'sku-input': scope.row.IssalesAttributes }" class="custom-input"
-								v-if="scope.row.IsEdit" type="text" v-model="scope.row.salesAttributes" clearable="" />
+							<el-input :class="{ 'sku-input': scope.row.IssalesAttributes }" class="custom-input" v-if="scope.row.IsEdit" type="text" v-model="scope.row.salesAttributes" clearable="" />
 							<div v-else>{{ scope.row.salesAttributes }}</div>
 						</div>
 					</template>
@@ -421,8 +427,7 @@ handleQuery();
 				<el-table-column prop="productCAT" label="产品CAT" align="center" sortable show-overflow-tooltip="">
 					<template #default="scope">
 						<div @dblclick="openEdit(scope.row)">
-							<el-input :class="{ 'sku-input': scope.row.IsproductCAT }" class="custom-input"
-								v-if="scope.row.IsEdit" type="text" v-model="scope.row.productCAT" clearable="" />
+							<el-input :class="{ 'sku-input': scope.row.IsproductCAT }" class="custom-input" v-if="scope.row.IsEdit" type="text" v-model="scope.row.productCAT" clearable="" />
 							<div v-else>{{ scope.row.productCAT }}</div>
 						</div>
 					</template>
@@ -430,8 +435,7 @@ handleQuery();
 				<el-table-column prop="purchasingCountry" label="采购国" align="center" sortable show-overflow-tooltip="">
 					<template #default="scope">
 						<div @dblclick="openEdit(scope.row)">
-							<el-input :class="{ 'sku-input': scope.row.IspurchasingCountry }" class="custom-input"
-								v-if="scope.row.IsEdit" type="text" v-model="scope.row.purchasingCountry" clearable="" />
+							<el-input :class="{ 'sku-input': scope.row.IspurchasingCountry }" class="custom-input" v-if="scope.row.IsEdit" type="text" v-model="scope.row.purchasingCountry" clearable="" />
 							<div v-else>{{ scope.row.purchasingCountry }}</div>
 						</div>
 					</template>
@@ -439,30 +443,39 @@ handleQuery();
 				<el-table-column prop="specsUnit" label="SpecsUnit" align="center" sortable show-overflow-tooltip="">
 					<template #default="scope">
 						<div @dblclick="openEdit(scope.row)">
-							<el-input :class="{ 'sku-input': scope.row.IsspecsUnit }" class="custom-input"
-								v-if="scope.row.IsEdit" type="text" v-model="scope.row.specsUnit" clearable="" />
+							<el-input :class="{ 'sku-input': scope.row.IsspecsUnit }" class="custom-input" v-if="scope.row.IsEdit" type="text" v-model="scope.row.specsUnit" clearable="" />
 							<div v-else>{{ scope.row.specsUnit }}</div>
 						</div>
 					</template>
 				</el-table-column>
-				<el-table-column label="操作" width="140" align="center" sortable fixed="right" show-overflow-tooltip=""
-					v-if="auth('cN_OperationalProductAttributes:edit') || auth('cN_OperationalProductAttributes:delete')">
+				<el-table-column
+					label="操作"
+					width="140"
+					align="center"
+					sortable
+					fixed="right"
+					show-overflow-tooltip=""
+					v-if="auth('cN_OperationalProductAttributes:edit') || auth('cN_OperationalProductAttributes:delete')"
+				>
 					<template #default="scope">
-						<el-button icon="ele-Edit" size="small" text="" type="primary"
-							@click="openEditCN_OperationalProductAttributes(scope.row)"
-							v-auth="'cN_OperationalProductAttributes:edit'">
+						<el-button icon="ele-Edit" size="small" text="" type="primary" @click="openEditCN_OperationalProductAttributes(scope.row)" v-auth="'cN_OperationalProductAttributes:edit'">
 							编辑
 						</el-button>
-						<el-button icon="ele-Delete" size="small" text="" type="primary"
-							@click="delCN_OperationalProductAttributes(scope.row)"
-							v-auth="'cN_OperationalProductAttributes:delete'"> 删除 </el-button>
+						<el-button icon="ele-Delete" size="small" text="" type="primary" @click="delCN_OperationalProductAttributes(scope.row)" v-auth="'cN_OperationalProductAttributes:delete'"> 删除 </el-button>
 					</template>
 				</el-table-column>
 			</el-table>
-			<el-pagination v-model:currentPage="tableParams.page" v-model:page-size="tableParams.pageSize"
-				:total="tableParams.total" :page-sizes="[50, 100, 500, 1000]" small="" background=""
-				@size-change="handleSizeChange" @current-change="handleCurrentChange"
-				layout="total, sizes, prev, pager, next, jumper" />
+			<el-pagination
+				v-model:currentPage="tableParams.page"
+				v-model:page-size="tableParams.pageSize"
+				:total="tableParams.total"
+				:page-sizes="[50, 100, 500, 1000]"
+				small=""
+				background=""
+				@size-change="handleSizeChange"
+				@current-change="handleCurrentChange"
+				layout="total, sizes, prev, pager, next, jumper"
+			/>
 			<editDialog ref="editDialogRef" :title="editCN_OperationalProductAttributesTitle" @reloadTable="handleQuery" />
 		</el-card>
 	</div>
@@ -470,7 +483,7 @@ handleQuery();
 <style lang="less" scoped>
 .sku-input {
 	:deep(.el-input__wrapper) {
-		box-shadow: 0 0 0 1px #DE2910 inset;
+		box-shadow: 0 0 0 1px #de2910 inset;
 	}
 }
 </style>

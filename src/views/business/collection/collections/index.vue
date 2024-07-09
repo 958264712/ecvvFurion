@@ -95,7 +95,7 @@
 							position: absolute;
 							right: -45px;
 							top: 30px;
-							z-index: 10000;
+							z-index: 2048;
 							overflow-y: auto;
 							background-color: #fff;
 							padding: 10px 20px;
@@ -142,7 +142,7 @@
 							position: absolute;
 							right: -25px;
 							top: 30px;
-							z-index: 10000;
+							z-index: 2048;
 							overflow-y: auto;
 							background-color: #fff;
 							padding: 10px 20px;
@@ -295,6 +295,11 @@ let Baoguancolumns = ref<any>([
 	{
 		title: '内部唯一识别码',
 		dataIndex: 'InternalUniqueID',
+		checked: false,
+	},
+	{
+		title: '风险标签',
+		dataIndex: 'WarnTag',
 		checked: false,
 	},
 	{
@@ -1029,11 +1034,21 @@ function deletefun(val: any) {
 }
 //导出报关件
 function exportBaoguan(val: any) {
+	if(Exportloading.value === true){
+		
+		ElMessage({
+			type: 'warning',
+			message: '正在导出文件，请等待本次导出完成后再进行导出操作',
+		});
+		return;
+	}
+	Exportloading.value = true;
 	service({
 		url: `/api/collectionOrderInfo/export/${val.row.documentNo}`,
 		method: 'get',
 		data: { documentNo: val.row.documentNo },
 		responseType: 'blob',
+		timeout:120000
 	})
 		.then((data) => {
 			downloadfile(data);
@@ -1049,6 +1064,7 @@ function exportBaoguan(val: any) {
 				});
 				getAppPage();
 			}
+			Exportloading.value = false;
 		})
 		.catch((arr) => {
 			ElNotification({
@@ -1060,6 +1076,7 @@ function exportBaoguan(val: any) {
 				type: 'error',
 				message: '导出失败',
 			});
+			Exportloading.value = false;
 		});
 }
 //导出验货单

@@ -200,6 +200,12 @@ const TableData = ref<any>([
 		fixed: false,
 	},
 	{
+		titleCN: '订单数量汇总',
+		dataIndex: 'orderQuantitySummary',
+		checked: true,
+		fixed: false,
+	},
+	{
 		titleCN: 'ERP可用库存-UAE仓',
 		dataIndex: 'erpAvailableStockUAE',
 		checked: true,

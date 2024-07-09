@@ -1,12 +1,12 @@
 <template>
 	<el-dialog :width="1200" v-model="dialogFormVisible" title="新增集货单商品基础信息">
-		<el-form :model="ruleForm" label-width="160px">
+		<el-form ref="ruleFormRef" :model="ruleForm" label-width="160px" :rules="rules">
 			<el-row>
 				<el-form-item v-show="false">
 					<el-input v-model="ruleForm.id" />
 				</el-form-item>
 				<el-col :span="12">
-					<el-form-item label="内部唯一识别码">
+					<el-form-item label="内部唯一识别码" prop="internalUniqueID">
 						<el-input v-model="ruleForm.internalUniqueID" placeholder="请输入内部唯一识别码" />
 					</el-form-item>
 					<el-form-item label="采购员">
@@ -29,8 +29,7 @@
 					</el-form-item>
 					<el-form-item label="标签">
 						<el-select v-model="ruleForm.warnTag" multiple collapse-tags placeholder="请选择" style="width: 240px">
-							<el-option v-for="item in tagoptions" :key="item.value" :label="item.value"
-								:value="item.value" />
+							<el-option v-for="item in tagoptions" :key="item.value" :label="item.value" :value="item.value" />
 						</el-select>
 					</el-form-item>
 					<el-form-item label="报关数量">
@@ -136,13 +135,12 @@
 					</el-form-item>
 				</el-col>
 			</el-row>
-			<el-row style="margin-top:18px;">
+			<el-row style="margin-top: 18px">
 				<el-col :span="24">
 					<el-form-item label="备注">
 						<el-input type="textarea" v-model="ruleForm.notes" placeholder="请输入备注" />
 					</el-form-item>
 				</el-col>
-
 			</el-row>
 			<!-- <el-form-item v-for="el in columns" :key="el.dataIndex" :label="el.title" >
 				<el-input v-model="ruleForm." :placeholder="`请输入${el.title}`"  />
@@ -151,19 +149,19 @@
 		<template #footer>
 			<span class="dialog-footer">
 				<el-button @click="dialogFormVisible = false">Cancel</el-button>
-				<el-button type="primary" @click="confirm()"> OK </el-button>
+				<el-button type="primary" @click="confirm(ruleFormRef)"> OK </el-button>
 			</span>
 		</template>
 	</el-dialog>
 </template>
 <script lang="ts" setup>
 import { ref, onMounted, reactive, computed } from 'vue';
-import { ElMessageBox, ElMessage, ElNotification } from 'element-plus';
+import { ElMessageBox, ElMessage, ElNotification, FormRules } from 'element-plus';
 import { SysCodeGenConfigApi, SysConstApi, SysDictDataApi, SysDictTypeApi, SysEnumApi } from '/@/api-services/api';
 import { service } from '/@/utils/request';
 import { getAPI } from '/@/utils/axios-utils';
 let dialogFormVisible = ref(false);
-const tagoptions = ref<any>([])
+const tagoptions = ref<any>([]);
 onMounted(async () => {
 	var res = await getAPI(SysDictDataApi).apiSysDictDataDataListCodeGet('warn_tag');
 	tagoptions.value = res.data.result;
@@ -173,59 +171,72 @@ const emit = defineEmits(['reloadTable']);
 const ruleFormRef = ref<FormInstance>();
 const isShowDialog = ref(false);
 const ruleForm = ref<any>({
-	warnTag: []
+	warnTag: [],
 });
+
+const rules = reactive<FormRules<RuleForm>>({
+	internalUniqueID: [{ required: true, message: '请输入内部唯一识别码' }],
+});
+
 // 打开弹窗
 const openDialog = (row: any) => {
 	ruleForm.value = JSON.parse(JSON.stringify(row));
 	dialogFormVisible.value = true;
 };
+
 // 关闭弹窗
 const closeDialog = () => {
 	emit('reloadTable');
 	dialogFormVisible.value = false;
 };
-function confirm() {
-	ruleForm.value.warnTag = ruleForm.value.warnTag.join(',');
-	if (ruleForm.value.id != null) {
-		service({
-			url: '/api/collectionGoodsInfoCache/update',
-			method: 'post',
-			data: ruleForm.value,
-		}).then((data) => {
-			if (data.data.type == 'success') {
-				ElMessage({
-					type: 'success',
-					message: '更新成功',
+function confirm(formEl: FormInstance | undefined) {
+	ruleForm.value.warnTag = ruleForm.value.warnTag?.length ? ruleForm.value.warnTag.join(',') : null;
+	if (!formEl) return;
+	 formEl.validate((valid, fields) => {
+		if (valid) {
+			if (ruleForm.value.id != null) {
+				service({
+					url: '/api/collectionGoodsInfoCache/update',
+					method: 'post',
+					data: ruleForm.value,
+				}).then((data) => {
+					if (data.data.type == 'success') {
+						ElMessage({
+							type: 'success',
+							message: '更新成功',
+						});
+						closeDialog();
+					} else {
+						ElMessage({
+							type: 'info',
+							message: '更新失败',
+						});
+					}
 				});
-				closeDialog();
 			} else {
-				ElMessage({
-					type: 'info',
-					message: '更新失败',
+				service({
+					url: '/api/collectionGoodsInfoCache/add',
+					method: 'post',
+					data: ruleForm.value,
+				}).then((data) => {
+					if (data.data.type == 'success') {
+						ElMessage({
+							type: 'success',
+							message: '添加成功',
+						});
+						closeDialog();
+					} else {
+						ElMessage({
+							type: 'info',
+							message: '添加失败',
+						});
+					}
 				});
 			}
-		});
-	} else {
-		service({
-			url: '/api/collectionGoodsInfoCache/add',
-			method: 'post',
-			data: ruleForm.value,
-		}).then((data) => {
-			if (data.data.type == 'success') {
-				ElMessage({
-					type: 'success',
-					message: '添加成功',
-				});
-				closeDialog();
-			} else {
-				ElMessage({
-					type: 'info',
-					message: '添加失败',
-				});
-			}
-		});
-	}
+		} else {
+			console.log('error submit!', fields);
+		}
+	});
 }
 //将属性或者函数暴露给父组件
 defineExpose({ openDialog });

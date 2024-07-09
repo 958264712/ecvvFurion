@@ -67,7 +67,7 @@ const disabledfun = async (val: any): void => {
 		const index = disabledList.value.findIndex((item) => item === val.row.id);
 		disabledList.value.splice(index, 1);
 	} else {
-		const reg = /^[0-9]{0,10}$/
+		const reg = /^[0-9]{1,10}$/
 		if(reg.test(val.row.rateStr)){
 			var res = await targetUpdate(Object.assign({ id: val.row.id, rate: parseFloat(val.row.rateStr) })).then(ElMessage.success('Save Successfully!'));
 			disabledList.value.push(val.row.id);

@@ -81,9 +81,9 @@ export const newDownLoadPOZip = (params?: any) =>
 		data: params,
 	});
 // 更新PO订单 Imports
-export const ImportPO = (params?: any) =>
+export const ImportPO = (params?: any,cover?:string) =>
 	request({
-		url: Api.importPO,
+		url: Api.importPO + '/' + cover,
 		method: 'post',
 		data: params,
 		headers: {
@@ -175,7 +175,7 @@ export const saudiPagePoData = (params?: any) =>
 // 导入ASIN
 export const Import = (params?: any) =>
 	request({
-		url: Api.Import,
+		url: Api.Import + '/' + params.Site,
 		method: 'post',
 		data: params,
 		headers: {

@@ -5,7 +5,7 @@ import { Local, Session } from '/@/utils/storage';
 // 配置新建一个 axios 实例
 export const service = axios.create({
 	baseURL: import.meta.env.VITE_API_URL as any,
-	timeout: 50000,
+	timeout: 120000,
 	headers: { 'Content-Type': 'application/json' },
 });
 
@@ -84,7 +84,8 @@ service.interceptors.response.use(
 		// 获取状态码和返回数据
 		var status = res.status;
 		var serve = res.data;
-
+		
+		
 		// 处理 401
 		if (status === 401) {
 			clearAccessTokens();
@@ -94,7 +95,6 @@ service.interceptors.response.use(
 		if (status >= 400) {
 			throw new Error(res.statusText || 'Request Error.');
 		}
-
 		// 处理规范化结果错误
 		if (serve && serve.hasOwnProperty('errors') && serve.errors) {
 			throw new Error(JSON.stringify(serve.errors || 'Request Error.'));
@@ -120,15 +120,22 @@ service.interceptors.response.use(
 		} else if (serve.code === undefined) {
 			return Promise.resolve(res);
 		} else if (serve.code !== 200) {
-			var message;
+			var message,result;
 			// 判断 serve.message 是否为对象
 			if (serve.message && typeof serve.message == 'object') {
 				message = JSON.stringify(serve.message);
 			} else {
 				message = serve.message;
 			}
+			
+			if (serve.result && typeof serve.result == 'object') {
+				result = JSON.stringify(serve.result);
+			} else {
+				result = serve.result;
+			}
+
 			ElMessage.error(message);
-			throw new Error(message);
+			throw new Error(message+result);
 		}
 
 		return res;

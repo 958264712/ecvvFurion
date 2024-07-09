@@ -492,7 +492,7 @@ const multipleExport = () => {
 		data.push(selectedRows.value[i]?.id);
 	}
 	cardLoading.value = true;
-	newMultipleExportByTemplate(data).then((res: any) => {
+	newMultipleExportByTemplate({ poList: data, Site: 'UAE' }).then((res: any) => {
 		if (res.data.code !== 200) {
 			cardLoading.value = false;
 			ElMessage.error(res.message);
@@ -565,13 +565,15 @@ handleQuery();
 					<el-select v-model="queryParams.type" style="width: 90px" placeholder="vendor">
 						<el-option v-for="i in vendorOptionList" :value="i.value" :label="i.label" />
 					</el-select>
-					<el-input v-model="queryParams.type1" style="width: 150px" clearable="" placeholder="Please enter" />
+					<el-input v-model="queryParams.type1" style="width: 150px" clearable=""
+						placeholder="Please enter" />
 				</el-form-item>
 				<el-form-item>
 					<el-select v-model="queryParams.orderDate" style="width: 90px" placeholder="orderDate">
 						<el-option v-for="i in orderDateOptionList" :value="i.value" :label="i.label" />
 					</el-select>
-					<el-date-picker v-model="queryParams.time" type="daterange" start-placeholder="Start date" end-placeholder="End date" format="YYYY-MM-DD" date-format="YYYY/MM/DD" style="width: 290px" />
+					<el-date-picker v-model="queryParams.time" type="daterange" start-placeholder="Start date"
+						end-placeholder="End date" format="YYYY-MM-DD" date-format="YYYY/MM/DD" style="width: 290px" />
 				</el-form-item>
 				<el-form-item label="状态">
 					<el-select v-model="queryParams.state" placeholder="全部">
@@ -586,15 +588,11 @@ handleQuery();
 				<el-form-item>
 					<el-button-group>
 						<el-button type="primary" icon="ele-Search" @click="handleQuery"> Search </el-button>
-						<el-button
-							icon="ele-Refresh"
-							@click="
-								() => {
-									queryParams = {};
-									handleQuery();
-								}
-							"
-						>
+						<el-button icon="ele-Refresh" @click="() => {
+				queryParams = {};
+				handleQuery();
+			}
+			">
 							Reset
 						</el-button>
 					</el-button-group>
@@ -612,79 +610,87 @@ handleQuery();
 					</el-dropdown-menu>
 				</template>
 			</el-dropdown>
-			<el-table :data="tableData" style="width: 100%" v-loading="loading" tooltip-effect="light" row-key="id" size="lagre" border="" @selection-change="(selection: any) => selectChange(selection)">
+			<el-table :data="tableData" style="width: 100%" v-loading="loading" tooltip-effect="light" row-key="id"
+				size="lagre" border="" @selection-change="(selection: any) => selectChange(selection)">
 				<el-table-column type="selection" width="55" />
 				<template v-for="item in tabelList">
-					<el-table-column v-if="item.dataIndex === 'shipToLocation'" width="135px" :prop="item.dataIndex" :label="item.titleCN" align="center" show-overflow-tooltip="">
+					<el-table-column v-if="item.dataIndex === 'shipToLocation'" width="135px" :prop="item.dataIndex"
+						:label="item.titleCN" align="center" show-overflow-tooltip="">
 						<template #default="scope">
 							{{ scope.row.shipToLocation.substring(0, 4) }}
 						</template>
 					</el-table-column>
-					<el-table-column v-else-if="item.dataIndex === 'state'" :prop="item.dataIndex" :label="item.titleCN" align="center" show-overflow-tooltip="">
+					<el-table-column v-else-if="item.dataIndex === 'state'" :prop="item.dataIndex" :label="item.titleCN"
+						align="center" show-overflow-tooltip="">
 						<template #default="scope">
 							<el-select v-model="scope.row.state" :disabled="disabledAuto(scope)">
 								<el-option v-for="i in optionList" :value="i.value" :label="i.label" />
 							</el-select>
 						</template>
 					</el-table-column>
-					<el-table-column v-else-if="item.dataIndex === 'contractedWarehouseTime'" :prop="item.dataIndex" :label="item.titleCN" align="center" width="125px">
+					<el-table-column v-else-if="item.dataIndex === 'contractedWarehouseTime'" :prop="item.dataIndex"
+						:label="item.titleCN" align="center" width="125px">
 						<template #default="scope">
-							<el-date-picker v-model="scope.row.contractedWarehouseTime" style="width: 96px" format="YYYY-MM-DD" type="date" :disabled="disabledAuto(scope)" />
+							<el-date-picker v-model="scope.row.contractedWarehouseTime" style="width: 96px"
+								format="YYYY-MM-DD" type="date" :disabled="disabledAuto(scope)" />
 						</template>
 					</el-table-column>
-					<el-table-column v-else-if="item.dataIndex === 'actualDate'" :prop="item.dataIndex" :label="item.titleCN" align="center" width="125px">
+					<el-table-column v-else-if="item.dataIndex === 'actualDate'" :prop="item.dataIndex"
+						:label="item.titleCN" align="center" width="125px">
 						<template #default="scope">
-							<el-date-picker v-model="scope.row.actualDate" style="width: 96px" format="YYYY-MM-DD" type="date" :disabled="disabledAuto(scope)" />
+							<el-date-picker v-model="scope.row.actualDate" style="width: 96px" format="YYYY-MM-DD"
+								type="date" :disabled="disabledAuto(scope)" />
 						</template>
 					</el-table-column>
-					<el-table-column v-else-if="item.dataIndex === 'invoicedStatus'" :prop="item.dataIndex" :label="item.titleCN" align="center" width="122px" show-overflow-tooltip="">
+					<el-table-column v-else-if="item.dataIndex === 'invoicedStatus'" :prop="item.dataIndex"
+						:label="item.titleCN" align="center" width="122px" show-overflow-tooltip="">
 						<template #default="scope">
 							<el-select v-model="scope.row.invoicedStatus" :disabled="disabledAuto(scope)">
 								<el-option v-for="i in statusOptionList" :value="i.value" :label="i.label" />
 							</el-select>
 						</template>
 					</el-table-column>
-					<el-table-column v-else-if="item.dataIndex === 'orderDate'" width="150px" :prop="item.dataIndex" :label="item.titleCN" align="center" show-overflow-tooltip="" />
-					<el-table-column v-else-if="item.dataIndex" :prop="item.dataIndex" :label="item.titleCN" align="center" show-overflow-tooltip="" />
+					<el-table-column v-else-if="item.dataIndex === 'orderDate'" width="150px" :prop="item.dataIndex"
+						:label="item.titleCN" align="center" show-overflow-tooltip="" />
+					<el-table-column v-else-if="item.dataIndex" :prop="item.dataIndex" :label="item.titleCN"
+						align="center" show-overflow-tooltip="" />
 				</template>
 
 				<el-table-column label="Operation" width="350" align="center" fixed="right" show-overflow-tooltip="">
 					<template #default="scope">
 						<el-button size="small" @click="openEdit(scope.row.id, scope.row)"> Edits </el-button>
 						<el-button size="small" @click="showModal(scope.row.id)"> Details </el-button>
-						<el-button type="info" size="small" @click="showModal1(scope.row.remark, scope.row.id)"> Remark </el-button>
+						<el-button type="info" size="small" @click="showModal1(scope.row.remark, scope.row.id)"> Remark
+						</el-button>
 					</template>
 				</el-table-column>
 			</el-table>
-			<el-pagination
-				v-model:currentPage="tableParams.page"
-				v-model:page-size="tableParams.pageSize"
-				:total="tableParams.total"
-				:page-sizes="[10, 20, 50, 100, 500, 1000]"
-				small=""
-				background=""
-				@size-change="handleSizeChange"
-				@current-change="handleCurrentChange"
-				layout="total, sizes, prev, pager, next, jumper"
-			/>
+			<el-pagination v-model:currentPage="tableParams.page" v-model:page-size="tableParams.pageSize"
+				:total="tableParams.total" :page-sizes="[10, 20, 50, 100, 500, 1000]" small="" background=""
+				@size-change="handleSizeChange" @current-change="handleCurrentChange"
+				layout="total, sizes, prev, pager, next, jumper" />
 			<!-- <el-dialog v-model="visible" title="Product List" @close="close" width="1000px">
 				<PoDataSource :po="pos"></PoDataSource>
 			</el-dialog> -->
 			<el-dialog v-model="visible1" title="Remark" width="400px">
-				<el-input v-model="remark" placeholder="Please enter orderDate" :disabled="remarkDisabled" style="height: 30px" />
+				<el-input v-model="remark" placeholder="Please enter orderDate" :disabled="remarkDisabled"
+					style="height: 30px" />
 				<template #footer>
 					<span class="dialog-footer">
 						<el-button @click="visible1 = false">Cancel</el-button>
-						<el-button type="primary" @click="remarkDisabled = false" v-if="remarkDisabled"> Edit </el-button>
+						<el-button type="primary" @click="remarkDisabled = false" v-if="remarkDisabled"> Edit
+						</el-button>
 						<el-button type="primary" @click="submit" v-else> Confirm </el-button>
 					</span>
 				</template>
 			</el-dialog>
 			<el-dialog v-model="visible2" title="导出历史记录" @close="close2" width="1000px">
-				<infoDataDialog :id="111" idName="dibaiPoDataDataId" :dataList="dataList" :ifClose="ifClose" :pointerface="getNewPoDataExportHistory" :formList="formList" />
+				<infoDataDialog :id="111" idName="dibaiPoDataDataId" :dataList="dataList" :ifClose="ifClose"
+					:pointerface="getNewPoDataExportHistory" :formList="formList" />
 			</el-dialog>
 			<el-dialog v-model="visible" title="Confirmed New POs详情" @close="close1" width="1000px">
-				<infoDataDialog :id="showId" idName="id" :dataList="dataList1" :pointerface="getConfirmedNewPOsPage" :formList="formList1" :ifClose="ifClose1" />
+				<infoDataDialog :id="showId" idName="id" :dataList="dataList1" :pointerface="getConfirmedNewPOsPage"
+					:formList="formList1" :ifClose="ifClose1" />
 			</el-dialog>
 		</el-card>
 	</div>
@@ -709,6 +715,7 @@ handleQuery();
 .el-link .el-icon--right.el-icon {
 	vertical-align: text-bottom;
 }
+
 /deep/ .el-select {
 	.el-input {
 		width: 100%;

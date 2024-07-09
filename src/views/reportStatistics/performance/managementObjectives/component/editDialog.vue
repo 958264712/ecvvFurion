@@ -4,7 +4,7 @@
 			<el-row>
 				<el-col :span="12">
 					<el-form-item label="人员" :rules="[{ required: true, message: `人员不能为空`, trigger: 'blur' }]">
-						<el-select v-model="ruleForm.name" clearable="" class="select"  placeholder="请选择">
+						<el-select v-model="ruleForm.name" clearable="" filterable class="select"  placeholder="请选择">
 							<el-option v-for="(item, index) in props.nameList" :key="index" :value="item.value" :label="item.label" />
 						</el-select>
 					</el-form-item>

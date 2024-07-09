@@ -68,7 +68,7 @@ export const pYYOtherWarehouseReceiptsPage = (params?: any) =>
 export const pYYPurchaseOrderPage = (params?: any) =>
 	request({
 		url: Api.pYYPurchaseOrderPage,
-		method: 'get',
+		method: 'post',
 		data: params,
 	});
 // 普源云其他入库单修改

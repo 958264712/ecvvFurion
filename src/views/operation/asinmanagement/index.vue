@@ -11,34 +11,28 @@
 				<el-form-item label="ERP-SKU/中文Name">
 					<el-popover :visible="visibleTextarea1" placement="bottom" :width="250">
 						<el-scrollbar height="150px" style="border: 1px solid var(--el-border-color)">
-							<el-input
-								v-model="queryParams.erpTextArea"
-								style="width: 215px"
-								:autosize="{ minRows: 1, maxRows: 200 }"
-								type="textarea"
-								placeholder="可输入多个ERP-SKU精确查询，每行一个，最多支持200个"
-							/>
+							<el-input v-model="queryParams.erpTextArea" style="width: 215px"
+								:autosize="{ minRows: 1, maxRows: 200 }" type="textarea"
+								placeholder="可输入多个ERP-SKU精确查询，每行一个，最多支持200个" />
 						</el-scrollbar>
 						<div style="text-align: right; margin-top: 20px">
 							<span style="float: left">{{ queryParams.erpSkuList?.length ?? 0 }}/200</span>
-							<el-button
-								type="info"
-								@click="
-									() => {
-										queryParams.erpTextArea = '';
-										erpAndGoodsName = '';
-									}
-								"
-								>重置</el-button
-							>
+							<el-button type="info" @click="() => {
+					queryParams.erpTextArea = '';
+					erpAndGoodsName = '';
+				}
+				">重置</el-button>
 							<el-button type="primary" @click="handleConfirm(1)">确定</el-button>
 						</div>
 						<template #reference>
-							<el-input v-model="erpAndGoodsName" clearable="" placeholder="请输入,点击展开可输多个" @clear="clearErp" @blur="clearObj">
+							<el-input v-model="erpAndGoodsName" clearable="" placeholder="请输入,点击展开可输多个"
+								@clear="clearErp" @blur="clearObj">
 								<template #suffix>
-									<el-icon class="el-input__icon"
-										><ArrowDownBold @click="showTextarea(1, visibleTextarea1)" v-if="!visibleTextarea1" /><ArrowUpBold @click="showTextarea(1, visibleTextarea1)" v-else
-									/></el-icon>
+									<el-icon class="el-input__icon">
+										<ArrowDownBold @click="showTextarea(1, visibleTextarea1)"
+											v-if="!visibleTextarea1" />
+										<ArrowUpBold @click="showTextarea(1, visibleTextarea1)" v-else />
+									</el-icon>
 								</template>
 							</el-input>
 						</template>
@@ -47,34 +41,28 @@
 				<el-form-item label="ASIN">
 					<el-popover :visible="visibleTextarea2" placement="bottom" :width="250">
 						<el-scrollbar height="150px" style="border: 1px solid var(--el-border-color)">
-							<el-input
-								v-model="queryParams.asinTextArea"
-								style="width: 215px"
-								:autosize="{ minRows: 1, maxRows: 200 }"
-								type="textarea"
-								placeholder="可输入多个ERP-SKU精确查询，每行一个，最多支持200个"
-							/>
+							<el-input v-model="queryParams.asinTextArea" style="width: 215px"
+								:autosize="{ minRows: 1, maxRows: 200 }" type="textarea"
+								placeholder="可输入多个ASIN精确查询，每行一个，最多支持200个" />
 						</el-scrollbar>
 						<div style="text-align: right; margin-top: 20px">
 							<span style="float: left">{{ queryParams.aSINList?.length ?? 0 }}/200</span>
-							<el-button
-								type="info"
-								@click="
-									() => {
-										queryParams.asinTextArea = '';
-										aSIN = '';
-									}
-								"
-								>重置</el-button
-							>
+							<el-button type="info" @click="() => {
+					queryParams.asinTextArea = '';
+					aSIN = '';
+				}
+				">重置</el-button>
 							<el-button type="primary" @click="handleConfirm(2)">确定</el-button>
 						</div>
 						<template #reference>
-							<el-input v-model="aSIN" clearable="" placeholder="请输入,点击展开可输多个" @clear="clearAsin" @blur="clearObj">
+							<el-input v-model="aSIN" clearable="" placeholder="请输入,点击展开可输多个" @clear="clearAsin"
+								@blur="clearObj">
 								<template #suffix>
-									<el-icon class="el-input__icon"
-										><ArrowDownBold @click="showTextarea(2, visibleTextarea2)" v-if="!visibleTextarea2" /><ArrowUpBold @click="showTextarea(2, visibleTextarea2)" v-else
-									/></el-icon>
+									<el-icon class="el-input__icon">
+										<ArrowDownBold @click="showTextarea(2, visibleTextarea2)"
+											v-if="!visibleTextarea2" />
+										<ArrowUpBold @click="showTextarea(2, visibleTextarea2)" v-else />
+									</el-icon>
 								</template>
 							</el-input>
 						</template>
@@ -87,7 +75,8 @@
 					</el-select>
 				</el-form-item>
 				<el-form-item label="采购国">
-					<el-select v-model="queryParams.purchasingCountry" class="m-2" style="width: 240px" @change="handleQuery">
+					<el-select v-model="queryParams.purchasingCountry" class="m-2" style="width: 240px"
+						@change="handleQuery">
 						<el-option label="UAE" value="UAE" />
 						<el-option label="SA" value="SA" />
 						<el-option label="CN" value="CN" />
@@ -106,7 +95,8 @@
 					</el-select>
 				</el-form-item>
 				<el-form-item label="负责人">
-					<el-input v-model="queryParams.creator" clearable="" placeholder="请输入负责人" @clear="clearObj" @blur="clearObj" />
+					<el-input v-model="queryParams.creator" clearable="" placeholder="请输入负责人" @clear="clearObj"
+						@blur="clearObj" />
 				</el-form-item>
 				<el-form-item label="Buybox">
 					<el-select v-model="queryParams.IsBuyBox" placeholder="全部" style="width: 240px">
@@ -131,7 +121,7 @@
 						<template #dropdown>
 							<el-dropdown-menu>
 								<el-dropdown-item @click="Export"> 导出全部 </el-dropdown-item>
-								<el-dropdown-item @click="SelectedExport"> 导出选中 </el-dropdown-item>
+								<el-dropdown-item @click="SelectedExport" :disabled="!selectedRowKeys?.length"> 导出选中 </el-dropdown-item>
 							</el-dropdown-menu>
 						</template>
 					</el-dropdown>
@@ -139,120 +129,85 @@
 						<el-radio-button label="中文表头" value="中文表头" @change="changeArea('CN')" />
 						<el-radio-button label="English header" value="English header" @change="changeArea('EN')" />
 					</el-radio-group>
-					<el-button type="primary" style="margin-left: 20px" :loading="exportDataLoading" @click="exportDataDialog">导出记录</el-button>
+					<el-button type="primary" style="margin-left: 20px" :loading="exportDataLoading"
+						@click="exportDataDialog">导出记录</el-button>
 				</div>
 				<tabDragColum :data="TableData" :name="`newasinmanagementData`" :area="area" @handleData="handleData" />
 			</div>
 			<el-tabs v-model="selectcountry" type="card" style="height: 85%" @tab-click="handleClick">
 				<el-tab-pane :label="item.label" :name="item.name" style="height: 100%" v-for="item in tabsList">
-					<el-table :data="tableData" style="height: 100%" v-loading="loading" tooltip-effect="light" row-key="id" border="" @selection-change="handleSelectionChange" @sort-change="handleSortChange">
+					<el-table :data="tableData" style="height: 100%" v-loading="loading" tooltip-effect="light"
+						row-key="id" border="" @selection-change="handleSelectionChange"
+						@sort-change="handleSortChange">
 						<el-table-column type="selection" width="40" align="center" />
 						<!-- <el-table-column prop="no" label="序号" align="center" /> -->
 						<template v-for="(item, index) in TableData" :key="index">
-							<el-table-column
-								v-if="item.dataIndex === 'rankOne' && item.checked"
-								width="150"
-								:fixed="item.fixed"
-								:prop="item.dataIndex"
-								:label="area == 'CN' ? item.titleCN : item.titleEN"
-								align="center"
-								sortable="custom"
-								:formatter="splitRank"
-							/>
-							<el-table-column
-								v-else-if="item.dataIndex === 'backRankOne' && item.checked"
-								width="150"
-								:fixed="item.fixed"
-								:prop="item.dataIndex"
-								:label="area == 'CN' ? item.titleCN : item.titleEN"
-								align="center"
-								sortable="custom"
-								:formatter="splitRank"
-							/>
-							<el-table-column
-								v-else-if="item.dataIndex === 'rankTwo' && item.checked"
-								width="150"
-								:fixed="item.fixed"
-								:prop="item.dataIndex"
-								:label="area == 'CN' ? item.titleCN : item.titleEN"
-								align="center"
-								sortable="custom"
-								:formatter="splitRank"
-							/>
-							<el-table-column
-								v-else-if="item.dataIndex === 'backRankTwo' && item.checked"
-								width="150"
-								:fixed="item.fixed"
-								:prop="item.dataIndex"
-								:label="area == 'CN' ? item.titleCN : item.titleEN"
-								align="center"
-								sortable="custom"
-								:formatter="splitRank"
-							/>
-							<el-table-column
-								v-else-if="item.dataIndex === 'days7Sales' && item.checked"
-								width="150"
-								:fixed="item.fixed"
-								:prop="item.dataIndex"
-								:label="area == 'CN' ? item.titleCN : item.titleEN"
-								align="center"
-							>
+							<el-table-column v-if="item.dataIndex === 'rankOne' && item.checked" width="150"
+								:fixed="item.fixed" :prop="item.dataIndex"
+								:label="area == 'CN' ? item.titleCN : item.titleEN" align="center" sortable="custom"
+								:formatter="splitRank" />
+							<el-table-column v-else-if="item.dataIndex === 'backRankOne' && item.checked" width="150"
+								:fixed="item.fixed" :prop="item.dataIndex"
+								:label="area == 'CN' ? item.titleCN : item.titleEN" align="center" sortable="custom"
+								:formatter="splitRank" />
+							<el-table-column v-else-if="item.dataIndex === 'rankTwo' && item.checked" width="150"
+								:fixed="item.fixed" :prop="item.dataIndex"
+								:label="area == 'CN' ? item.titleCN : item.titleEN" align="center" sortable="custom"
+								:formatter="splitRank" />
+							<el-table-column v-else-if="item.dataIndex === 'backRankTwo' && item.checked" width="150"
+								:fixed="item.fixed" :prop="item.dataIndex"
+								:label="area == 'CN' ? item.titleCN : item.titleEN" align="center" sortable="custom"
+								:formatter="splitRank" />
+							<el-table-column v-else-if="item.dataIndex === 'days7Sales' && item.checked" width="150"
+								:fixed="item.fixed" :prop="item.dataIndex"
+								:label="area == 'CN' ? item.titleCN : item.titleEN" align="center">
 								<template #header>
 									<el-tooltip effect="dark" placement="bottom">
-										<div style="display:flex;align-items:center;justify-content:center">{{ area == 'CN' ? item.titleCN : item.titleEN }}<QuestionFilled  width="14" style="color: #ccc" /></div>
+										<div style="display:flex;align-items:center;justify-content:center">
+											{{ area == 'CN' ? item.titleCN : item.titleEN }}
+											<QuestionFilled width="14" style="color: #ccc" />
+										</div>
 										<template #content>
-											<p >统计近7天可获取到的数据汇总</p>
+											<p>统计近7天可获取到的数据汇总</p>
 										</template>
 									</el-tooltip>
 								</template>
 							</el-table-column>
-							<el-table-column
-								v-else-if="item.dataIndex === 'days30Sales' && item.checked"
-								width="150"
-								:fixed="item.fixed"
-								:prop="item.dataIndex"
-								:label="area == 'CN' ? item.titleCN : item.titleEN"
-								align="center"
-							>
+							<el-table-column v-else-if="item.dataIndex === 'days30Sales' && item.checked" width="150"
+								:fixed="item.fixed" :prop="item.dataIndex"
+								:label="area == 'CN' ? item.titleCN : item.titleEN" align="center">
 								<template #header>
 									<el-tooltip effect="dark" placement="bottom">
-										<div style="display:flex;align-items:center;justify-content:center">{{ area == 'CN' ? item.titleCN : item.titleEN }}<QuestionFilled  width="14" style="color: #ccc" /></div>
+										<div style="display:flex;align-items:center;justify-content:center">
+											{{ area == 'CN' ? item.titleCN : item.titleEN }}
+											<QuestionFilled width="14" style="color: #ccc" />
+										</div>
 										<template #content>
-											<p >统计近30天可获取到的数据汇总</p>
+											<p>统计近30天可获取到的数据汇总</p>
 										</template>
 									</el-tooltip>
 								</template>
 							</el-table-column>
-							<el-table-column
-								v-else-if="item.checked"
-								:fixed="item.fixed"
-								:width="item.width"
-								:prop="item.dataIndex"
-								show-overflow-tooltip
-								:label="area == 'CN' ? item.titleCN : item.titleEN"
-								align="center"
-							/>
+							<el-table-column v-else-if="item.checked" :fixed="item.fixed" :width="item.width"
+								:prop="item.dataIndex" show-overflow-tooltip
+								:label="area == 'CN' ? item.titleCN : item.titleEN" align="center" />
 						</template>
 					</el-table>
 				</el-tab-pane>
 			</el-tabs>
-			<el-pagination
-				v-model:currentPage="tableParams.page"
-				v-model:page-size="tableParams.pageSize"
-				:total="tableParams.total"
-				:page-sizes="[10, 20, 50, 100, 500, 1000]"
-				small=""
-				background=""
-				@size-change="handleSizeChange"
-				@current-change="handleCurrentChange"
-				layout="total, sizes, prev, pager, next, jumper"
-			/>
+			<el-pagination v-model:currentPage="tableParams.page" v-model:page-size="tableParams.pageSize"
+				:total="tableParams.total" :page-sizes="[10, 20, 50, 100, 500, 1000]" small="" background=""
+				@size-change="handleSizeChange" @current-change="handleCurrentChange"
+				layout="total, sizes, prev, pager, next, jumper" />
 			<el-dialog v-model="exportVisible" title="导出历史记录" @close="close" width="1000px">
-				<SvgIcon style="margin-bottom: 10px; display: flex; justify-content: flex-end; cursor: pointer" name="iconfont icon-shuaxin" :size="22" title="刷新" @click="multipleExport" />
-				<el-table :data="exportData" style="height: 100%" v-loading="exportTableLoading" tooltip-effect="light" row-key="id" border="">
+				<SvgIcon style="margin-bottom: 10px; display: flex; justify-content: flex-end; cursor: pointer"
+					name="iconfont icon-shuaxin" :size="22" title="刷新" @click="multipleExport" />
+				<el-table :data="exportData" style="height: 100%" v-loading="exportTableLoading" tooltip-effect="light"
+					row-key="id" border="">
 					<el-table-column prop="fileUrl" label="文件地址" align="center" width="280px" show-overflow-tooltip>
 						<template #default="scope">
-							<el-link type="success" :href="scope.row.fileUrl">{{ scope.row.fileUrl === null ? '无文件' : scope.row.fileUrl.split('http://192.168.1.81:5568/ASINData/')[1] }}</el-link>
+							<el-link type="success"
+								:href="scope.row.fileUrl">{{ scope.row.fileUrl === null ? '无文件' : scope.row.fileUrl.split('http://192.168.1.81:5568/ASINData/')[1] }}</el-link>
 						</template>
 					</el-table-column>
 					<el-table-column prop="state" label="状态" width="130px" align="center">
@@ -266,24 +221,17 @@
 					<el-table-column prop="exportedBy" width="135px" label="导出人" align="center" />
 					<el-table-column prop="remark" label="备注" align="center" show-overflow-tooltip />
 				</el-table>
-				<el-pagination
-					v-model:currentPage="tableParams1.page"
-					v-model:page-size="tableParams1.pageSize"
-					:total="tableParams1.total"
-					:page-sizes="[10, 20, 50, 100, 500, 1000]"
-					small=""
-					background=""
-					@size-change="handleSizeChange1"
-					@current-change="handleCurrentChange1"
-					layout="total, sizes, prev, pager, next, jumper"
-				/>
+				<el-pagination v-model:currentPage="tableParams1.page" v-model:page-size="tableParams1.pageSize"
+					:total="tableParams1.total" :page-sizes="[10, 20, 50, 100, 500, 1000]" small="" background=""
+					@size-change="handleSizeChange1" @current-change="handleCurrentChange1"
+					layout="total, sizes, prev, pager, next, jumper" />
 			</el-dialog>
 		</el-card>
 	</div>
 </template>
 
 <script lang="ts" setup name="asinData">
-import { ref, watch, h } from 'vue';
+import { ref, watch, h, onBeforeUnmount, onUpdated } from 'vue';
 import { ElMessageBox, ElMessage, ElNotification, ElTooltip } from 'element-plus';
 import { auth } from '/@/utils/authFunction';
 //import { formatDate } from '/@/utils/formatTime';
@@ -819,13 +767,32 @@ const handleClick = (tab, event): void => {
 
 const Export = () => {
 	loading.value = true;
+	if (queryParams.value.erpSkuList?.length > 0) {
+		// queryParams.value.erpTextArea = '';
+		queryParams.value.erpAndGoodsName = '';
+	} else {
+		queryParams.value.erpAndGoodsName = erpAndGoodsName.value;
+		queryParams.value.erpSkuList = null;
+	}
+	if (queryParams.value.aSINList?.length > 0) {
+		// queryParams.value.asinTextArea = '';
+		queryParams.value.aSIN = '';
+	} else {
+		queryParams.value.aSIN = aSIN.value;
+		queryParams.value.aSINList = null;
+	}
+	if (!Session.get('queryObj')?.ifquery) {
+		queryParams.value.country = Session.get('queryObj')?.country ?? 'UAE';
+		queryParams.value.erpAndGoodsName = Session.get('queryObj')?.erpAndGoodsName ?? '';
+		selectcountry.value = Session.get('queryObj')?.country ?? 'UAE';
+	}
 	const input = {
 		country: selectcountry.value,
 	};
 	if (area.value === 'CN') {
-		Chinese(input);
+		Chinese(Object.assign(queryParams.value, tableParams.value, input));
 	} else {
-		English(input);
+		English(Object.assign(queryParams.value, tableParams.value, input));
 	}
 	loading.value = false;
 };
@@ -839,6 +806,7 @@ const SelectedExport = () => {
 	const formData = {
 		country: selectcountry.value,
 		idLists: selectedRows.value,
+		IsSelect: true
 	};
 	if (area.value === 'CN') {
 		Chinese(formData);
@@ -967,7 +935,10 @@ const handleConfirm = (type) => {
 	});
 	if (type === 1) {
 		queryParams.value.erpSkuList = arr;
-		erpAndGoodsName.value = arr + '';
+		if(arr?.length>0){
+			erpAndGoodsName.value = arr + '';
+		}
+
 		visibleTextarea1.value = false;
 	} else {
 		queryParams.value.aSINList = arr;
@@ -999,7 +970,7 @@ const clearObj = () => {
 };
 // 重置
 const reset = () => {
-	queryParams.value = { country: 'UAE' };
+	queryParams.value = { country: 'UAE' ,erpSkuList: null};
 	aSIN.value = '';
 	erpAndGoodsName.value = '';
 	Session.set('queryObj', {});
@@ -1021,12 +992,6 @@ const handleSortChange = ({ column, prop, order }) => {
 };
 // 查询操作
 const handleQuery = async () => {
-	if (!Session.get('queryObj')?.ifquery) {
-		queryParams.value.country = Session.get('queryObj')?.country ?? 'UAE';
-		queryParams.value.erpAndGoodsName = Session.get('queryObj')?.erpAndGoodsName ?? '';
-		selectcountry.value = Session.get('queryObj')?.country ?? 'UAE';
-	}
-
 	var getNotImportedList = await GetNotImportedList({ site: selectcountry.value });
 	if (getNotImportedList.data.result !== '') {
 		tableData.value = [];
@@ -1048,6 +1013,15 @@ const handleQuery = async () => {
 	} else {
 		queryParams.value.aSIN = aSIN.value;
 		queryParams.value.aSINList = null;
+	}
+	if (Session.get('queryObj')?.ifquery === false) {
+		queryParams.value.country = Session.get('queryObj')?.country ?? 'UAE';
+		queryParams.value.erpAndGoodsName = Session.get('queryObj')?.erpAndGoodsName ?? '';
+		erpAndGoodsName.value = queryParams.value.erpAndGoodsName
+		// queryParams.value.erpSkuList = Session.get('queryObj')?.erpSkuList ?? null;
+		queryParams.value.erpTextArea = Session.get('queryObj')?.erpSkuList ?? null;
+		handleConfirm(1)
+		selectcountry.value = Session.get('queryObj')?.country ?? 'UAE';
 	}
 	var res = await AsinDataPage(Object.assign(queryParams.value, tableParams.value));
 	tableData.value = res.data.result?.items ?? [];
@@ -1074,6 +1048,8 @@ function handleSelectionChange(val: any) {
 	});
 }
 handleQuery();
+
+
 watch(
 	() => queryParams.value.erpTextArea,
 	() => {
@@ -1114,6 +1090,19 @@ watch(
 		}
 	}
 );
+
+
+onUpdated(()=>{
+	if(Session.get('queryObj')?.ifquery === false && queryParams.value.erpTextArea !== Session.get('queryObj')?.erpSkuList){
+		handleQuery();
+	}
+})
+onBeforeUnmount(()=>{
+	queryParams.value = { country: 'UAE' ,erpSkuList: null};
+	aSIN.value = '';
+	erpAndGoodsName.value = '';
+	Session.set('queryObj', {});
+})
 </script>
 
 <style lang="less" scoped>
@@ -1167,6 +1156,7 @@ watch(
 /deep/ .el-table td.el-table__cell div {
 	overflow: hidden;
 }
+
 /deep/ .el-textarea__inner {
 	box-shadow: initial;
 	padding: 0;

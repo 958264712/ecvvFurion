@@ -96,6 +96,7 @@ export function setFilterRouteEnd() {
  */
 export async function setAddRoute() {
 	await setFilterRouteEnd().forEach((route: RouteRecordRaw) => {
+		
 		router.addRoute(route);
 	});
 }

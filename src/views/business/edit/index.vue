@@ -710,7 +710,7 @@
 						<el-button type="primary" size="small" @click="cut()"> 剪切 </el-button>
 						<el-button size="small" @click="affix()"> 粘贴 </el-button>
 						<el-button type="primary" size="small" @click="repricefun()"> 重新计价 </el-button>
-						<el-button size="small" @click="deletion()"> 批量删除 </el-button>
+						<!--<el-button size="small" @click="deletion()"> 批量删除 </el-button>-->
 					</el-button-group>
 				</el-form-item>
 			</el-row>

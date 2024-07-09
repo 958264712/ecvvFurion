@@ -1,5 +1,5 @@
 <script lang="ts" setup name="performance_rate">
-import { ref,onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { ratePage } from '/@/api/modular/main/performance.ts';
 import { service } from '/@/utils/request';
 import editDialog from './component/editDialog.vue'
@@ -12,32 +12,36 @@ const loading = ref(false);
 const visible = ref(false);
 const tableData = ref<any>([]);
 const yearList = ref<any>([
-    {label:'全部',value:null},
-    {value:2024,label:2024},
-    {value:2023,label:2023},
-    {value:2022,label:2022},
-    {value:2021,label:2021},
-    {value:2020,label:2020},
-    {value:2019,label:2019},
-    {value:2018,label:2018},
-    {value:2017,label:2017},
-    {value:2016,label:2016},
-    {value:2015,label:2015},
-    {value:2014,label:2014},
-    {value:2013,label:2013},
-    {value:2012,label:2012},
-    {value:2011,label:2011},
-    {value:2010,label:2010},
+	{ label: '全部', value: null },
+	{ value: 2024, label: 2024 },
+	{ value: 2023, label: 2023 },
+	{ value: 2022, label: 2022 },
+	{ value: 2021, label: 2021 },
+	{ value: 2020, label: 2020 },
+	{ value: 2019, label: 2019 },
+	{ value: 2018, label: 2018 },
+	{ value: 2017, label: 2017 },
+	{ value: 2016, label: 2016 },
+	{ value: 2015, label: 2015 },
+	{ value: 2014, label: 2014 },
+	{ value: 2013, label: 2013 },
+	{ value: 2012, label: 2012 },
+	{ value: 2011, label: 2011 },
+	{ value: 2010, label: 2010 },
 ]);
 const moneyList = ref<any>([
-    {label:'全部',value:null},
-    {label:'AED',value:'AED'},
-    {label:'SAR',value:'SAR'},
+	{ label: '全部', value: null },
+	{ label: 'AED', value: 'AED' },
+	{ label: 'SAR', value: 'SAR' },
 ]);
-const moneyList1= ref<any>([
-    {value:'RMB',label:'RMB'},
+const moneyList2 = ref<any>([
+	{ label: 'AED', value: 'AED' },
+	{ label: 'SAR', value: 'SAR' },
 ]);
-const queryParams = ref<any>({  });
+const moneyList1 = ref<any>([
+	{ value: 'RMB', label: 'RMB' },
+]);
+const queryParams = ref<any>({});
 const editDialogRef = ref();
 const editCollectionOrderInfoTitle = ref('');
 const area = ref('CN');
@@ -128,7 +132,7 @@ const handleCurrentChange = (val: number) => {
 	handleQuery();
 };
 
-    
+
 handleQuery();
 </script>
 
@@ -137,28 +141,26 @@ handleQuery();
 		<el-card shadow="hover" :body-style="{ paddingBottom: '0' }">
 			<el-form :model="queryParams" ref="queryForm" :inline="true">
 				<el-form-item label="年份">
-					<el-select v-model="queryParams.year" clearable=""  placeholder="请选择">
-						<el-option v-for="(item, index) in yearList" :key="index" :value="item.value" :label="item.label" />
+					<el-select v-model="queryParams.year" clearable="" placeholder="请选择">
+						<el-option v-for="(item, index) in yearList" :key="index" :value="item.value"
+							:label="item.label" />
 					</el-select>
 				</el-form-item>
-			
+
 				<el-form-item label="原币种">
-					<el-select v-model="queryParams.originalCurrency" clearable=""  placeholder="请选择">
-						<el-option v-for="(item, index) in moneyList" :key="index" :value="item.value" :label="item.label" />
+					<el-select v-model="queryParams.originalCurrency" clearable="" placeholder="请选择">
+						<el-option v-for="(item, index) in moneyList" :key="index" :value="item.value"
+							:label="item.label" />
 					</el-select>
 				</el-form-item>
 				<el-form-item>
 					<el-button-group>
 						<el-button type="primary" icon="ele-Search" @click="handleQuery"> 查询 </el-button>
-						<el-button
-							icon="ele-Refresh"
-							@click="
-								() => {
-									queryParams = {};
-									handleQuery();
-								}
-							"
-						>
+						<el-button icon="ele-Refresh" @click="() => {
+				queryParams = {};
+				handleQuery();
+			}
+			">
 							重置
 						</el-button>
 					</el-button-group>
@@ -168,22 +170,16 @@ handleQuery();
 		<el-card class="full-table" shadow="hover">
 			<div style="display: flex; justify-content: space-between">
 				<div style="margin-bottom: 20px; display: flex; justify-content: space-between">
-					<el-button type="primary" @click="openAddManagement" >新增</el-button>
+					<el-button type="primary" @click="openAddManagement">新增</el-button>
 				</div>
 				<tabDragColum :data="TableData" :name="`performance_rate`" :area="area" @handleData="handleData" />
 			</div>
 
-			<el-table :data="tableData" style="height: 100%" v-loading="loading" tooltip-effect="light" row-key="id" border="">
+			<el-table :data="tableData" style="height: 100%" v-loading="loading" tooltip-effect="light" row-key="id"
+				border="">
 				<template v-for="(item, index) in TableData" :key="index">
-					<el-table-column
-						v-if="item.checked"
-						:fixed="item.fixed"
-						:width="item.width"
-						:prop="item.dataIndex"
-						show-overflow-tooltip
-						:label="area == 'CN' ? item.titleCN : item.titleEN"
-						align="center"
-					/>
+					<el-table-column v-if="item.checked" :fixed="item.fixed" :width="item.width" :prop="item.dataIndex"
+						show-overflow-tooltip :label="area == 'CN' ? item.titleCN : item.titleEN" align="center" />
 				</template>
 				<el-table-column label="操作" align="center" fixed="right" width="180">
 					<template #default="scope">
@@ -191,32 +187,29 @@ handleQuery();
 					</template>
 				</el-table-column>
 			</el-table>
-			<el-pagination
-				v-model:currentPage="tableParams.page"
-				v-model:page-size="tableParams.pageSize"
-				:total="tableParams.total"
-				:page-sizes="[10, 20, 50, 100, 500, 1000]"
-				small=""
-				background=""
-				@size-change="handleSizeChange"
-				@current-change="handleCurrentChange"
-				layout="total, sizes, prev, pager, next, jumper"
-			/>
+			<el-pagination v-model:currentPage="tableParams.page" v-model:page-size="tableParams.pageSize"
+				:total="tableParams.total" :page-sizes="[10, 20, 50, 100, 500, 1000]" small="" background=""
+				@size-change="handleSizeChange" @current-change="handleCurrentChange"
+				layout="total, sizes, prev, pager, next, jumper" />
 		</el-card>
-		<editDialog ref="editDialogRef" :moneyList="moneyList" :moneyList1="moneyList1" :title="editCollectionOrderInfoTitle" @reloadTable="handleQuery()" />
+		<editDialog ref="editDialogRef" :moneyList="moneyList2" :moneyList1="moneyList1"
+			:title="editCollectionOrderInfoTitle" @reloadTable="handleQuery()" />
 	</div>
 </template>
 
 <style lang="less" scoped>
 .select {
 	width: 100px;
+
 	:deep(.el-input) {
 		width: 100%;
 	}
 }
+
 .radio-group {
 	height: 24px;
 	margin: 0 10px;
+
 	:deep(.el-radio-button__inner) {
 		padding: 4px 13px;
 	}

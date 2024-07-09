@@ -1,5 +1,5 @@
 ﻿<script lang="ts" setup name="dibaiPoData">
-import { ref } from 'vue';
+import { ref, h } from 'vue';
 import { ElMessageBox, ElMessage } from 'element-plus';
 import { pagePoData, deletePoData, updateOrderDate, ImportPO, bulkImportOrderDate, multipleExportByTemplate, downLoadPOZip } from '/@/api/modular/main/aSINBasicData.ts';
 import PoDataSource from './components/poDataSource.vue';
@@ -70,7 +70,7 @@ const delPoData = (row: any) => {
 			handleQuery();
 			ElMessage.success('Successfully Delete');
 		})
-		.catch(() => { });
+		.catch(() => {});
 };
 
 // 改变页面容量
@@ -85,19 +85,36 @@ const handleCurrentChange = (val: number) => {
 	handleQuery();
 };
 // 导入
-function ImportforPO(file: any) {
+function ImportforPO(file: any, ifCover = false) {
 	loading1.value = true;
 	const formData = new FormData();
 	formData.append('file', file.raw);
-	ImportPO(formData).then((res: any) => {
-		loading1.value = false;
-		if (res.data.type === 'success') {
-			ElMessage.success('Import succeeded');
-			handleQuery();
-		} else {
-			ElMessage.error(res.message); // + res.message
-		}
-	});
+	formData.append('cover', ifCover === true ? 'true' : 'false');
+	ImportPO(formData, ifCover === true ? 'true' : 'false')
+		.then((res: any) => {
+			loading1.value = false;
+			if (res.data.type === 'success') {
+				ElMessage.success('Import succeeded');
+				handleQuery();
+			} 
+		})
+		.catch((res) => {
+			loading1.value = false;
+			const result = res.toString().split('据')[2]
+			ElMessageBox({
+				message:h('p',{style:"overflow-wrap:break-word"},`${result} in the data has already been imported. If you needs to be imported again, the original ${result} will be overwritten: it is a duplicate PO number`),
+				title:'Prompt Message',
+				showCancelButton: true,
+				cancelButtonText: 'Cancel',
+				confirmButtonText: 'Confirm',
+			})
+				.then(async () => {
+					await ImportforPO(file, true);
+				})
+				.catch(() => {
+					// ElMessage.error(res.message); // + res.message
+				});
+		});
 }
 // 导入
 function ImportsOrderDate(data: any) {
@@ -128,7 +145,7 @@ const multipleExport = () => {
 		data.push(selectedRows.value[i]?.po);
 	}
 	cardLoading.value = true;
-	multipleExportByTemplate(data).then((res: any) => {
+	multipleExportByTemplate({ poList: data, Site: 'UAE' }).then((res: any) => {
 		if (res.data.code !== 200) {
 			cardLoading.value = false;
 			ElMessage.error(res.message);
@@ -241,11 +258,15 @@ handleQuery();
 				<el-form-item>
 					<el-button-group>
 						<el-button type="primary" icon="ele-Search" @click="handleQuery"> Search </el-button>
-						<el-button icon="ele-Refresh" @click="() => {
-								queryParams = {};
-								handleQuery();
-							}
-							">
+						<el-button
+							icon="ele-Refresh"
+							@click="
+								() => {
+									queryParams = {};
+									handleQuery();
+								}
+							"
+						>
 							Reset
 						</el-button>
 					</el-button-group>
@@ -254,8 +275,7 @@ handleQuery();
 		</el-card>
 		<el-card class="full-table" shadow="hover" style="margin-top: 8px">
 			<div class="importDiv" style="width: 72%">
-				<el-upload :on-change="ImportforPO" :multiple="false" action="#" :show-file-list="false"
-					:auto-upload="false" name="file">
+				<el-upload :on-change="ImportforPO" :multiple="false" action="#" :show-file-list="false" :auto-upload="false" name="file">
 					<el-button :loading="loading1" type="primary">Batch import PO</el-button>
 				</el-upload>
 				<el-upload :on-change="ImportsOrderDate" :multiple="false" :show-file-list="false" name="file">
@@ -265,18 +285,14 @@ handleQuery();
 				<!-- <el-button type="danger" @click="notGenerateExport" :loading="notGenerateLoading"
             >生成未生成的PO拣货单</el-button
           > -->
-				<el-link icon="ele-Download" href="https://sa1api.ecvv.com/ExcelTemplate/POtemplate.xlsx"> Download the PO
-					import template</el-link>
-				<el-link icon="ele-Download" href="https://sa1api.ecvv.com/ExcelTemplate/OrderDate.xlsx"> Download the
-					OrderDate import template</el-link>
+				<el-link icon="ele-Download" href="https://sa1api.ecvv.com/ExcelTemplate/POtemplate.xlsx"> Download the PO import template</el-link>
+				<el-link icon="ele-Download" href="https://sa1api.ecvv.com/ExcelTemplate/OrderDate.xlsx"> Download the OrderDate import template</el-link>
 			</div>
-			<el-table :data="tableData" style="width: 100%" v-loading="loading" tooltip-effect="light" row-key="id"
-				size="lagre" border="" @selection-change="(selection: any) => selectChange(selection)">
+			<el-table :data="tableData" style="width: 100%" v-loading="loading" tooltip-effect="light" row-key="id" size="lagre" border="" @selection-change="(selection: any) => selectChange(selection)">
 				<el-table-column type="selection" width="55" />
 				<el-table-column prop="po" label="PO" align="center" sortable show-overflow-tooltip="" />
 				<el-table-column prop="vendor" label="Vendor" align="center" sortable show-overflow-tooltip="" />
-				<el-table-column prop="shipToLocation" label="ShipToLocation" align="center" sortable
-					show-overflow-tooltip="" />
+				<el-table-column prop="shipToLocation" label="ShipToLocation" align="center" sortable show-overflow-tooltip="" />
 				<el-table-column prop="windowType" label="WindowType" align="center" sortable show-overflow-tooltip="" />
 				<el-table-column prop="isGenerate" label="IsGenerate" align="center" sortable show-overflow-tooltip="">
 					<template #default="scope">
@@ -292,19 +308,23 @@ handleQuery();
 				</el-table-column>
 				<el-table-column label="Operation" width="350" align="center" fixed="right" show-overflow-tooltip="">
 					<template #default="scope">
-						<el-button icon="ele-Edit" size="small" text="" type="primary" @click="showModal(scope.row.po)">
-							Details </el-button>
-						<el-button icon="ele-Edit" size="small" text="" type="primary"
-							@click="showModal1(scope.row.orderDate, scope.row.po)"> Edit OrderDate </el-button>
-						<el-button icon="ele-Delete" size="small" text="" type="primary" @click="delPoData(scope.row)">
-							Delete </el-button>
+						<el-button icon="ele-Edit" size="small" text="" type="primary" @click="showModal(scope.row.po)"> Details </el-button>
+						<el-button icon="ele-Edit" size="small" text="" type="primary" @click="showModal1(scope.row.orderDate, scope.row.po)"> Edit OrderDate </el-button>
+						<el-button icon="ele-Delete" size="small" text="" type="primary" @click="delPoData(scope.row)"> Delete </el-button>
 					</template>
 				</el-table-column>
 			</el-table>
-			<el-pagination v-model:currentPage="tableParams.page" v-model:page-size="tableParams.pageSize"
-				:total="tableParams.total" :page-sizes="[10, 20, 50, 100, 500, 1000]" small="" background=""
-				@size-change="handleSizeChange" @current-change="handleCurrentChange"
-				layout="total, sizes, prev, pager, next, jumper" />
+			<el-pagination
+				v-model:currentPage="tableParams.page"
+				v-model:page-size="tableParams.pageSize"
+				:total="tableParams.total"
+				:page-sizes="[10, 20, 50, 100, 500, 1000]"
+				small=""
+				background=""
+				@size-change="handleSizeChange"
+				@current-change="handleCurrentChange"
+				layout="total, sizes, prev, pager, next, jumper"
+			/>
 			<el-dialog v-model="visible" title="Product List" @close="close" width="1000px">
 				<PoDataSource :po="pos"></PoDataSource>
 			</el-dialog>
@@ -340,4 +360,5 @@ handleQuery();
 .el-link .el-icon--right.el-icon {
 	vertical-align: text-bottom;
 }
+
 </style>

@@ -66,9 +66,9 @@ export function setTagsViewNameI18n(item: any) {
 		}
 	} else {
 		// 非自定义 tagsView 名称
-		if(query?.name){
+		if (query?.name) {
 			tagsViewName = i18n.global.t(query.name);
-		}else{
+		} else {
 			tagsViewName = i18n.global.t(meta.title);
 		}
 	}
@@ -195,6 +195,48 @@ export function downloadfile(res: any) {
 	document.body.removeChild(downloadElement); // 下载完成移除元素
 	window.URL.revokeObjectURL(href);
 }
+/**
+ * 并发函数
+ * @param reqs 并发数组
+ */
+export const handQueue = (
+	reqs: any // 请求总数
+): void => {
+	reqs = reqs || []
+	const requestQueue = (concurrency: number) => {
+		concurrency = concurrency || 10 // 最大并发数
+		const queue: any[] = [] // 请求池
+		let current = 0
+		const dequeue = () => {
+			while (current < concurrency && queue.length) {
+				current++;
+				const requestPromiseFactory: any = queue.shift() // 出列
+
+				requestPromiseFactory
+					.then(() => { // 成功的请求逻辑
+					})
+					.catch((error: string) => { // 失败
+						console.log(error)
+					})
+					.finally(() => {
+						current--
+						dequeue()
+					});
+			}
+
+		}
+		return (requestPromiseFactory: any) => {
+			queue.push(requestPromiseFactory) // 入队
+			dequeue()
+		}
+
+	}
+	const enqueue = requestQueue(6)
+	for (let i = 0; i < reqs.length; i++) {
+		enqueue(reqs[i])
+	}
+}
+
 
 /**
  * 统一批量导出
@@ -208,6 +250,7 @@ export function downloadfile(res: any) {
  * @method handleEmpty 判断数组对象中所有属性是否为空，为空则删除当前行对象
  * @method handleOpenLink 打开外部链接
  * @method downloadfile 导出函数
+ * @method handQueue 并发函数
  */
 const other = {
 	elSvg: (app: App) => {
@@ -239,6 +282,9 @@ const other = {
 	},
 	downloadfile: (val: any) => {
 		downloadfile(val);
+	},
+	handQueue: (val: any) => {
+		handQueue(val);
 	},
 };
 

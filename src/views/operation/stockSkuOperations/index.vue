@@ -5,6 +5,7 @@ import other from '/@/utils/other.ts';
 import { ElMessage } from 'element-plus';
 import { useRouter } from 'vue-router';
 import { Session } from '/@/utils/storage';
+import { ArrowDownBold, ArrowUpBold } from '@element-plus/icons-vue';
 import { SKUOperationPage, SKUOperationUpdate, SKUOperationExport } from '/@/api/modular/main/sotckSkuOperations';
 import tabDragColum from '/@/components/tabDragColum/index.vue';
 
@@ -14,12 +15,16 @@ const tableParams = ref<any>({ PageNo: 1, PageSize: 20 });
 const tableData = ref<any>([]);
 const selectedRows = ref<any>([]);
 const selectedRowKeys = ref<any>([]);
+const selectedRowErp = ref<any>('');
 const disabledList = ref<any>([]);
 const editDialogRef = ref();
 const editCostpeice_BatchTitle = ref('批量修改');
 const activeName = ref('ALL');
 const loading = ref(false);
 const Exportloading = ref<any>(false);
+const visibleTextarea1 = ref(false);
+const erpAndGoodsName = ref('');
+
 const area = ref('CN');
 const month = new Date().getMonth() + 1;
 let month1, month2, month3, month4, month5;
@@ -93,7 +98,7 @@ const TableData = ref<any>([
 	{
 		titleCN: '销售属性',
 		titleEN: 'Sales Attributes',
-		dataIndex: '销售属性',
+		dataIndex: 'salesAttributes',
 		checked: true,
 		fixed: false,
 	},
@@ -371,6 +376,14 @@ const handleQuery = async (): void => {
 	if (activeName.value === 'ALL') {
 		queryParams.value.Site = null;
 	}
+	if (queryParams.value.ErpSkuList?.length > 0) {
+		// queryParams.value.erpTextArea = '';
+		queryParams.value.ErpSku = '';
+	} else {
+		queryParams.value.ErpSku = erpAndGoodsName.value;
+		queryParams.value.ErpSkuList = null;
+	}
+
 	var res = await SKUOperationPage(Object.assign(queryParams.value, tableParams.value));
 	tableData.value = res.data.result?.items ?? [];
 	tableParams.value.total = res.data.result?.total;
@@ -390,9 +403,17 @@ const handleClick = (tab, event): void => {
 const selectChange = (selection: any): void => {
 	selectedRowKeys.value = [];
 	selectedRows.value = [];
+	selectedRowErp.value = ''
 	selectedRows.value = selection;
-	selection.map((item: any) => {
+	selection.map((item: any,index:number) => {
 		selectedRowKeys.value.push(item.id);
+		if(activeName.value !== 'ALL'){
+			if(index=== selection.length -1){
+				selectedRowErp.value += item.inventorySKU
+			}else{
+				selectedRowErp.value += item.inventorySKU+'\n'
+			}
+		}
 	});
 };
 // 导出选中
@@ -459,6 +480,59 @@ const handleRouter = (storeSku: string, site: string) => {
 	}
 };
 
+const handleConfirm = (type) => {
+	let str_array = [];
+	str_array = queryParams.value.erpTextArea?.split(/[(\r\n)\r\n]+/);
+	let arr = str_array?.map((item, index) => {
+		if (item === '') {
+			str_array.splice(index, 1);
+		} else {
+			return item.trim();
+		}
+	});
+	queryParams.value.ErpSkuList = arr;
+	erpAndGoodsName.value = arr + '';
+	visibleTextarea1.value = false;
+};
+const clearErp = () => {
+	erpAndGoodsName.value = '';
+	queryParams.value.ErpSku = '';
+	queryParams.value.ErpSkuList = null;
+	Session.set('queryObj', { ifquery: true });
+};
+// 重置
+const reset = () => {
+	erpAndGoodsName.value = '';
+	Session.set('queryObj', {});
+	queryParams.value = {}
+	handleQuery();
+};
+
+const handleErpList = () => {
+	Session.set('queryObj', { country: activeName.value, erpSkuList: selectedRowErp.value, ifquery: false });
+	router.push({ path: '/operation/asin/asindata' });
+}
+
+watch(
+	() => queryParams.value.erpTextArea,
+	() => {
+		let str_array = queryParams.value.erpTextArea?.split(/[(\r\n)\r\n]+/);
+		let arr = str_array?.map((item, index) => {
+			if (item === '') {
+				str_array.splice(index, 1);
+			} else {
+				return item.trim();
+			}
+		});
+		if (arr?.length > 0) {
+			if (arr[0] !== undefined) {
+				queryParams.value.ErpSkuList = arr;
+			} else {
+				queryParams.value.ErpSkuList = null;
+			}
+		}
+	}
+);
 // 站点改变调用接口
 watch(
 	() => activeName.value,
@@ -475,30 +549,60 @@ onMounted(() => {
 		<el-card shadow="hover" :body-style="{ paddingBottom: '0' }">
 			<el-form :model="queryParams" ref="queryForm" :inline="true">
 				<el-form-item label="品号/库存SKU">
-					<el-input v-model="queryParams.ErpSku" clearable="" placeholder="请输入品号/库存SKU" />
+					<!-- <el-input v-model="queryParams.ErpSku" clearable="" placeholder="请输入品号/库存SKU" /> -->
+					<el-popover :visible="visibleTextarea1" placement="bottom" :width="250">
+						<el-scrollbar height="150px" style="border: 1px solid var(--el-border-color)">
+							<el-input
+								v-model="queryParams.erpTextArea"
+								style="width: 215px"
+								:autosize="{ minRows: 1, maxRows: 200 }"
+								type="textarea"
+								placeholder="可输入多个ERP-SKU精确查询，每行一个，最多支持200个"
+							/>
+						</el-scrollbar>
+						<div style="text-align: right; margin-top: 20px">
+							<span style="float: left">{{ queryParams.ErpSkuList?.length ?? 0 }}/200</span>
+							<el-button
+								type="info"
+								@click="
+									() => {
+										queryParams.ErpSku = '';
+										erpAndGoodsName = '';
+									}
+								"
+								>重置</el-button
+							>
+							<el-button type="primary" @click="handleConfirm()">确定</el-button>
+						</div>
+						<template #reference>
+							<el-input v-model="erpAndGoodsName" clearable="" placeholder="请输入,点击展开可输多个" @clear="clearErp" @blur="clearObj">
+								<template #suffix>
+									<el-icon class="el-input__icon"
+										><ArrowDownBold @click="visibleTextarea1 = !visibleTextarea1" v-if="!visibleTextarea1" /><ArrowUpBold @click="visibleTextarea1 = !visibleTextarea1" v-else
+									/></el-icon>
+								</template>
+							</el-input>
+						</template>
+					</el-popover>
 				</el-form-item>
 				<el-form-item label="采购国">
 					<el-select clearable="" v-model="queryParams.PurchasingCountry" placeholder="全部">
-						<el-option v-for="(item, index) in buyer" :key="index" :value="item.value"
-							:label="item.label" />
+						<el-option v-for="(item, index) in buyer" :key="index" :value="item.value" :label="item.label" />
 					</el-select>
 				</el-form-item>
 				<el-form-item label="产品是否淘汰">
 					<el-select clearable="" v-model="queryParams.ItemStatus" placeholder="请选择">
-						<el-option v-for="(item, index) in ifoutProduct" :key="index" :value="item.value"
-							:label="item.label" />
+						<el-option v-for="(item, index) in ifoutProduct" :key="index" :value="item.value" :label="item.label" />
 					</el-select>
 				</el-form-item>
 				<el-form-item label="库存周转状态">
 					<el-select clearable="" v-model="queryParams.StockTurnover" placeholder="请选择">
-						<el-option v-for="(item, index) in stockStatus" :key="index" :value="item.value"
-							:label="item.label" />
+						<el-option v-for="(item, index) in stockStatus" :key="index" :value="item.value" :label="item.label" />
 					</el-select>
 				</el-form-item>
 				<el-form-item label="周销量趋势">
 					<el-select clearable="" v-model="queryParams.WeekTrend" placeholder="请选择">
-						<el-option v-for="(item, index) in weekSales" :key="index" :value="item.value"
-							:label="item.label" />
+						<el-option v-for="(item, index) in weekSales" :key="index" :value="item.value" :label="item.label" />
 					</el-select>
 				</el-form-item>
 				<!-- <el-form-item label="月销量趋势">
@@ -513,13 +617,7 @@ onMounted(() => {
 				<el-form-item>
 					<el-button-group>
 						<el-button type="primary" icon="ele-Search" @click="handleQuery"> 查询 </el-button>
-						<el-button icon="ele-Refresh" @click="() => {
-			queryParams = {};
-			handleQuery();
-		}
-			">
-							重置
-						</el-button>
+						<el-button icon="ele-Refresh" @click="reset"> 重置 </el-button>
 					</el-button-group>
 				</el-form-item>
 			</el-form>
@@ -527,15 +625,14 @@ onMounted(() => {
 		<el-card class="full-table" shadow="hover" style="margin-top: 8px" :body-style="{ padding: '10px 20px' }">
 			<div class="settingf" style="margin-bottom: 5px; display: flex; justify-content: space-between">
 				<div>
-					<el-button type="primary" @click="batchModify()" style="margin-right: 20px"
-						:disabled="!selectedRowKeys?.length"> 批量修改 </el-button>
+					<el-button type="primary" @click="batchModify" style="margin-right: 0px" :disabled="!selectedRowKeys?.length"> 批量修改 </el-button>
+					<el-button type="primary" @click="handleErpList" style="margin-right: 10px" :disabled="activeName === 'ALL'"> 查询ASIN详情 </el-button>
 					<el-dropdown style="margin-right: 20px">
 						<el-button type="primary" :loading="Exportloading"> 导出 </el-button>
 						<template #dropdown>
 							<el-dropdown-menu>
-								<el-dropdown-item @click="AllExport()">导出所有</el-dropdown-item>
-								<el-dropdown-item @click="SelectedExport()"
-									:disabled="!selectedRowKeys?.length">导出选中</el-dropdown-item>
+								<el-dropdown-item @click="AllExport">导出所有</el-dropdown-item>
+								<el-dropdown-item @click="SelectedExport" :disabled="!selectedRowKeys?.length">导出选中</el-dropdown-item>
 							</el-dropdown-menu>
 						</template>
 					</el-dropdown>
@@ -544,61 +641,65 @@ onMounted(() => {
 						<el-radio-button label="English header" value="English header" @change="changeArea('EN')" />
 					</el-radio-group>
 				</div>
-				<tabDragColum :data="TableData" :name="`stockSkuOperationsData`" :area="area"
-					@handleData="handleData" />
+				<tabDragColum :data="TableData" :name="`stockSkuOperationsData`" :area="area" @handleData="handleData" />
 			</div>
 			<el-tabs v-model="activeName" type="card" style="height: 85%" @tab-click="handleClick">
 				<el-tab-pane :label="item.label" :name="item.name" style="height: 100%" v-for="item in tabsList">
-					<el-table :data="tableData" style="height: 100%" v-loading="loading" tooltip-effect="light"
-						row-key="id" @selection-change="(selection: any) => selectChange(selection)">
+					<el-table :data="tableData" style="height: 100%" v-loading="loading" tooltip-effect="light" row-key="id" @selection-change="(selection: any) => selectChange(selection)">
 						<el-table-column type="selection" width="55" />
 						<el-table-column type="index" :label="area == 'CN' ? '序号' : 'NO.'" width="55" align="center" />
 						<template v-for="(item, index) in TableData" :key="index">
-							<el-table-column v-if="item.checked && item.dataIndex === 'site'" :prop="item.dataIndex"
-								:fixed="item.fixed" :label="area == 'CN' ? item.titleCN : item.titleEN" align="center">
+							<el-table-column v-if="item.checked && item.dataIndex === 'site'" :prop="item.dataIndex" :fixed="item.fixed" :label="area == 'CN' ? item.titleCN : item.titleEN" align="center">
 								<template #default="scope">
-									<img
-										:src="'https://raw.githubusercontent.com/okbuynow/OKPIC/main/50x50/' + scope.row.inventorySKU + '.jpg'" />
+									<img :src="'https://raw.githubusercontent.com/okbuynow/OKPIC/main/50x50/' + scope.row.inventorySKU + '.jpg'" />
 								</template>
 							</el-table-column>
-							<el-table-column v-else-if="item.checked && item.dataIndex === 'itemStatus'"
-								:fixed="item.fixed" :prop="item.dataIndex"
-								:label="area == 'CN' ? item.titleCN : item.titleEN" width="100" align="center">
+							<el-table-column v-else-if="item.checked && item.dataIndex === 'inventorySKU'" width="110" :fixed="item.fixed" :prop="item.dataIndex" :label="area == 'CN' ? item.titleCN : item.titleEN" align="center">
 								<template #default="scope">
-									<el-select clearable="" v-model="scope.row.itemStatus" placeholder="请选择"
-										:disabled="disabledAuto(scope)">
-										<el-option v-for="(item, index) in ifoutProduct" :key="index"
-											:value="item.value" :label="item.label" />
+									<span style="color: red" @click="handleRouter(scope.row.inventorySKU, activeName)">{{ scope.row.inventorySKU }} </span>
+								</template>
+							</el-table-column>
+							<el-table-column
+								v-else-if="item.checked && item.dataIndex === 'itemStatus'"
+								:fixed="item.fixed"
+								:prop="item.dataIndex"
+								:label="area == 'CN' ? item.titleCN : item.titleEN"
+								width="100"
+								align="center"
+							>
+								<template #default="scope">
+									<el-select clearable="" v-model="scope.row.itemStatus" placeholder="请选择" :disabled="disabledAuto(scope)">
+										<el-option v-for="(item, index) in ifoutProduct" :key="index" :value="item.value" :label="item.label" />
 									</el-select>
 								</template>
 							</el-table-column>
-							<el-table-column v-else-if="item.checked && item.dataIndex === 'listCount'"
-								:fixed="item.fixed" :prop="item.dataIndex"
-								:label="area == 'CN' ? item.titleCN : item.titleEN" align="center">
+							<el-table-column v-else-if="item.checked && item.dataIndex === 'listCount'" :fixed="item.fixed" :prop="item.dataIndex" :label="area == 'CN' ? item.titleCN : item.titleEN" align="center">
 								<template #default="scope">
-									<span style="color: red"
-										@click="handleRouter(scope.row.inventorySKU, activeName)">{{ scope.row.listCount }}
-									</span>
+									<span style="color: red" @click="handleRouter(scope.row.inventorySKU, activeName)">{{ scope.row.listCount }} </span>
 								</template>
 							</el-table-column>
-							<el-table-column v-else-if="item.checked" :fixed="item.fixed" :prop="item.dataIndex"
-								:label="area == 'CN' ? item.titleCN : item.titleEN" width="120" align="center" />
+							<el-table-column v-else-if="item.checked" :fixed="item.fixed" :prop="item.dataIndex" :label="area == 'CN' ? item.titleCN : item.titleEN" width="120" align="center" />
 						</template>
 						<el-table-column label="操作" width="140" align="center" fixed="right">
 							<template #default="scope">
-								<el-button size="small" text type="primary"
-									@click="disabledfun(scope)">{{ disabledList.some((item) => item === scope.row.id) ? '编辑' : '保存' }}</el-button>
+								<el-button size="small" text type="primary" @click="disabledfun(scope)">{{ disabledList.some((item) => item === scope.row.id) ? '编辑' : '保存' }}</el-button>
 							</template>
 						</el-table-column>
 					</el-table>
 				</el-tab-pane>
 			</el-tabs>
-			<el-pagination v-model:currentPage="tableParams.PageNo" v-model:page-size="tableParams.PageSize"
-				:total="tableParams.total" :page-sizes="[10, 20, 50, 100, 500, 1000]" small="" background=""
-				@size-change="handleSizeChange" @current-change="handleCurrentChange"
-				layout="total, sizes, prev, pager, next, jumper" />
-			<editDialog ref="editDialogRef" :title="editCostpeice_BatchTitle" @reloadTable="handleQuery"
-				@idList="idList" />
+			<el-pagination
+				v-model:currentPage="tableParams.PageNo"
+				v-model:page-size="tableParams.PageSize"
+				:total="tableParams.total"
+				:page-sizes="[10, 20, 50, 100, 500, 1000]"
+				small=""
+				background=""
+				@size-change="handleSizeChange"
+				@current-change="handleCurrentChange"
+				layout="total, sizes, prev, pager, next, jumper"
+			/>
+			<editDialog ref="editDialogRef" :title="editCostpeice_BatchTitle" @reloadTable="handleQuery" @idList="idList" />
 		</el-card>
 	</div>
 </template>
@@ -619,5 +720,18 @@ onMounted(() => {
 	// .el-table__body-wrapper{
 	//     overflow:auto;
 	// }
+}
+/deep/ .cell {
+	white-space: nowrap;
+}
+
+/deep/ .el-table td.el-table__cell div {
+	overflow: hidden;
+}
+/deep/ .el-textarea__inner {
+	box-shadow: initial;
+	padding: 0;
+	margin: 4px 0 4px 3px;
+	height: 142px !important;
 }
 </style>

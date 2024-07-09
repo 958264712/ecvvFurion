@@ -1,6 +1,7 @@
 <script lang="ts" setup name="purchase_order">
 import { ref, onMounted, watch } from 'vue';
 import { pYYPurchaseOrderPage, pYYPurchaseOrderupdate, importPurchaseUnitPrice } from '/@/api/modular/main/financial.ts';
+import { ArrowDownBold, ArrowUpBold } from '@element-plus/icons-vue';
 import { ElMessageBox, ElMessage, ElNotification } from 'element-plus';
 import importDialog from '/@/components/importDialog/index.vue';
 import axios from 'axios';
@@ -12,11 +13,13 @@ const tableParams = ref({
 	total: 0,
 });
 const dialogFormVisible = ref(false);
-const area = ref("CN");
+const area = ref('CN');
 const IsEdit = ref<any>(false);
 const loading = ref(false);
 const loading2 = ref(false);
+const visibleTextarea1 = ref(false);
 const selectExport = ref([]);
+const erpAndGoodsName = ref('');
 const TableData = ref<any>([
 	{
 		titleCN: '采购单号',
@@ -39,6 +42,12 @@ const TableData = ref<any>([
 	{
 		titleCN: '采购总数量',
 		dataIndex: 'purchaseTotalQuantity',
+		checked: true,
+		fixed: false,
+	},
+	{
+		titleCN: '采购总金额',
+		dataIndex: 'purchaseTotalAmount',
 		checked: true,
 		fixed: false,
 	},
@@ -378,6 +387,13 @@ const getAppPage = async (): void => {
 		const day2 = date2.getDate();
 		queryParams.value.EndCreatorTime = year2 + '-' + month2 + '-' + day2;
 	}
+	if (queryParams.value.erpSkuList?.length > 0) {
+		// queryParams.value.erpTextArea = '';
+		queryParams.value.erpAndGoodsName = '';
+	} else {
+		queryParams.value.erpAndGoodsName = erpAndGoodsName.value;
+		queryParams.value.erpSkuList = null;
+	}
 	await pYYPurchaseOrderPage(Object.assign(queryParams.value, tableParams.value)).then((res) => {
 		//tableData.value = res.data.result.items;
 		tableData.value.splice(0, tableData.value.length);
@@ -394,45 +410,39 @@ function ImportPurchaseOrder(file: any) {
 	loading.value = true;
 	const formData = new FormData();
 	formData.append('file', file.raw);
-	axios
-		.post((import.meta.env.VITE_API_URL as any) + `/api/pYYPurchaseOrder/importPurchaseOrder`, formData)
-		.then((res) => {
-			if (res.data.code == 200) {
-				ElMessage.success('Import succeeded');
-				getAppPage();
-				loading.value = false;
-			} else {
-				ElMessage.error(res.message); // + res.message
-				loading.value = false;
-			}
-		});
-
+	axios.post((import.meta.env.VITE_API_URL as any) + `/api/pYYPurchaseOrder/importPurchaseOrder`, formData).then((res) => {
+		if (res.data.code == 200) {
+			ElMessage.success('Import succeeded');
+			getAppPage();
+			loading.value = false;
+		} else {
+			ElMessage.error(res.message); // + res.message
+			loading.value = false;
+		}
+	});
 }
 // 导入采购单价
 function ImportPurchaseUnitPrice(file: any) {
 	loading2.value = true;
 	const formData = new FormData();
 	formData.append('file', file.raw);
-	axios
-		.post((import.meta.env.VITE_API_URL as any) + `/api/pYYPurchaseOrder/importPurchaseUnitPrice`, formData)
-		.then((res) => {
-			if (res.data.code == 200) {
-				ElMessage.success('Import succeeded');
-				getAppPage();
-				loading2.value = false;
-			} else {
-				ElMessage.error(res.message); // + res.message
-				loading2.value = false;
-			}
-		});
-
+	axios.post((import.meta.env.VITE_API_URL as any) + `/api/pYYPurchaseOrder/importPurchaseUnitPrice`, formData).then((res) => {
+		if (res.data.code == 200) {
+			ElMessage.success('Import succeeded');
+			getAppPage();
+			loading2.value = false;
+		} else {
+			ElMessage.error(res.message); // + res.message
+			loading2.value = false;
+		}
+	});
 }
 const update = async (row: any) => {
 	await pYYPurchaseOrderupdate(row);
 	ElMessage.success('update succeeded');
 	IsEdit.value = false;
 	row.IsEdit = false;
-}
+};
 //打开编辑
 const openEdit = (row: any) => {
 	if (!IsEdit.value) {
@@ -442,6 +452,25 @@ const openEdit = (row: any) => {
 };
 const importClose = (bol: boolean) => {
 	dialogFormVisible.value = bol;
+};
+const clearErp = () => {
+	erpAndGoodsName.value = '';
+	queryParams.value.erpTextArea = '';
+	queryParams.value.erpSkuList = null;
+};
+const handleConfirm = () => {
+	let str_array = [];
+	str_array = queryParams.value.erpTextArea?.split(/[(\r\n)\r\n]+/);
+	let arr = str_array?.map((item, index) => {
+		if (item === '') {
+			str_array.splice(index, 1);
+		} else {
+			return item.trim();
+		}
+	});
+	queryParams.value.erpSkuList = arr;
+	erpAndGoodsName.value = arr + '';
+	visibleTextarea1.value = false;
 };
 onMounted(() => {
 	getAppPage();
@@ -459,11 +488,61 @@ const handleCurrentChange = (val: number): void => {
 	tableParams.value.page = val;
 	getAppPage();
 };
+watch(
+	() => queryParams.value.erpTextArea,
+	() => {
+		let str_array = queryParams.value.erpTextArea?.split(/[(\r\n)\r\n]+/);
+		let arr = str_array?.map((item, index) => {
+			if (item === '') {
+				str_array.splice(index, 1);
+			} else {
+				return item.trim();
+			}
+		});
+		if (arr?.length > 0) {
+			if (arr[0] !== undefined) {
+				queryParams.value.erpSkuList = arr;
+			} else {
+				queryParams.value.erpSkuList = null;
+			}
+		}
+	}
+);
 </script>
 <template>
 	<div class="collectionOrderInfo-container">
 		<el-card shadow="hover" :body-style="{ paddingBottom: '0' }">
 			<el-form :model="queryParams" :inline="true">
+				<el-form-item label="库存SKU">
+					<el-popover :visible="visibleTextarea1" placement="bottom" :width="250">
+						<el-scrollbar height="150px" style="border: 1px solid var(--el-border-color)">
+							<el-input v-model="queryParams.erpTextArea" style="width: 215px"
+								:autosize="{ minRows: 1, maxRows: 200 }" type="textarea"
+								placeholder="可输入多个SKU精确查询，每行一个，最多支持200个" />
+						</el-scrollbar>
+						<div style="text-align: right; margin-top: 20px">
+							<span style="float: left">{{ queryParams.erpSkuList?.length ?? 0 }}/200</span>
+							<el-button type="info" @click="() => {
+			queryParams.erpTextArea = '';
+			erpAndGoodsName = '';
+		}
+			">重置</el-button>
+							<el-button type="primary" @click="handleConfirm()">确定</el-button>
+						</div>
+						<template #reference>
+							<el-input v-model="erpAndGoodsName" clearable="" placeholder="请输入,点击展开可输多个"
+								@clear="clearErp">
+								<template #suffix>
+									<el-icon class="el-input__icon">
+										<ArrowDownBold @click="visibleTextarea1 = !visibleTextarea1"
+											v-if="!visibleTextarea1" />
+										<ArrowUpBold @click="visibleTextarea1 = !visibleTextarea1" v-else />
+									</el-icon>
+								</template>
+							</el-input>
+						</template>
+					</el-popover>
+				</el-form-item>
 				<el-form-item label="制单时间">
 					<el-date-picker style="width: 250px" start-placeholder=" 开始时间" end-placeholder="结束时间"
 						type="daterange" v-model="queryParams.CreatorTime" format="YYYY-MM-DD" />
@@ -473,11 +552,14 @@ const handleCurrentChange = (val: number): void => {
 						<el-button v-auth="'shippingDetails:page'" type="primary" icon="ele-Search"
 							@click="getAppPage()" style="width: 70px; margin-right: 2px"> 查询 </el-button>
 						<el-button icon="ele-Refresh" @click="() => {
+			queryParams.erpTextArea = '';
+			erpAndGoodsName = '';
 			queryParams = {};
 			getAppPage();
-		}" style="width: 70px; margin-right: 2px"> 重置
+		}
+			" style="width: 70px; margin-right: 2px">
+							重置
 						</el-button>
-
 					</el-button-group>
 				</el-form-item>
 			</el-form>
@@ -489,7 +571,7 @@ const handleCurrentChange = (val: number): void => {
 						:auto-upload="false" name="file">
 						<el-button :loading="loading" type="primary">导入采购订单</el-button>
 					</el-upload>
-					<el-button style="margin-left: 10px;" @click="dialogFormVisible = true" type="primary"> 导入采购单价
+					<el-button style="margin-left: 10px" @click="dialogFormVisible = true" type="primary"> 导入采购单价
 					</el-button>
 					<el-dialog v-model="dialogFormVisible" title="普源采购单价数据导入" width="600px" center>
 						<importDialog :type="importType" :text="importText" :formList="importFormList"
@@ -514,7 +596,6 @@ const handleCurrentChange = (val: number): void => {
 					</template>
 				</el-table-column>
 				<template v-for="(item, index) in TableData" :key="index">
-
 					<el-table-column v-if="item.dataIndex == 'purchaseUnitPrice'" :fixed="item.fixed"
 						:prop="item.dataIndex" :label="area == 'CN' ? item.titleCN : item.titleEN" align="center"
 						min-width="150" show-overflow-tooltip="">
@@ -545,5 +626,12 @@ const handleCurrentChange = (val: number): void => {
 
 :deep(.el-dialog__title) {
 	color: white;
+}
+
+/deep/ .el-textarea__inner {
+	box-shadow: initial;
+	padding: 0;
+	margin: 4px 0 4px 3px;
+	height: 142px !important;
 }
 </style>

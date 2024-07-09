@@ -4,6 +4,7 @@ enum Api {
 	getLateDeliveryList = '/api/collectionOrderInfo/getLateDeliveryList',
 	getExpectedDeliveryList = '/api/collectionOrderInfo/getExpectedDeliveryList',
 	getCollectionGoodsInfoCache = '/api/collectionGoodsInfoCache/getCollectionGoodsInfoCache',
+	ExportCollectionGoodsInfoCache = '/api/collectionGoodsInfoCache/export',
 	getShipmentDetails = '/api/collectionOrderInfo/getShipmentDetails',
 	ExportShipmentDetails = '/api/collectionOrderInfo/exportShipmentDetails',
 }
@@ -43,6 +44,15 @@ export const getShipmentDetails = (params?: any) =>
 		url: Api.getShipmentDetails,
 		method: 'get',
 		params: params,
+	});
+
+// 导出集货单商品缓存表
+export const ExportCollectionGoodsInfoCache = (params?: any) =>
+	request({
+		url: Api.ExportCollectionGoodsInfoCache,
+		method: 'post',
+		data: params,
+		responseType: 'blob',
 	});
 // 导出A出货明细总表
 export const ExportShipmentDetails = (params?: any) =>

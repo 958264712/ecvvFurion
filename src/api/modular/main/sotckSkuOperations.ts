@@ -9,8 +9,8 @@ enum Api {
 export const SKUOperationPage = (params?: any) =>
     request({
         url: Api.SKUOperationPage,
-        method: 'get',
-        params: params,
+        method: 'post',
+        data: params,
     });
 //修改
 export const SKUOperationUpdate = (params?: any) =>

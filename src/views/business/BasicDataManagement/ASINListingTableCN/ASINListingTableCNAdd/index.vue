@@ -31,21 +31,20 @@
 								:placeholder="area == 'CN' ? '请输入Creator' : 'Please enter Creator'" />
 						</el-form-item>
 					</el-col>
-
 				</el-row>
 			</el-form>
 		</el-card>
 		<el-card class="full-table" shadow="hover" style="margin-top: 8px">
 			<div class="importDiv">
-				<div style="left: left;display: inline;">
+				<div style="left: left; display: inline">
 					<el-button type="primary" @click="Previous"
-						style="height: 28px;font-size: 14px;">{{ area == 'CN' ? '返回' : 'Back' }}</el-button>
+						style="height: 28px; font-size: 14px">{{ area == 'CN' ? '返回' : 'Back' }}</el-button>
 				</div>
-				<div style="float: right;margin-right: 50px;">
+				<div style="float: right; margin-right: 50px">
 					<el-button type="primary" icon="ele-Refresh" :loading="loading" @click="Reset"
-						style="height: 28px;font-size: 14px;">{{ area == 'CN' ? '重置' : 'Reset' }}</el-button>
+						style="height: 28px; font-size: 14px">{{ area == 'CN' ? '重置' : 'Reset' }}</el-button>
 					<el-button type="primary" icon="ele-Document" :loading="loading" @click="Saves(ruleFormRef)"
-						style="height: 28px;font-size: 14px;">{{ area == 'CN' ? '保存' : 'SAVE' }}</el-button>
+						style="height: 28px; font-size: 14px">{{ area == 'CN' ? '保存' : 'SAVE' }}</el-button>
 				</div>
 			</div>
 			<el-table ref="scrollContainer" :data="tableData" size="lagre" style="width: 100%" tooltip-effect="light"
@@ -61,7 +60,8 @@
 				<el-table-column prop="addASINAccount" :label="area == 'CN' ? '上架平台' : 'Platform'" align="center"
 					show-overflow-tooltip="">
 					<template #default="scope">
-						<el-select class="custom-input" v-model="scope.row.addASINAccount" @change="handleInpu"
+						<el-select class="custom-input" :class="{ 'sku-input': scope.row.IsSku1 }"
+							v-model="scope.row.addASINAccount" @change="handleInpu"
 							:placeholder="area == 'CN' ? '请选择' : 'Please select'" clearable>
 							<el-option label="UAE-SC " value="UAE-SC "></el-option>
 							<el-option label="UAE-SHOWAY " value="UAE-SHOWAY "></el-option>
@@ -74,11 +74,9 @@
 					show-overflow-tooltip="">
 					<template #default="scope">
 						<el-button v-if="!IsLast(scope.row)" icon="ele-DocumentCopy" size="small" text="" type="primary"
-							@click="CopyAdd(scope.row)">
-							{{ area == 'CN' ? '复制' : 'COPE' }} </el-button>
+							@click="CopyAdd(scope.row)"> {{ area == 'CN' ? '复制' : 'COPE' }} </el-button>
 						<el-button v-if="!IsLast(scope.row)" icon="ele-Delete" size="small" text="" type="primary"
-							@click="remove(scope.row)">
-							{{ area == 'CN' ? '删除' : 'DELETE' }} </el-button>
+							@click="remove(scope.row)"> {{ area == 'CN' ? '删除' : 'DELETE' }} </el-button>
 					</template>
 				</el-table-column>
 			</el-table>
@@ -91,7 +89,7 @@ import router from '/@/router';
 import { ElMessage, FormRules, FormInstance } from 'element-plus';
 import { Save } from '/@/api/modular/main/SAINListingTable';
 import { ASINListingTableStore } from '/@/stores/ASINListingTable';
-import { useRoute } from 'vue-router'
+import { useRoute } from 'vue-router';
 import { error } from 'console';
 const route = useRoute();
 const store = ASINListingTableStore();
@@ -105,12 +103,12 @@ let SubmitData = ref<any>([]);
 const ruleFormRef = ref<FormInstance>();
 const area = ref<any>(route.query.area);
 let queryForm = ref<any>({
-	asin: "",
-	erpSku: "",
-	singleOrderQTY: "",
-	Brand: "",
-	EAN: "",
-	Creator: ""
+	asin: '',
+	erpSku: '',
+	singleOrderQTY: '',
+	Brand: '',
+	EAN: '',
+	Creator: '',
 });
 onMounted(() => {
 	if (store.IsClear) {
@@ -119,23 +117,26 @@ onMounted(() => {
 	} else {
 		tableData.value.push({
 			id: 1,
-			asin: "",
-			storeSKU: "",
-			erpSku: "",
-			singleOrderQTY: "",
-			brand: "",
-			ean: "",
-			addASINAccount: "",
-			creator: "",
+			asin: '',
+			storeSKU: '',
+			erpSku: '',
+			singleOrderQTY: '',
+			brand: '',
+			ean: '',
+			addASINAccount: '',
+			creator: '',
 		});
 		store.$patch({ IsClear: true });
 	}
 });
 
-watch(() => route.path, () => {//监听路由是否跳转
-	store.$patch({ queryForm: queryForm.value });
-	store.$patch({ tableData: tableData.value });
-}
+watch(
+	() => route.path,
+	() => {
+		//监听路由是否跳转
+		store.$patch({ queryForm: queryForm.value });
+		store.$patch({ tableData: tableData.value });
+	}
 );
 // // 规则
 // const validateASIN = (rule: any, value: any, callback: any) => {
@@ -147,40 +148,51 @@ watch(() => route.path, () => {//监听路由是否跳转
 // 	}
 // };
 //自行添加其他规则
+const validateNumber = (rule, value, callback) => {
+	if (!value) {
+		return callback(new Error('SingleOrderQTY不能为空'));
+	}
+	if (isNaN(value)) {
+		return callback(new Error('SingleOrderQTY只能输入数字'));
+	}
+	callback();
+};
 const rules = ref<FormRules<typeof queryForm>>({
-	asin: [{ required: true, message: area.value == 'CN' ? '请输入10位数的字母或者数字，并且不包含空格' : 'Please enter 10 digit letters or numbers without spaces', trigger: 'blur' },
-	{ min: 10, max: 10, message: area.value == 'CN' ? '请输入10位数的字母或者数字，并且不包含空格' : 'Please enter 10 digit letters or numbers without spaces', trigger: 'blur' }],
+	asin: [
+		{ required: true, message: area.value == 'CN' ? '请输入10位数的字母或者数字，并且不包含空格' : 'Please enter 10 digit letters or numbers without spaces', trigger: 'blur' },
+		{ min: 10, max: 10, message: area.value == 'CN' ? '请输入10位数的字母或者数字，并且不包含空格' : 'Please enter 10 digit letters or numbers without spaces', trigger: 'blur' },
+	],
 	erpSku: [{ required: true, message: area.value == 'CN' ? 'erpSku不能为空' : 'ErpSku cannot be empty', trigger: 'blur' }],
-	singleOrderQTY: [{ required: true, message: area.value == 'CN' ? 'SingleOrderQTY不能为空' : 'SingleOrderQTY cannot be empty', trigger: 'blur' }],
+	singleOrderQTY: [{ validator: validateNumber, trigger: 'blur' }],
 	// EAN: [{ required: true, message: area.value == 'CN' ? 'EAN- 13不能为空' : 'EAN-13 cannot be empty', trigger: 'blur' }],
 });
 //选中的数据
 function handleSelectionChange(val: any) {
-
 	selectedRows.value.splice(0, selectedRows.value.length);
 	val.forEach((element: any) => {
 		selectedRows.value.push(element.id);
 	});
 }
 function IsLast(row: any) {
-	const selectedIndex = tableData.value.findIndex(item => item.id === row.id);
+	const selectedIndex = tableData.value.findIndex((item) => item.id === row.id);
 	if (selectedIndex === tableData.value.length - 1) {
 		return true;
 	}
 	return false;
 }
 function handleInpu() {
-	if (tableData.value[tableData.value.length - 1].storeSKU !== "" || tableData.value[tableData.value.length - 1].addASINAccount !== "") {
+	let index = tableData.value?.length === 0 ? 0 : tableData.value.length - 1;
+	if (tableData.value[index].storeSKU !== '' && tableData.value[index].addASINAccount !== '') {
 		tableData.value.push({
 			id: Id.value++,
-			asin: "",
-			storeSKU: "",
-			erpSku: "",
-			singleOrderQTY: "",
-			brand: "",
-			ean: "",
-			addASINAccount: "",
-			creator: "",
+			asin: '',
+			storeSKU: '',
+			erpSku: '',
+			singleOrderQTY: '',
+			brand: '',
+			ean: '',
+			addASINAccount: '',
+			creator: '',
 		});
 		setTimeout(() => {
 			let table = scrollContainer.value.layout.table.refs;
@@ -190,10 +202,9 @@ function handleInpu() {
 			tableScrollEle.scrollTop = tableScrollEle.clientHeight;
 		}, 100);
 	}
-
 }
 function remove(row: any) {
-	const selectedIndex = tableData.value.findIndex(item => item.id === row.id);
+	const selectedIndex = tableData.value.findIndex((item) => item.id === row.id);
 	tableData.value.splice(selectedIndex, 1);
 	// // 遍历选中状态数组，移除对应选中的元素
 	// for (let i = selectedRows.value.length - 1; i >= 0; i--) {
@@ -210,31 +221,31 @@ function remove(row: any) {
 }
 const scrollContainer = ref();
 function CopyAdd(row: any) {
-	if (tableData.value[tableData.value.length - 1].storeSKU == "" && tableData.value[tableData.value.length - 1].addASINAccount == "") {
-		const selectedIndex = tableData.value.findIndex(item => item.id === tableData.value[tableData.value.length - 1].id);
+	if (tableData.value[tableData.value.length - 1].storeSKU == '' && tableData.value[tableData.value.length - 1].addASINAccount == '') {
+		const selectedIndex = tableData.value.findIndex((item) => item.id === tableData.value[tableData.value.length - 1].id);
 		tableData.value.splice(selectedIndex, 1);
 	}
 	tableData.value.push({
 		id: Id.value++,
-		asin: "",
+		asin: '',
 		storeSKU: row.storeSKU,
-		erpSku: "",
-		singleOrderQTY: "",
-		brand: "",
-		ean: "",
-		addASINAccount: "",
-		creator: "",
+		erpSku: '',
+		singleOrderQTY: '',
+		brand: '',
+		ean: '',
+		addASINAccount: '',
+		creator: '',
 	});
 	tableData.value.push({
 		id: Id.value++,
-		asin: "",
-		storeSKU: "",
-		erpSku: "",
-		singleOrderQTY: "",
-		brand: "",
-		ean: "",
-		addASINAccount: "",
-		creator: "",
+		asin: '',
+		storeSKU: '',
+		erpSku: '',
+		singleOrderQTY: '',
+		brand: '',
+		ean: '',
+		addASINAccount: '',
+		creator: '',
 	});
 	setTimeout(() => {
 		let table = scrollContainer.value.layout.table.refs;
@@ -246,39 +257,58 @@ function CopyAdd(row: any) {
 }
 function Reset() {
 	queryForm.value = {
-		asin: "",
-		erpSku: "",
-		singleOrderQTY: "",
-		Brand: "",
-		EAN: "",
-		Creator: ""
+		asin: '',
+		erpSku: '',
+		singleOrderQTY: '',
+		Brand: '',
+		EAN: '',
+		Creator: '',
 	};
-	tableData.value = [{
-		id: Id.value++,
-		asin: "",
-		storeSKU: "",
-		erpSku: "",
-		singleOrderQTY: "",
-		brand: "",
-		ean: "",
-		addASINAccount: "",
-		creator: "",
-	}];
+	tableData.value = [
+		{
+			id: Id.value++,
+			asin: '',
+			storeSKU: '',
+			erpSku: '',
+			singleOrderQTY: '',
+			brand: '',
+			ean: '',
+			addASINAccount: '',
+			creator: '',
+		},
+	];
 }
+
 const Saves = (formEl: FormInstance | undefined) => {
-	if (!formEl) return
+	if (!formEl) return;
 	formEl.validate((valid) => {
 		if (valid) {
 			SubmitData.value = [];
 			var IsSku = true;
+			var IsSku1 = true;
 			if (tableData.value.length == 1) {
-				tableData.value[0].IsSku = true;
+				if (tableData.value[0].storeSKU === '') {
+					tableData.value[0].IsSku = true;
+					ElMessage.error(area.value == 'CN' ? '店铺SKU不能为空' : 'The Store SKU cannot be empty');
+				}
+				if (tableData.value[0].addASINAccount === '') {
+					tableData.value[0].IsSku1 = true;
+					ElMessage.error(area.value == 'CN' ? '上架平台不能为空' : 'The platform cannot be empty');
+				}
 				return false;
 			}
 			for (var i = 0; i < tableData.value.length - 1; i++) {
-				if (tableData.value[i].storeSKU == '') {
-					tableData.value[i].IsSku = true;
-					IsSku = false;
+				if (tableData.value[i].storeSKU == '' || tableData.value[i].addASINAccount == '') {
+					if (tableData.value[i].storeSKU === '') {
+						tableData.value[i].IsSku = true;
+						IsSku = false;
+						ElMessage.error(area.value == 'CN' ? '店铺SKU不能为空' : 'The Store SKU cannot be empty');
+					}
+					if (tableData.value[i].addASINAccount === '') {
+						tableData.value[i].IsSku1 = true;
+						IsSku1 = false;
+						ElMessage.error(area.value == 'CN' ? '上架平台不能为空' : 'The platform cannot be empty');
+					}
 					continue;
 				}
 				SubmitData.value.push({
@@ -291,11 +321,11 @@ const Saves = (formEl: FormInstance | undefined) => {
 					ean: queryForm.value.EAN,
 					creator: queryForm.value.Creator,
 					storeSKU: tableData.value[i].storeSKU,
-					addASINAccount: tableData.value[i].addASINAccount
+					addASINAccount: tableData.value[i].addASINAccount,
 				});
 				tableData.value[i].IsSku = false;
 			}
-			if (IsSku && SubmitData.value.length > 0) {
+			if (IsSku && IsSku1 && SubmitData.value.length > 0) {
 				loading.value = true;
 				Save(SubmitData.value)
 					.then((res: any) => {
@@ -309,18 +339,16 @@ const Saves = (formEl: FormInstance | undefined) => {
 							ElMessage.error(area.value == 'CN' ? '该数据已存在' : 'Change data already exists');
 							loading.value = false;
 						}
-
 					})
 					.error((res: any) => {
 						loading.value = false;
-					})
+					});
 			} else {
-				return false
+				return false;
 			}
 		}
-	})
-}
-
+	});
+};
 
 function Previous() {
 	IsBack.value = true;
@@ -343,7 +371,7 @@ function Previous() {
 
 .sku-input {
 	:deep(.el-input__wrapper) {
-		box-shadow: 0 0 0 1px #DE2910 inset;
+		box-shadow: 0 0 0 1px #de2910 inset;
 	}
 }
 

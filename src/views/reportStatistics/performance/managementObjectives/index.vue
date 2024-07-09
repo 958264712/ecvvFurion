@@ -25,10 +25,14 @@ for (let i = year+5; i >= 2005; i--) {
 }
 
 const siteList = ref<any>([
+	{ label: '全部', value: null },
 	{ value: 'UAE', label: 'UAE' },
 	{ value: 'SA', label: 'SA' },
 ]);
-
+const siteList1 = ref<any>([
+	{ value: 'UAE', label: 'UAE' },
+	{ value: 'SA', label: 'SA' },
+]);
 const nameList = ref<any>([{ label: '全部', value: null }]);
 const queryName = async (id: number) => {
 	await service({
@@ -48,7 +52,7 @@ const queryName = async (id: number) => {
 		}
 	});
 };
-const queryParams = ref<any>({ site: 'UAE', yearList: null });
+const queryParams = ref<any>({ site: null, yearList: null });
 const editDialogRef = ref();
 const editCollectionOrderInfoTitle = ref('');
 const area = ref('CN');
@@ -231,7 +235,7 @@ const deletes = (val: any) => {
 				type: 'success',
 				message: '删除成功',
 			});
-			getAppPage();
+			handleQuery()
 		} else {
 			ElMessage({
 				type: 'info',
@@ -239,7 +243,7 @@ const deletes = (val: any) => {
 			});
 		}
 	});
-	handleQuery()
+	
 };
 // 改变页面容量
 const handleSizeChange = (val: number) => {
@@ -271,7 +275,7 @@ const handleCurrentChange = (val: number) => {
 					</el-select>
 				</el-form-item>
 				<el-form-item label="姓名">
-					<el-select v-model="queryParams.nameList" clearable="" multiple placeholder="请选择">
+					<el-select v-model="queryParams.nameList" clearable=""  filterable multiple placeholder="请选择">
 						<el-option v-for="(item, index) in nameList" :key="index" :value="item.value" :label="item.label" />
 					</el-select>
 				</el-form-item>
@@ -351,7 +355,7 @@ const handleCurrentChange = (val: number) => {
 				layout="total, sizes, prev, pager, next, jumper"
 			/>
 		</el-card>
-		<editDialog ref="editDialogRef" :monthList="monthList" :nameList="nameList1" :siteList="siteList" :yearList="yearList1" :title="editCollectionOrderInfoTitle" @reloadTable="handleQuery()" />
+		<editDialog ref="editDialogRef" :monthList="monthList" :nameList="nameList1" :siteList="siteList1" :yearList="yearList1" :title="editCollectionOrderInfoTitle" @reloadTable="handleQuery()" />
 	</div>
 </template>
 

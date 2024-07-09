@@ -22,22 +22,37 @@
 				</el-form-item>
 				<el-form-item>
 					<el-button-group>
-						<el-button type="primary" icon="ele-Search" @click="queryfun()"> 查询 </el-button>
-						<el-button icon="ele-Refresh" @click="resetfun()"> 重置 </el-button>
+						<el-button type="primary" icon="ele-Search" @click="queryfun"> 查询 </el-button>
+						<el-button icon="ele-Refresh" @click="resetfun"> 重置 </el-button>
 					</el-button-group>
 				</el-form-item>
 			</el-form>
 		</el-card>
 		<el-card class="full-table" shadow="hover" style="margin-top: 8px">
 			<el-form-item class="settingf">
-				<el-button type="primary" icon="ele-Plus" @click="OpenAdd()" style="margin-right: 20px"> 新增集货单商品基础信息
-				</el-button>
+				<el-button type="primary" icon="ele-Plus" @click="OpenAdd" style="margin-right: 20px"> 新增集货单商品基础信息 </el-button>
 
-				<el-upload action="http://192.168.1.81:5568/api/collectionOrderInfo/collectionUploadAttachment"
-					:on-success="successfun" :on-error="errorfun" :multiple="true" :show-file-list="false" name="file">
+				<el-upload
+					action="http://192.168.1.81:5568/api/collectionOrderInfo/collectionUploadAttachment"
+					:on-success="successfun"
+					:on-error="errorfun"
+					:multiple="true"
+					:show-file-list="false"
+					name="file"
+				>
 					<el-button type="primary" :loading="loading1" icon="ele-Plus" style="margin: 20px"> 导入 </el-button>
 				</el-upload>
-
+				<div class="flex flex-wrap items-center">
+					<el-dropdown>
+						<el-button type="primary" :loading="cardLoading"> 导出 </el-button>
+						<template #dropdown>
+							<el-dropdown-menu>
+								<el-dropdown-item style="height: 24px" @click="AllExport">导出全部 </el-dropdown-item>
+								<el-dropdown-item style="height: 24px" @click="SelectedExport" :disabled="!selectedRowKeys?.length">导出选中 </el-dropdown-item>
+							</el-dropdown-menu>
+						</template>
+					</el-dropdown>
+				</div>
 				<div class="setting">
 					<el-tooltip class="box-item" effect="dark" content="刷新" placement="bottom-end">
 						<el-button type="primary" :icon="Refresh" />
@@ -48,7 +63,10 @@
 					<el-tooltip class="box-item" effect="dark" content="列设置" placement="bottom-end">
 						<el-button type="primary" @click="CacheShows = !CacheShows" :icon="Setting" />
 					</el-tooltip>
-					<div v-if="CacheShows" class="s-tool-column-header s-tool-column-item" style="
+					<div
+						v-if="CacheShows"
+						class="s-tool-column-header s-tool-column-item"
+						style="
 							width: 230px;
 							height: 500px;
 							position: absolute;
@@ -59,7 +77,8 @@
 							background-color: #fff;
 							padding: 10px 20px;
 							box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.5);
-						">
+						"
+					>
 						<div style="padding: 0px 10px">
 							<el-checkbox v-model="checkAll" @change="onCheckAllChange"> 列展示 </el-checkbox>
 							<el-button style="margin: -6px 0 0 70px" @click="CacheReset" type="primary" link>重置</el-button>
@@ -74,8 +93,7 @@
 												<Grid />
 											</el-icon>
 
-											<el-checkbox v-model="element.checked"
-												@change="CacheOnChange(element)">{{ element.title }}</el-checkbox>
+											<el-checkbox v-model="element.checked" @change="CacheOnChange(element)">{{ element.title }}</el-checkbox>
 										</div>
 									</template>
 								</draggable>
@@ -85,23 +103,28 @@
 				</div>
 			</el-form-item>
 
-			<el-table :data="tableData" size="large" style="width: 100%" v-loading="loading" tooltip-effect="light"
-				:cell-style="customCellStyle" @sort-change="sortfun">
+			<el-table
+				:data="tableData"
+				size="large"
+				style="width: 100%"
+				v-loading="loading"
+				tooltip-effect="light"
+				:cell-style="customCellStyle"
+				@sort-change="sortfun"
+				@selection-change="(selection: any) => selectChange(selection)"
+			>
 				<el-table-column type="selection" width="55" />
 				<template v-for="el in columns" :key="el.dataIndex">
-					<el-table-column v-if="el.checked && el.title == '标签'" :prop="el.dataIndex" :label="el.title"
-						align="center" :width="el.width" sortable="custom">
+					<el-table-column v-if="el.checked && el.title == '标签'" :prop="el.dataIndex" :label="el.title" align="center" :width="el.width" sortable="custom">
 						<template #default="scope">
 							<div v-for="(item, index) in scope.row.warnTag" :key="index">
 								<el-tag class="mx-1" :color="IsTag(item)" :hit="false" effect="dark">{{ item }}</el-tag>
 							</div>
 						</template>
 					</el-table-column>
-					<el-table-column v-else-if="el.checked" :prop="el.dataIndex" :label="el.title" align="center"
-						show-overflow-tooltip="" :width="el.width" sortable="custom">
+					<el-table-column v-else-if="el.checked" :prop="el.dataIndex" :label="el.title" align="center" show-overflow-tooltip="" :width="el.width" sortable="custom">
 						<template #default="scope" v-if="el.title == '产品图'">
-							<img :src="'https://raw.githubusercontent.com/okbuynow/OKPIC/main/50x50/' + scope.row.internalUniqueID + '.jpg'"
-								alt="" style="width: 80%" />
+							<img :src="'https://raw.githubusercontent.com/okbuynow/OKPIC/main/50x50/' + scope.row.internalUniqueID + '.jpg'" alt="" style="width: 80%" />
 						</template>
 					</el-table-column>
 				</template>
@@ -118,8 +141,7 @@
 								<el-button type="primary" size="small" @click="deletes(scope)">确定</el-button>
 							</div>
 							<template #reference>
-								<el-button size="small" :disabled="allCompiles" text type="primary"
-									@click="visible = false"> 删除</el-button>
+								<el-button size="small" :disabled="allCompiles" text type="primary" @click="visible = false"> 删除</el-button>
 							</template>
 						</el-popover>
 
@@ -127,10 +149,17 @@
 					</template>
 				</el-table-column>
 			</el-table>
-			<el-pagination v-model:currentPage="tableParams.page" v-model:page-size="tableParams.pageSize"
-				:total="tableParams.total" :page-sizes="[50, 100, 500, 1000]" small="" background=""
-				@size-change="handleSizeChange" @current-change="handleCurrentChange"
-				layout="total, sizes, prev, pager, next, jumper" />
+			<el-pagination
+				v-model:currentPage="tableParams.page"
+				v-model:page-size="tableParams.pageSize"
+				:total="tableParams.total"
+				:page-sizes="[50, 100, 500, 1000]"
+				small=""
+				background=""
+				@size-change="handleSizeChange"
+				@current-change="handleCurrentChange"
+				layout="total, sizes, prev, pager, next, jumper"
+			/>
 			<!-- <editDialog ref="editDialogRef" :title="editCollectionOrderInfoTitle" @reloadTable="handleQuery" /> -->
 		</el-card>
 		<el-dialog v-model="dialogVisible" title="出货说明">
@@ -160,8 +189,11 @@ import { Refresh, Setting, DCaret } from '@element-plus/icons-vue';
 import { ElMessageBox, ElMessage, ElNotification } from 'element-plus';
 import { onBeforeRouteUpdate } from 'vue-router';
 import { SysCodeGenConfigApi, SysConstApi, SysDictDataApi, SysDictTypeApi, SysEnumApi } from '/@/api-services/api';
+import other from '/@/utils/other.ts';
 import { getAPI } from '/@/utils/axios-utils';
-import editDialog from './component/editDialog.vue'
+import { ExportCollectionGoodsInfoCache } from '/@/api/modular/main/collections.ts';
+import editDialog from './component/editDialog.vue';
+
 const editDialogRef = ref();
 let tableData: any[] = reactive([]);
 const queryParams = ref<any>({});
@@ -173,6 +205,9 @@ let checkAll = ref<any>(true);
 const editCollectionOrderInfoTitle = ref('');
 let CacheShows = ref<any>(false);
 const tagoptions = ref<any>([]);
+const cardLoading = ref(false);
+const selectedRows = ref([]);
+const selectedRowKeys = ref([]);
 let tableParams = ref({
 	page: 1,
 	pageSize: 50,
@@ -583,7 +618,7 @@ let columns = ref<any>([
 		sorter: 'custom',
 		dataIndex: 'FOBSupplyPrice',
 		values: '',
-	}
+	},
 ]);
 async function getAppPage() {
 	var res = await getAPI(SysDictDataApi).apiSysDictDataDataListCodeGet('warn_tag');
@@ -607,8 +642,7 @@ async function getAppPage() {
 	}).then((data) => {
 		tableData.splice(0, tableData.length);
 		data.data.result.items.forEach((element: any) => {
-
-			if (element.warnTag != null && element.warnTag != "") {
+			if (element.warnTag != null && element.warnTag != '') {
 				element.warnTag = element.warnTag.split(',');
 			}
 			tableData.push(element);
@@ -621,11 +655,11 @@ async function getAppPage() {
 }
 //判断标签是否存在于集合中
 function IsTag(tag: any) {
-	const element = tagoptions.value.find(item => item.value === tag);
+	const element = tagoptions.value.find((item) => item.value === tag);
 	if (element) {
 		return element.code;
 	}
-	return "#DE2910";
+	return '#DE2910';
 }
 //导入
 function successfun(data: any, res: any) {
@@ -743,7 +777,6 @@ function confirmNotes() {
 			});
 		}
 	});
-
 }
 onMounted(() => {
 	getAppPage();
@@ -796,17 +829,53 @@ function Imports(data: any) {
 		url: '/api/collectionGoodsInfoCache/import',
 		method: 'post',
 		data: formData,
-	}).then((data) => { });
+	}).then((data) => {});
 }
 
 //底色
 function customCellStyle({ row, column, rowIndex, columnIndex }) {
-	if (row.warnTag != null && row.warnTag != "") {
+	if (row.warnTag != null && row.warnTag != '') {
 		return { backgroundColor: '#FEF0F0' };
 	}
 	// 返回一个包含自定义样式的对象
 	return null;
 }
+
+const selectChange = (selection: any) => {
+	selectedRowKeys.value = [];
+	selectedRows.value = [];
+	selectedRows.value = selection;
+	selection.map((item: any) => {
+		selectedRowKeys.value.push(item.id);
+	});
+};
+// 导出选中
+const SelectedExport = async () => {
+	cardLoading.value = true;
+	await ExportCollectionGoodsInfoCache(Object.assign({ type: 0, idList: selectedRowKeys.value }, queryList, tableParams.value)).then((res) => {
+		cardLoading.value = false;
+		other.downloadfile(res);
+	});
+};
+// 导出所有
+const AllExport = async () => {
+	cardLoading.value = true;
+	await ExportCollectionGoodsInfoCache(
+		Object.assign({
+			type: 1,
+			internalUniqueID: queryList.internalUniqueID,
+			purchaser: queryList.purchaser,
+			purchaseContractNo: queryList.purchaseContractNo,
+			boxNo: queryList.boxNo,
+			supplier: queryList.supplier,
+			brand: queryList.brand,
+		})
+	).then((res) => {
+		cardLoading.value = false;
+		other.downloadfile(res);
+		selectedRows.value = [];
+	});
+};
 </script>
 <style lang="less" scoped>
 .settingf {

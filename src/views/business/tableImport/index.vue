@@ -67,8 +67,8 @@ import { ElMessageBox, ElMessage } from 'element-plus';
 import { auth } from '/@/utils/authFunction';
 //import { formatDate } from '/@/utils/formatTime';
 
-import editDialog from '/@/views//business/tableImport/component/editDialog.vue';
-import importDialog from '/@/views//business/tableImport/component/importDialog.vue';
+import editDialog from '/@/views/business/tableImport/component/editDialog.vue';
+import importDialog from '/@/views/business/tableImport/component/importDialog.vue';
 import { pageTableImport, deleteTableImport } from '/@/api/main/tableImport';
 const editDialogRef = ref();
 const importDialogRef = ref();

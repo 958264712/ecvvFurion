@@ -1,26 +1,32 @@
 <script lang="ts" setup name="performance_condition">
 import * as echarts from 'echarts';
 import moment from 'moment';
-import { ref } from 'vue';
+import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import router from '/@/router';
 import { service } from '/@/utils/request';
 import { auth } from '/@/utils/authFunction';
 import { getAPI } from '/@/utils/axios-utils';
 import { SysAuthApi } from '/@/api-services/api';
-import { WarningFilled } from '@element-plus/icons-vue';
-import { performanceGetAccumulated, performanceGetCompletion,performanceGetCompletionDetails } from '/@/api/modular/main/performance.ts';
+import { WarningFilled, QuestionFilled } from '@element-plus/icons-vue';
+import { performanceGetAccumulated, performanceGetCompletion, performanceGetCompletionDetails } from '/@/api/modular/main/performance.ts';
 
 const loading = ref(false);
 const centerDialogVisible = ref(false);
+const centerTilte = ref('');
 const ifshow = ref(false);
+const ifSuper = ref(false);
 const tableData = ref<any>([]);
 const tableData1 = ref<any>([]);
-const queryParams = ref<any>({ site: '全部', time:new Date() });//'2024-5'
+const queryParams = ref<any>({ site: '全部', time: new Date() }); //'2024-5'
 const radio = ref('月');
 const area = ref('CN');
 
 const overPieRef = ref();
 const overObjectivesRef = ref();
+const table1Ref = ref();
+const table2Ref = ref();
+
+const srcollLeft = ref(0);
 
 const date = new Date();
 const year = date.getFullYear();
@@ -67,17 +73,19 @@ const handleAuth = async () => {
 	var res = await getAPI(SysAuthApi).apiSysAuthUserInfoGet();
 	if (res.data.type === 'success') {
 		if (res.data.result.account === 'superadmin') {
-			queryParams.value.name="全部"
+			queryParams.value.name = '全部';
+			ifSuper.value = true;
 			queryName();
 			handleQuery();
 		} else {
-			queryParams.value.name=res.data.result.realName
+			queryParams.value.name = res.data.result.realName;
+			ifSuper.value = false;
 			nameList.value = [{ value: res.data.result.realName, label: res.data.result.realName }];
 			handleQuery();
 		}
 	}
 };
-handleAuth()
+handleAuth();
 const disabledDate = (time: Date) => {
 	return time.getTime() > Date.now();
 };
@@ -92,7 +100,10 @@ const TableData = ref<any>([
 	{ label: '超出目标销售额', dataIndex: 'exceedingTargetSalesRevenue', width: 125 },
 ]);
 const TableData1 = ref<any>([]);
-const TableData2 = ref<any>([{ label: '', dataIndex: '',width:80 },{ label: '', dataIndex:  '' ,width:80}]);
+const TableData2 = ref<any>([
+	{ label: '', dataIndex: '', width: 80 },
+	{ label: '', dataIndex: '', width: 80 },
+]);
 const TableData3 = ref<any>([]);
 const changeRadio = (type: string) => {
 	let num = 0;
@@ -100,10 +111,10 @@ const changeRadio = (type: string) => {
 		for (let i = 1; i <= days; i++) {
 			if (i % 7 === 0) {
 				num++;
-				dayList.value.push({ label: i, dataIndex:  `day${i}` });
+				dayList.value.push({ label: i, dataIndex: `day${i}` });
 				dayList.value.push({ label: `第${num}周合计`, dataIndex: `week${num}`, width: 105 });
 			} else {
-				dayList.value.push({ label: i, dataIndex:  `day${i}` });
+				dayList.value.push({ label: i, dataIndex: `day${i}` });
 				if (num === 4 && i == days) {
 					dayList.value.push({ label: `第${num + 1}周合计`, dataIndex: `week${num + 1}` });
 				}
@@ -113,23 +124,26 @@ const changeRadio = (type: string) => {
 		for (let i = 1; i <= monthsList.value.length; i++) {
 			if (i % 3 === 0) {
 				num++;
-				dayList.value.push({ label: monthsList.value[i - 1], dataIndex:`month${i - 1}` });
+				dayList.value.push({ label: monthsList.value[i - 1], dataIndex: `month${i}` });
 				dayList.value.push({ label: `Q${num}合计`, dataIndex: `q${num}`, width: 100 });
 			} else {
-				dayList.value.push({ label: monthsList.value[i - 1], dataIndex:`month${i - 1}` });
+				dayList.value.push({ label: monthsList.value[i - 1], dataIndex: `month${i}` });
 			}
 		}
 	}
 	TableData1.value = [...TableData.value, ...dayList.value];
-	TableData2.value = [{ label: '', dataIndex: '',width:80 },{ label: '', dataIndex:  '' ,width:80}];
+	TableData2.value = [
+		{ label: '', dataIndex: '', width: 80 },
+		{ label: '', dataIndex: '', width: 80 },
+	];
 	TableData3.value = [...TableData.value, ...dayList.value];
 	dayList.value = [];
-	
-	TableData3.value.map(item=>{
-		if(item.dataIndex !== 'name' && item.dataIndex !== 'no'&& item.dataIndex !== 'site'){
-			TableData2.value.push({label:item.label,dataIndex:'total' + item.dataIndex,width:item.width})
+
+	TableData3.value.map((item) => {
+		if (item.dataIndex !== 'name' && item.dataIndex !== 'no' && item.dataIndex !== 'site') {
+			TableData2.value.push({ label: item.label, dataIndex: 'total' + item.dataIndex, width: item.width });
 		}
-	})
+	});
 };
 const changeMonths = (data, month, item) => {
 	switch (month) {
@@ -191,7 +205,6 @@ const dataymxMoney = async (face, unit) => {
 						}
 					});
 				});
-				
 			} else if (radio.value === '年') {
 				res.data.result.thisYear?.map((item) => {
 					changeMonths(data, item.month, item[unit]);
@@ -269,15 +282,15 @@ const dataymxMoney = async (face, unit) => {
 };
 const initEcharts = async () => {
 	const myChart = echarts.init(overPieRef.value);
-	let targetAmount,completeAmount;
+	let targetAmount, completeAmount;
 	await performanceGetAccumulated(Object.assign(queryParams.value)).then((res) => {
 		if (res.data.code === 200 && res.data.type === 'success') {
 			if (radio.value === '月') {
-				targetAmount = res.data.result.targetAmount 
-				completeAmount = res.data.result.completeAmount 
+				targetAmount = res.data.result.targetAmount;
+				completeAmount = res.data.result.completeAmount;
 			} else if (radio.value === '年') {
-				targetAmount = res.data.result.targetAmount 
-				completeAmount = res.data.result.completeAmount 
+				targetAmount = res.data.result.targetAmount;
+				completeAmount = res.data.result.completeAmount;
 			}
 		}
 	});
@@ -301,7 +314,7 @@ const initEcharts = async () => {
 				},
 				data: [
 					{ value: targetAmount, name: '目标销售额' },
-					{ value: completeAmount, name: radio.value === '月' ? '完成销售额' : '累计完成', label: { show: true, position: 'center', fontSize: '12', formatter: '完成度：{d}%', fontWeight: 'bold' } },
+					{ value: completeAmount, name: radio.value === '月' ? '完成销售额' : '累计完成', label: { show: true, position: 'center', fontSize: '12', formatter: '完成率：{d}%', fontWeight: 'bold' } },
 				],
 				itemStyle: {
 					normal: {
@@ -321,59 +334,112 @@ const initEcharts = async () => {
 };
 
 // 查询操作
-const handleQuery =  () => {
+const handleQuery = () => {
 	changeRadio(radio.value);
-	if(queryParams.value.site === '全部'){
-		queryParams.value.site = null
+	if (queryParams.value.site === '全部') {
+		queryParams.value.site = null;
 	}
-	if(queryParams.value.name && queryParams.value.name!=='全部'){
-		ifshow.value = true
+	if (queryParams.value.name && queryParams.value.name !== '全部') {
+		ifshow.value = true;
 		setTimeout(() => {
 			dataymxMoney(performanceGetCompletion, 'shippedCOGS');
 			initEcharts();
 		}, 100);
-	}else{
-		ifshow.value = false
+	} else {
+		ifshow.value = false;
 	}
-	if(queryParams.value.name==='全部'){
-		queryParams.value.name=null
+	
+	if (queryParams.value.name === '全部') {
+		queryParams.value.name = null;
 	}
-	queryParams.value.time = moment(queryParams.value.time).format('YYYY-MM')
+	queryParams.value.time = moment(queryParams.value.time).format('YYYY-MM');
 	queryParams.value.TimePeriod = radio.value;
 	loading.value = true;
-	 performanceGetCompletionDetails(Object.assign(tableParams.value, queryParams.value)).then(res=>{
+	performanceGetCompletionDetails(Object.assign(tableParams.value, queryParams.value)).then((res) => {
 		tableData.value = res.data.result?.detailslist;
 		tableData1.value[0] = res.data.result?.total;
-		if(res.data.result?.isShow<=0){
-			centerDialogVisible.value = true
-		}else{
-			centerDialogVisible.value = false
+		if (res.data.result?.isShow <= 0) {
+			centerDialogVisible.value = true;
+			if (!ifSuper.value) {
+				centerTilte.value = '当前月份业绩所有币种的业绩汇率汇率未设置，部分数据将无法查看，请先设置业绩汇率';
+			} else {
+				centerTilte.value = res.data.result?.prompt;
+			}
+		} else {
+			centerDialogVisible.value = false;
 		}
-	})
+	});
 	setTimeout(() => {
-		if(queryParams.value.site ===null ){
-			queryParams.value.site = '全部'
+		if (queryParams.value.site === null) {
+			queryParams.value.site = '全部';
 		}
 	}, 100);
-	
+
 	loading.value = false;
 };
-// 改变页面容量
-const handleSizeChange = (val: number) => {
-	tableParams.value.pageSize = val;
-	handleQuery();
-};
+// // 改变页面容量
+// const handleSizeChange = (val: number) => {
+// 	tableParams.value.pageSize = val;
+// 	handleQuery();
+// };
 const getColumnLabel = (column) => {
-	return tableData1.value[0][column]
+	return tableData1.value[0][column];
+};
+
+// // 改变页码序号
+// const handleCurrentChange = (val: number) => {
+// 	tableParams.value.page = val;
+// 	handleQuery();
+// };
+const srcoll = () => {
+	setTimeout(() => {
+		if (table1Ref.value && table1Ref.value.$el && table2Ref.value && table2Ref.value.$el) {
+			const wrapper1 = table1Ref.value.$el.querySelector('.el-table__body-wrapper .el-scrollbar__wrap');
+			const wrapper2 = table2Ref.value.$el.querySelector('.el-table__body-wrapper .el-scrollbar__wrap');
+			if (wrapper1 && wrapper2) {
+				wrapper2.addEventListener('scroll', () => {
+					srcollLeft.value = wrapper2.scrollLeft;
+				});
+			} else {
+				console.error('无法找到对应的DOM元素');
+			}
+		}else{
+			srcoll()
+		}
+	}, 900);
 }
 
-// 改变页码序号
-const handleCurrentChange = (val: number) => {
-	tableParams.value.page = val;
-	handleQuery();
-};
+onMounted(() => {
+	srcoll()
+});
+onUnmounted(() => {
+	if (table1Ref.value && table1Ref.value.$el && table2Ref.value && table2Ref.value.$el) {
+		const wrapper1 = table1Ref.value.$el.querySelector('.el-table__body-wrapper .el-scrollbar__wrap');
+		const wrapper2 = table2Ref.value.$el.querySelector('.el-table__body-wrapper .el-scrollbar__wrap');
+		if (wrapper1 && wrapper2) {
+			wrapper2.removeEventListener('scroll', () => {
+				srcollLeft.value = wrapper2.scrollLeft;
+			});
+		} else {
+			console.error('无法找到对应的DOM元素');
+		}
+	}
+});
 
-
+watch(
+	() => srcollLeft.value,
+	() => {
+		if (table1Ref.value && table1Ref.value.$el && table2Ref.value && table2Ref.value.$el) {
+			const wrapper1 = table1Ref.value.$el.querySelector('.el-table__body-wrapper .el-scrollbar__wrap');
+			const wrapper2 = table2Ref.value.$el.querySelector('.el-table__body-wrapper .el-scrollbar__wrap');
+			if (wrapper1 && wrapper2) {
+				wrapper1.scrollLeft = srcollLeft.value;
+			} else {
+				console.error('无法找到对应的DOM元素');
+			}
+		}
+	}
+);
 </script>
 
 <template>
@@ -381,13 +447,13 @@ const handleCurrentChange = (val: number) => {
 		<el-card class="full-table" shadow="hover">
 			<div style="display: flex; justify-content: space-between">
 				<div style="margin-bottom: 20px; display: flex; justify-content: space-between">
-					<el-date-picker @change="handleQuery()" :clearable="false" v-model="queryParams.time" type="month" style="width: 100px" placeholder="请选择月份"  />
+					<el-date-picker @change="handleQuery()" :clearable="false" v-model="queryParams.time" :type="radio === '月' ? 'month' : 'year'" style="width: 100px" placeholder="请选择月份" />
 					<el-select @change="handleQuery()" v-model="queryParams.site" class="select">
-						<el-option value="null" label="全部"></el-option>
+						<el-option value='全部' label="全部"></el-option>
 						<el-option value="UAE" label="UAE"></el-option>
 						<el-option value="SA" label="SA"></el-option>
 					</el-select>
-					<el-select v-model="queryParams.name" @change="handleQuery()" clearable="" placeholder="请选择" class="select">
+					<el-select v-model="queryParams.name" @change="handleQuery()" filterable clearable="" placeholder="请选择" class="select">
 						<el-option v-for="(item, index) in nameList" :key="index" :value="item.value" :label="item.label" />
 					</el-select>
 					<el-radio-group v-model="radio" size="large" class="radio-group">
@@ -401,7 +467,7 @@ const handleCurrentChange = (val: number) => {
 					<el-col class="MainCol leftcard" :span="12">
 						<el-card shadow="always" class="bottomdiv">
 							<div class="topchange">
-								<span>{{ radio === '月' ? '本月' : '今年' }}累计完成({{ queryParams.site === '全部' ? 'RMB' : queryParams.site }})</span>
+								<span>{{ radio === '月' ? '本月' : '今年' }}累计完成({{ queryParams.site === '全部' ? 'RMB' : queryParams.site === 'SA' ? 'SAR' : 'AED' }})</span>
 							</div>
 							<div style="height: 335px; background: #fff" ref="overPieRef"></div>
 						</el-card>
@@ -409,39 +475,68 @@ const handleCurrentChange = (val: number) => {
 					<el-col class="MainCol rightcard" :span="12">
 						<el-card shadow="always" class="bottomdiv">
 							<div class="topchange">
-								<span>{{ radio === '月' ? '本月' : '今年' }}完成情况({{ queryParams.site === '全部' ? 'RMB' : queryParams.site }})</span>
+								<span>{{ radio === '月' ? '本月' : '今年' }}完成情况({{ queryParams.site === '全部' ? 'RMB' : queryParams.site === 'SA' ? 'SAR' : 'AED' }})</span>
 							</div>
 							<div style="height: 335px; background: #fff" ref="overObjectivesRef"></div>
 						</el-card>
 					</el-col>
 				</el-row>
-				<el-table  :data="tableData"  v-loading="loading" tooltip-effect="light" row-key="id" border="">
-					<template v-for="(item, index) in TableData1" :key="index">
-						<el-table-column v-if="item.dataIndex === 'target'" :width="item.width" sortable :prop="item.dataIndex" show-overflow-tooltip :label="item.label" align="center" >
-							<template #default="scope">
-								{{scope.row.target}}({{scope.row.unit}})
+				<div class="card">
+					<h3 style="margin-bottom: 10px">业绩完成详情</h3>
+					<el-table ref="table1Ref" id="shared-scrollbar-container" :data="tableData" v-loading="loading" style="width: 100%; overflow: hidden" tooltip-effect="light" row-key="id" border="">
+						<template v-for="(item, index) in TableData1" :key="index">
+							<el-table-column v-if="item.dataIndex === 'name'" :width="item.width" :prop="item.dataIndex" show-overflow-tooltip :label="item.label" align="center">
+								<template #default="scope">
+									{{ scope.row.name }}
+								</template>
+							</el-table-column>
+							<el-table-column v-else-if="item.dataIndex === 'target'" :width="item.width" sortable :prop="item.dataIndex" show-overflow-tooltip :label="item.label" align="center">
+								<template #default="scope"> {{ scope.row.target }}({{ scope.row.unit }}) </template>
+							</el-table-column>
+							<el-table-column v-else-if="item.dataIndex === 'shippedCOGS'" :width="item.width" sortable :prop="item.dataIndex" show-overflow-tooltip :label="item.label" align="center">
+								<template #default="scope"> {{ scope.row.shippedCOGS }}({{ scope.row.unit }}) </template>
+							</el-table-column>
+							<el-table-column
+								v-else-if="item.dataIndex === 'exceedingTargetSalesRevenue'"
+								:width="item.width"
+								sortable
+								:prop="item.dataIndex"
+								show-overflow-tooltip
+								:label="item.label"
+								align="center"
+							>
+								<template #default="scope"> {{ scope.row.exceedingTargetSalesRevenue }}({{ scope.row.unit }}) </template>
+							</el-table-column>
+							<el-table-column v-else-if="item.dataIndex" :width="item.width" sortable :prop="item.dataIndex" show-overflow-tooltip :label="item.label" align="center" />
+						</template>
+					</el-table>
+					<el-table
+						ref="table2Ref"
+						v-if="tableData1.length > 0"
+						:data="tableData1"
+						id="shared-scrollbar-container1"
+						style="height: 40px; width: 100%; overflow: hidden"
+						v-loading="loading"
+						tooltip-effect="light"
+						row-key="id"
+						border=""
+					>
+						<el-table-column label="总计" align="center" labelClassName="bold">
+							<template #header>
+								<el-tooltip effect="dark" placement="bottom">
+									<div style="display: flex; align-items: center; justify-content: center">总计(￥)<QuestionFilled width="14" style="color: #ccc" /></div>
+									<template #content>
+										<p>总计中每列数据是根据已设置不同国家的汇率兑换成人民币的金额，统计列表中每个人{{ radio === '月' ? '每天、每周' : '每月、每季' }}的业绩汇总</p>
+									</template>
+								</el-tooltip>
 							</template>
 						</el-table-column>
-						<el-table-column v-else-if="item.dataIndex === 'shippedCOGS'" :width="item.width" sortable :prop="item.dataIndex" show-overflow-tooltip :label="item.label" align="center" >
-							<template #default="scope">
-								{{scope.row.shippedCOGS}}({{scope.row.unit}})
-							</template>
-						</el-table-column>
-						<el-table-column v-else-if="item.dataIndex === 'exceedingTargetSalesRevenue'" :width="item.width" sortable :prop="item.dataIndex" show-overflow-tooltip :label="item.label" align="center" >
-							<template #default="scope">
-								{{scope.row.exceedingTargetSalesRevenue}}({{scope.row.unit}})
-							</template>
-						</el-table-column>
-						<el-table-column v-else-if="item.dataIndex" :width="item.width" sortable :prop="item.dataIndex" show-overflow-tooltip :label="item.label" align="center" />
-					</template>
-				</el-table>
-				<el-table v-if="tableData1.length>0" :data="tableData1" style="height: 45px; overflow-x: scroll" v-loading="loading" tooltip-effect="light" row-key="id" border="">
-					<el-table-column label="总计" align="center" />
-					<template v-for="(item, index) in TableData2" :key="index">
-						<el-table-column :width="item.width" :label="getColumnLabel(item.dataIndex)"  :prop="item.dataIndex" show-overflow-tooltip align="center" />
-					</template>
-				</el-table>
-				<el-pagination
+						<template v-for="(item, index) in TableData2" :key="index">
+							<el-table-column :width="item.width" :label="getColumnLabel(item.dataIndex)" labelClassName="bold" :prop="item.dataIndex" show-overflow-tooltip align="center" />
+						</template>
+					</el-table>
+				</div>
+				<!-- <el-pagination
 					v-model:currentPage="tableParams.page"
 					v-model:page-size="tableParams.pageSize"
 					:total="tableParams.total"
@@ -451,12 +546,12 @@ const handleCurrentChange = (val: number) => {
 					@size-change="handleSizeChange"
 					@current-change="handleCurrentChange"
 					layout="total, sizes, prev, pager, next, jumper"
-				/>
+				/> -->
 			</div>
 		</el-card>
 		<el-dialog v-model="centerDialogVisible" title="提示" width="500">
 			<span
-				><el-icon><WarningFilled /></el-icon> 当前月份业绩汇率未设置，部分数据将无法查看，请先设置业绩汇率
+				><el-icon><WarningFilled /></el-icon>{{ centerTilte }}
 			</span>
 			<template #footer>
 				<div class="dialog-footer">
@@ -540,5 +635,23 @@ const handleCurrentChange = (val: number) => {
 
 .rightcard {
 	padding-left: 10px;
+}
+:deep(.bold) {
+	font-weight: bold;
+}
+#shared-scrollbar-container {
+	:deep(.is-horizontal) {
+		display: none !important;
+	}
+}
+.card {
+	box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.12);
+	border-radius: 4px;
+	border: 1px solid #e4e7ed;
+	background-color: #ffffff;
+	overflow: hidden;
+	color: #303133;
+	transition: 0.3s;
+	padding: 20px;
 }
 </style>

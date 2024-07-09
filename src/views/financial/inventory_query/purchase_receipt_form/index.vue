@@ -170,6 +170,9 @@ function Imports(file: any) {
 				ElMessage.error(res.message); // + res.message
 				loading.value = false;
 			}
+		})
+		.catch(res => {
+			loading.value = false;
 		});
 
 }

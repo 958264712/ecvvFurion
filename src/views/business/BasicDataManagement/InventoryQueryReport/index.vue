@@ -127,12 +127,33 @@ const Imports = useDebounce((file: any) => {
 		.then((res: any) => {
 			ImportsSalesloading.value = false;
 			if (res.data.code == 200) {
-				ElMessage.success('导入成功');
-				handleQuery();
+				ElMessageBox.alert('<el-text style="color:#67C23A;font-size:30px">导入成功</el-text>', '提示', {
+					dangerouslyUseHTMLString: true,
+					confirmButtonText: 'OK',
+					callback: (action: Action) => {
+						handleQuery();
+					}
+				})
 			} else {
 				ImportsSalesloading.value = false;
-				ElMessage.error('导入失败'); // + res.message
+				ElMessageBox.alert('<el-text style="color:#F78585;font-size:30px">导入失败</el-text>', '提示', {
+					dangerouslyUseHTMLString: true,
+					confirmButtonText: 'OK',
+					callback: (action: Action) => {
+						handleQuery();
+					}
+				})
 			}
+		})
+		.catch(arr => {
+			ImportsSalesloading.value = false;
+			ElMessageBox.alert('<el-text style="color:#F78585;font-size:30px">服务器超时，请重新导入</el-text>', '提示', {
+				dangerouslyUseHTMLString: true,
+				confirmButtonText: 'OK',
+				callback: (action: Action) => {
+					handleQuery();
+				}
+			})
 		});
 }, 500);
 
