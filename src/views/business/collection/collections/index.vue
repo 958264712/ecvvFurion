@@ -915,10 +915,12 @@ function exportfunAll() {
 function exportfun() {
 	Exportloading.value = true;
 	if (isExProtAll.value) {
+		queryList.startTime = queryList.time.length ? moment(queryList.time[0]).format('YYYY-MM-DD') : '';
+		queryList.endTime = queryList.time.length ? moment(queryList.time[1]).format('YYYY-MM-DD') : '';
 		service({
 			url: `/api/collectionGoodsInfo/exportSum`,
 			method: 'post',
-			data: 'all',
+			data: Object.assign(queryList, tableParams.value, { DocumentNos: "all" }),
 			responseType: 'blob',
 		})
 			.then((data) => {
@@ -955,7 +957,7 @@ function exportfun() {
 		service({
 			url: `/api/collectionGoodsInfo/exportSum`,
 			method: 'post',
-			data: selectedRows.value.toString(),
+			data: { DocumentNos: selectedRows.value.toString() },
 			responseType: 'blob',
 		})
 			.then((data) => {
@@ -1034,8 +1036,8 @@ function deletefun(val: any) {
 }
 //导出报关件
 function exportBaoguan(val: any) {
-	if(Exportloading.value === true){
-		
+	if (Exportloading.value === true) {
+
 		ElMessage({
 			type: 'warning',
 			message: '正在导出文件，请等待本次导出完成后再进行导出操作',
@@ -1048,7 +1050,7 @@ function exportBaoguan(val: any) {
 		method: 'get',
 		data: { documentNo: val.row.documentNo },
 		responseType: 'blob',
-		timeout:120000
+		timeout: 120000
 	})
 		.then((data) => {
 			downloadfile(data);

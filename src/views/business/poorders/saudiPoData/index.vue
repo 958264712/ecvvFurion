@@ -106,7 +106,7 @@ function ImportforPO(file: any, ifCover = false) {
 		})
 		.catch((res) => {
 			loading1.value = false;
-			const result = res.toString().split('据')[2];
+			const result = res.toString().split('|')[1]
 			ElMessageBox({
 				message: h(
 					'p',

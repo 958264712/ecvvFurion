@@ -15,8 +15,8 @@ export const batchPuyuanCloudInventoryPage = (params?: any) =>
 export const amazonOrdersPage = (params?: any) =>
 	request({
 		url: Api.amazonOrders,
-		method: 'get',
-		params: params,
+		method: 'post',
+		data: params,
 	});
 
 export const Import = (params?: any) =>

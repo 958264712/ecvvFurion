@@ -69,8 +69,8 @@
 		<el-card class="full-table" shadow="hover" style="margin-top: 8px">
 			<div class="importDiv" style="width: 100%">
 				<div style="float: left;">
-					<el-upload :on-change="Imports" :multiple="false" action="#" :show-file-list="false"
-						:auto-upload="false" name="file">
+					<el-upload :disabled="ifdisabled" :on-change="Imports" :multiple="false" action="#"
+						:show-file-list="false" :auto-upload="false" name="file">
 						<el-button :loading="ImportsSalesloading" type="primary">导入</el-button>
 					</el-upload>
 					<!-- <el-button @click="dialogFormVisible = true" type="primary">
@@ -212,12 +212,12 @@
 	</div>
 </template>
 <script lang="ts" setup="" name="DFPickingList">
-import { ref } from 'vue';
+import { ref, h } from 'vue';
 import { service } from '/@/utils/request';
 import axios from 'axios';
 import { ElMessageBox, ElMessage, ElNotification } from 'element-plus';
 //import { formatDate } from '/@/utils/formatTime';
-import { BatchDFPicking, ImportDFPickingList, downLoadPOZip, Delete, GetUserRole, ImportDFShippingList } from '/@/api/modular/main/BasicDataManagement.ts';
+import { BatchDFPicking, ImportDFPickingList, downLoadPOZip, Delete, GetUserRole, ImportDFShippingList, confirmImportDFPickingList } from '/@/api/modular/main/BasicDataManagement.ts';
 import editDialog from './component/details.vue';
 import ShippingListDetails from './component/ShippingListDetails.vue';
 const editDialogRef = ref();
@@ -235,6 +235,7 @@ const queryParams = ref<any>({ Site: 'UAE' });
 const IsImage = ref(false);
 const startTime = ref(0);
 const timer = ref<any>();
+const ifdisabled = ref(false);
 const Country = ref<any>('UAE')
 const options = [
 	{
@@ -256,8 +257,9 @@ const tableParams = ref({
 	prop: null
 });
 let selectedRows = ref<any>([]);
-function Imports(file: any) {
+function Imports(file: any, ifCover = false) {
 	ImportsSalesloading.value = true;
+	ifdisabled.value = true;
 	const formData = new FormData();
 	formData.append('file', file.raw);
 	// if (disabledSite.value) {
@@ -266,19 +268,37 @@ function Imports(file: any) {
 	// 	formData.append('Country', Country.value);
 	// }
 	formData.append('Country', queryParams.value.Site);
-	ImportDFPickingList(formData).then((res: any) => {
+	ImportDFPickingList(formData, queryParams.value.Site).then((res: any) => {
 		ImportsSalesloading.value = false;
-		if (res.data.code == 200) {
+		ifdisabled.value = false;
+		if (res.data.type === 'success') {
 			ElMessage.success('导入成功');
 			handleQuery();
-		} else {
-			ImportsSalesloading.value = false;
-			ElMessage.error('导入失败'); // + res.message
 		}
-	});
+	}).catch(res => {
+		ImportsSalesloading.value = false;
+		ifdisabled.value = false;
+		const result = res.toString().split('|')[1]
+		ElMessageBox({
+			message: h('p', { style: "overflow-wrap:break-word" }, result),
+			title: 'Prompt Message',
+			showCancelButton: true,
+			cancelButtonText: 'Cancel',
+			confirmButtonText: 'Confirm',
+		})
+			.then(async () => {
+				await confirmImportDFPickingList(formData, queryParams.value.Site).then(res => {
+					ElMessage.success('导入成功')
+					handleQuery();
+				})
+			})
+			.catch(() => {
+				// ElMessage.error(res.message); // + res.message
+			});
+	})
 }
 function OpendropdownClick(batchId) {
-	
+
 	axios.get(import.meta.env.VITE_API_URL as any + '/api/dFShippingList/isTrackingID/' + batchId)
 		.then(res => {
 			disableditem.value = res.data.result;

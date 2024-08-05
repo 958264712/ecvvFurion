@@ -78,9 +78,9 @@
 								<el-date-picker @change="actualArrivalDateChange" :disabled="!compile" v-model="collectionOrderInfo.actualArrivalDate"
 									type="date" placeholder="请选择日期" />
 							</el-form-item>
-							<el-form-item label="国际物流支付方" style="width: 90%">
+							<el-form-item label="国际物流支付方" style="width: 90%" required="true">
 								<el-select :disabled="!compile" v-model="collectionOrderInfo.internationalLogisticsFeePayer"
-									filterable clearable>
+									 clearable>
 									<el-option v-for="item in payerOptions" :key="item" :label="item" :value="item" />
 								</el-select>
 							</el-form-item>
@@ -104,7 +104,7 @@
 										<span v-if="!collectionOrderInfo.logisticsPrice || !collectionOrderInfo.logisticsPriceCurrency" class="error-message">物流报价不能为空！</span>
 									</div> -->
 							</el-form-item>
-							<el-form-item label="是否报关"> <el-switch :disabled="!compile"
+							<el-form-item label="是否报关" required="true"> <el-switch :disabled="!compile"
 									v-model="collectionOrderInfo.NeetCustoms" inline-prompt active-text="是"
 									inactive-text="否" /><br /> </el-form-item>
 							<br />
@@ -347,9 +347,17 @@ let isCommit = computed(function com() {
 		return false;
 	} else if (!collectionOrderInfo.exchangeRate && !(collectionOrderInfo.exchangeRate === 0)) {
 		return false;
-	} else if (!collectionOrderInfo.exchangeRateUSD && !(collectionOrderInfo.exchangeRateUSD === 0)) {
+	} 
+	else if (!collectionOrderInfo.exchangeRateUSD && !(collectionOrderInfo.exchangeRateUSD === 0)) {
 		return false;
-	} else {
+	} 
+	else if (!collectionOrderInfo.internationalLogisticsFeePayer && !(collectionOrderInfo.internationalLogisticsFeePayer === 0)) {
+		return false;
+	}
+	else if (!collectionOrderInfo.NeetCustoms && !(collectionOrderInfo.NeetCustoms === 0)) {
+		return false;
+	}
+	else {
 		return true;
 	}
 });

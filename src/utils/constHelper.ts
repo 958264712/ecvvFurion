@@ -1,5 +1,6 @@
 import type { App } from 'vue';
 import { useUserInfo } from '/@/stores/userInfo';
+import { time } from 'console';
 
 export function setupConstFilter(app: App) {
 	// 全局过滤器  在vue文件中调用  $filters.codeToName(code,type)
@@ -29,4 +30,13 @@ export function getConstType(type: any) {
 	const userStore = useUserInfo();
 	const constType = userStore.constList.filter((x: any) => x.code === type)[0].data;
 	return constType;
+}
+
+/**
+ * 清除数组中为空的数据
+ * @param array 
+ * @returns 
+ */
+export function clearEmptyDataByAny(array : any) : any{
+	return array.filter((x: string | null | undefined) => x !== null && x!== undefined && x !== '');
 }

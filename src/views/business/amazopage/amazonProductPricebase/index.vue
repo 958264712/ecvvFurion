@@ -108,7 +108,7 @@ const Amazonimport = useDebounce((file: any) => {
 // 导出用户文件
 const AmazonExport = () => {
 	loading1.value = true;
-	AmazondataExport(switchingDate())
+	AmazondataExport(Object.assign(queryParams.value))
 		.then((res) => {
 			loading1.value = false;
 			downloadfile(res);

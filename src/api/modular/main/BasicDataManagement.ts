@@ -7,6 +7,7 @@ enum Api {
 	BatchDFPicking = '/api/dFPickingList/page',
 	DFPickingListInfo = '/api/dFPickingList/PageDFPickingList',
 	ImportDFPickingList = '/api/dFPickingList/import',
+	confirmImportDFPickingList = '/api/dFPickingList/confirmImport',
 	DFShippingListInfo = '/api/dFShippingList/page',
 	ImportDFShippingList = '/api/dFShippingList/imports',
 	GetHistoryList = '/api/dFShippingList/getHistoryList',
@@ -87,9 +88,19 @@ export const DFPickingListInfo = (params?: any) =>
 		params: params,
 	});
 ///DFPickingList导入
-export const ImportDFPickingList = (params?: any) =>
+export const ImportDFPickingList = (params?: any, Country?:any) =>
 	request({
-		url: Api.ImportDFPickingList + '/' + params.Country,
+		url: Api.ImportDFPickingList + '/' + Country,
+		method: 'post',
+		data: params,
+		headers: {
+			'Content-Type': 'multipart/form-data; boundary=----WebKitFormBoundarynl6gT1BKdPWIejNq',
+		},
+	});
+///确认DFPickingList导入
+export const confirmImportDFPickingList = (params?: any, Country?: any) =>
+	request({
+		url: Api.confirmImportDFPickingList + '/' + Country,
 		method: 'post',
 		data: params,
 		headers: {

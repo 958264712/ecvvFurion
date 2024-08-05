@@ -5,6 +5,10 @@ import { ArrowDownBold, ArrowUpBold } from '@element-plus/icons-vue';
 import { ElMessageBox, ElMessage, ElNotification } from 'element-plus';
 import importDialog from '/@/components/importDialog/index.vue';
 import axios from 'axios';
+import { clearEmptyDataByAny } from '/@/utils/constHelper';
+import regexHelper from '/@/utils/regexHelper';
+
+const { clearCharactersByRegex } = regexHelper();
 const tableData: any[] = ref([]);
 const queryParams = ref<any>({ CreatorTime: '' });
 const tableParams = ref({
@@ -17,6 +21,7 @@ const area = ref('CN');
 const IsEdit = ref<any>(false);
 const loading = ref(false);
 const loading2 = ref(false);
+const isWatch = ref(true);
 const visibleTextarea1 = ref(false);
 const selectExport = ref([]);
 const erpAndGoodsName = ref('');
@@ -387,13 +392,7 @@ const getAppPage = async (): void => {
 		const day2 = date2.getDate();
 		queryParams.value.EndCreatorTime = year2 + '-' + month2 + '-' + day2;
 	}
-	if (queryParams.value.erpSkuList?.length > 0) {
-		// queryParams.value.erpTextArea = '';
-		queryParams.value.erpAndGoodsName = '';
-	} else {
-		queryParams.value.erpAndGoodsName = erpAndGoodsName.value;
-		queryParams.value.erpSkuList = null;
-	}
+	
 	await pYYPurchaseOrderPage(Object.assign(queryParams.value, tableParams.value)).then((res) => {
 		//tableData.value = res.data.result.items;
 		tableData.value.splice(0, tableData.value.length);
@@ -460,16 +459,11 @@ const clearErp = () => {
 };
 const handleConfirm = () => {
 	let str_array = [];
-	str_array = queryParams.value.erpTextArea?.split(/[(\r\n)\r\n]+/);
-	let arr = str_array?.map((item, index) => {
-		if (item === '') {
-			str_array.splice(index, 1);
-		} else {
-			return item.trim();
-		}
-	});
-	queryParams.value.erpSkuList = arr;
-	erpAndGoodsName.value = arr + '';
+	if (queryParams.value.erpTextArea?.length) {
+		str_array = clearCharactersByRegex(queryParams.value.erpTextArea + '');
+		let arr = clearEmptyDataByAny(str_array)
+		erpAndGoodsName.value = arr + '';
+	}
 	visibleTextarea1.value = false;
 };
 onMounted(() => {
@@ -488,26 +482,60 @@ const handleCurrentChange = (val: number): void => {
 	tableParams.value.page = val;
 	getAppPage();
 };
+
 watch(
-	() => queryParams.value.erpTextArea,
+	() => erpAndGoodsName.value,
 	() => {
-		let str_array = queryParams.value.erpTextArea?.split(/[(\r\n)\r\n]+/);
-		let arr = str_array?.map((item, index) => {
-			if (item === '') {
-				str_array.splice(index, 1);
-			} else {
-				return item.trim();
-			}
-		});
-		if (arr?.length > 0) {
-			if (arr[0] !== undefined) {
+		console.log('触发了erpAndGoodsName.value监听事件');
+		if(isWatch.value){
+			isWatch.value = false;
+			let str_array = clearCharactersByRegex(erpAndGoodsName.value.trim());
+			let arr = clearEmptyDataByAny(str_array);
+			if (arr?.length > 0) {
+				//if (arr[0] !== undefined) {
 				queryParams.value.erpSkuList = arr;
-			} else {
+				queryParams.value.erpTextArea = arr;
+				
+				//} else {
+				//queryParams.value.erpSkuList = null;
+				//}
+			}else{
 				queryParams.value.erpSkuList = null;
+				queryParams.value.erpTextArea = '';
 			}
+		}else{
+			isWatch.value = true;
 		}
 	}
 );
+
+watch(
+	() => queryParams.value.erpTextArea,
+	() => {
+		console.log('触发了queryParams.value.erpTextArea监听事件');
+		if(isWatch.value){
+			isWatch.value = false;
+			let str_array = clearCharactersByRegex(queryParams.value.erpTextArea + '');
+			let arr = clearEmptyDataByAny(str_array);
+			if (arr?.length > 0) {
+				//if (arr[0] !== undefined) {
+				queryParams.value.erpSkuList = arr;
+				erpAndGoodsName.value = arr;
+				//} else {
+					//queryParams.value.erpSkuList = null;
+				//}
+			}else{
+				queryParams.value.erpSkuList = null;
+				erpAndGoodsName.value = '';
+			}
+		}else{
+			isWatch.value = true;
+		}
+	}
+);
+
+
+
 </script>
 <template>
 	<div class="collectionOrderInfo-container">
@@ -516,26 +544,27 @@ watch(
 				<el-form-item label="库存SKU">
 					<el-popover :visible="visibleTextarea1" placement="bottom" :width="250">
 						<el-scrollbar height="150px" style="border: 1px solid var(--el-border-color)">
-							<el-input v-model="queryParams.erpTextArea" style="width: 215px"
-								:autosize="{ minRows: 1, maxRows: 200 }" type="textarea"
-								placeholder="可输入多个SKU精确查询，每行一个，最多支持200个" />
+							<el-input v-model="queryParams.erpTextArea" style="width: 215px" :autosize="{ minRows: 1, maxRows: 200 }" type="textarea" placeholder="可输入多个SKU精确查询，每行一个，最多支持200个" />
 						</el-scrollbar>
 						<div style="text-align: right; margin-top: 20px">
 							<span style="float: left">{{ queryParams.erpSkuList?.length ?? 0 }}/200</span>
-							<el-button type="info" @click="() => {
-			queryParams.erpTextArea = '';
-			erpAndGoodsName = '';
-		}
-			">重置</el-button>
+							<el-button
+								type="info"
+								@click="
+									() => {
+										queryParams.erpTextArea = '';
+										erpAndGoodsName = '';
+									}
+								"
+								>重置</el-button
+							>
 							<el-button type="primary" @click="handleConfirm()">确定</el-button>
 						</div>
 						<template #reference>
-							<el-input v-model="erpAndGoodsName" clearable="" placeholder="请输入,点击展开可输多个"
-								@clear="clearErp">
+							<el-input v-model="erpAndGoodsName" clearable="" placeholder="请输入,点击展开可输多个" @clear="clearErp">
 								<template #suffix>
 									<el-icon class="el-input__icon">
-										<ArrowDownBold @click="visibleTextarea1 = !visibleTextarea1"
-											v-if="!visibleTextarea1" />
+										<ArrowDownBold @click="visibleTextarea1 = !visibleTextarea1" v-if="!visibleTextarea1" />
 										<ArrowUpBold @click="visibleTextarea1 = !visibleTextarea1" v-else />
 									</el-icon>
 								</template>
@@ -544,20 +573,23 @@ watch(
 					</el-popover>
 				</el-form-item>
 				<el-form-item label="制单时间">
-					<el-date-picker style="width: 250px" start-placeholder=" 开始时间" end-placeholder="结束时间"
-						type="daterange" v-model="queryParams.CreatorTime" format="YYYY-MM-DD" />
+					<el-date-picker style="width: 250px" start-placeholder=" 开始时间" end-placeholder="结束时间" type="daterange" v-model="queryParams.CreatorTime" format="YYYY-MM-DD" />
 				</el-form-item>
 				<el-form-item>
 					<el-button-group>
-						<el-button v-auth="'shippingDetails:page'" type="primary" icon="ele-Search"
-							@click="getAppPage()" style="width: 70px; margin-right: 2px"> 查询 </el-button>
-						<el-button icon="ele-Refresh" @click="() => {
-			queryParams.erpTextArea = '';
-			erpAndGoodsName = '';
-			queryParams = {};
-			getAppPage();
-		}
-			" style="width: 70px; margin-right: 2px">
+						<el-button v-auth="'shippingDetails:page'" type="primary" icon="ele-Search" @click="getAppPage()" style="width: 70px; margin-right: 2px"> 查询 </el-button>
+						<el-button
+							icon="ele-Refresh"
+							@click="
+								() => {
+									queryParams.erpTextArea = '';
+									erpAndGoodsName = '';
+									queryParams = {};
+									getAppPage();
+								}
+							"
+							style="width: 70px; margin-right: 2px"
+						>
 							重置
 						</el-button>
 					</el-button-group>
@@ -567,55 +599,56 @@ watch(
 		<el-card class="full-table" shadow="hover" style="margin-top: 8px">
 			<div class="settingf" style="margin-bottom: 5px; display: flex; justify-content: space-between">
 				<div class="flex flex-wrap items-center">
-					<el-upload :on-change="ImportPurchaseOrder" :multiple="false" action="#" :show-file-list="false"
-						:auto-upload="false" name="file">
+					<el-upload :on-change="ImportPurchaseOrder" :multiple="false" action="#" :show-file-list="false" :auto-upload="false" name="file">
 						<el-button :loading="loading" type="primary">导入采购订单</el-button>
 					</el-upload>
-					<el-button style="margin-left: 10px" @click="dialogFormVisible = true" type="primary"> 导入采购单价
-					</el-button>
+					<el-button style="margin-left: 10px" @click="dialogFormVisible = true" type="primary"> 导入采购单价 </el-button>
 					<el-dialog v-model="dialogFormVisible" title="普源采购单价数据导入" width="600px" center>
-						<importDialog :type="importType" :text="importText" :formList="importFormList"
-							:importsInterface="importPurchaseUnitPrice" @close="importClose"
-							@importQuery="getAppPage" />
+						<importDialog :type="importType" :text="importText" :formList="importFormList" :importsInterface="importPurchaseUnitPrice" @close="importClose" @importQuery="getAppPage" />
 					</el-dialog>
 				</div>
 			</div>
-			<el-table :data="tableData" size="large" style="width: 100%"
-				@selection-change="(selection: any) => selectChange(selection)" v-loading="loading"
-				tooltip-effect="light">
+			<el-table :data="tableData" size="large" style="width: 100%" @selection-change="(selection: any) => selectChange(selection)" v-loading="loading" tooltip-effect="light">
 				<el-table-column width="85" align="center" fixed="left" show-overflow-tooltip="">
 					<template #header>
-						<el-button style="background-color: transparent; border: none; color: #df1515"
-							icon="ele-Setting"></el-button>
+						<el-button style="background-color: transparent; border: none; color: #df1515" icon="ele-Setting"></el-button>
 					</template>
 					<template #default="scope">
-						<el-button v-if="scope.row.IsEdit" icon="ele-Document" size="small" text="" type="primary"
-							@click="update(scope.row)"></el-button>
-						<el-button v-if="!scope.row.IsEdit" icon="ele-Edit" size="small" text="" type="primary"
-							@click="openEdit(scope.row)"></el-button>
+						<el-button v-if="scope.row.IsEdit" icon="ele-Document" size="small" text="" type="primary" @click="update(scope.row)"></el-button>
+						<el-button v-if="!scope.row.IsEdit" icon="ele-Edit" size="small" text="" type="primary" @click="openEdit(scope.row)"></el-button>
 					</template>
 				</el-table-column>
 				<template v-for="(item, index) in TableData" :key="index">
-					<el-table-column v-if="item.dataIndex == 'purchaseUnitPrice'" :fixed="item.fixed"
-						:prop="item.dataIndex" :label="area == 'CN' ? item.titleCN : item.titleEN" align="center"
-						min-width="150" show-overflow-tooltip="">
+					<el-table-column
+						v-if="item.dataIndex == 'purchaseUnitPrice'"
+						:fixed="item.fixed"
+						:prop="item.dataIndex"
+						:label="area == 'CN' ? item.titleCN : item.titleEN"
+						align="center"
+						min-width="150"
+						show-overflow-tooltip=""
+					>
 						<template #default="scope">
 							<!-- @dblclick="openEdit(scope.row)" 暂时不使用 -->
 							<div>
-								<el-input v-if="scope.row.IsEdit" type="text" v-model="scope.row.purchaseUnitPrice"
-									clearable="" />
+								<el-input v-if="scope.row.IsEdit" type="text" v-model="scope.row.purchaseUnitPrice" clearable="" />
 								<div v-else>{{ scope.row.purchaseUnitPrice }}</div>
 							</div>
 						</template>
 					</el-table-column>
-					<el-table-column v-else :fixed="item.fixed" :prop="item.dataIndex"
-						:label="area == 'CN' ? item.titleCN : item.titleEN" align="center" min-width="150"
-						show-overflow-tooltip="" />
+					<el-table-column v-else :fixed="item.fixed" :prop="item.dataIndex" :label="area == 'CN' ? item.titleCN : item.titleEN" align="center" min-width="150" show-overflow-tooltip="" />
 				</template>
 			</el-table>
-			<el-pagination v-model:currentPage="tableParams.page" v-model:page-size="tableParams.pageSize"
-				:total="tableParams.total" :page-sizes="[50, 100, 500, 1000]" small="" background=""
-				@current-change="handleCurrentChange" layout="total, sizes, prev, pager, next, jumper" />
+			<el-pagination
+				v-model:currentPage="tableParams.page"
+				v-model:page-size="tableParams.pageSize"
+				:total="tableParams.total"
+				:page-sizes="[50, 100, 500, 1000]"
+				small=""
+				background=""
+				@current-change="handleCurrentChange"
+				layout="total, sizes, prev, pager, next, jumper"
+			/>
 		</el-card>
 	</div>
 </template>

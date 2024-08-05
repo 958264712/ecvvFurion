@@ -11,26 +11,24 @@
 				<el-form-item label="ERP-SKU/中文Name">
 					<el-popover :visible="visibleTextarea1" placement="bottom" :width="250">
 						<el-scrollbar height="150px" style="border: 1px solid var(--el-border-color)">
-							<el-input v-model="queryParams.erpTextArea" style="width: 215px"
-								:autosize="{ minRows: 1, maxRows: 200 }" type="textarea"
-								placeholder="可输入多个ERP-SKU精确查询，每行一个，最多支持200个" />
+							<el-input
+								v-model="queryParams.erpTextArea"
+								style="width: 215px"
+								:autosize="{ minRows: 1, maxRows: 200 }"
+								type="textarea"
+								placeholder="可输入多个ERP-SKU精确查询，每行一个，最多支持200个"
+							/>
 						</el-scrollbar>
 						<div style="text-align: right; margin-top: 20px">
 							<span style="float: left">{{ queryParams.erpSkuList?.length ?? 0 }}/200</span>
-							<el-button type="info" @click="() => {
-					queryParams.erpTextArea = '';
-					erpAndGoodsName = '';
-				}
-				">重置</el-button>
+							<el-button type="info" @click="resetQueryConditionsByErpSku()">重置</el-button>
 							<el-button type="primary" @click="handleConfirm(1)">确定</el-button>
 						</div>
 						<template #reference>
-							<el-input v-model="erpAndGoodsName" clearable="" placeholder="请输入,点击展开可输多个"
-								@clear="clearErp" @blur="clearObj">
+							<el-input v-model="erpAndGoodsName" clearable="" placeholder="请输入,点击展开可输多个" @clear="clearErp" @blur="clearObj">
 								<template #suffix>
 									<el-icon class="el-input__icon">
-										<ArrowDownBold @click="showTextarea(1, visibleTextarea1)"
-											v-if="!visibleTextarea1" />
+										<ArrowDownBold @click="showTextarea(1, visibleTextarea1)" v-if="!visibleTextarea1" />
 										<ArrowUpBold @click="showTextarea(1, visibleTextarea1)" v-else />
 									</el-icon>
 								</template>
@@ -41,26 +39,24 @@
 				<el-form-item label="ASIN">
 					<el-popover :visible="visibleTextarea2" placement="bottom" :width="250">
 						<el-scrollbar height="150px" style="border: 1px solid var(--el-border-color)">
-							<el-input v-model="queryParams.asinTextArea" style="width: 215px"
-								:autosize="{ minRows: 1, maxRows: 200 }" type="textarea"
-								placeholder="可输入多个ASIN精确查询，每行一个，最多支持200个" />
+							<el-input
+								v-model="queryParams.asinTextArea"
+								style="width: 215px"
+								:autosize="{ minRows: 1, maxRows: 200 }"
+								type="textarea"
+								placeholder="可输入多个ASIN精确查询，每行一个，最多支持200个"
+							/>
 						</el-scrollbar>
 						<div style="text-align: right; margin-top: 20px">
 							<span style="float: left">{{ queryParams.aSINList?.length ?? 0 }}/200</span>
-							<el-button type="info" @click="() => {
-					queryParams.asinTextArea = '';
-					aSIN = '';
-				}
-				">重置</el-button>
+							<el-button type="info" @click="resetQueryConditionsByASIN()">重置</el-button>
 							<el-button type="primary" @click="handleConfirm(2)">确定</el-button>
 						</div>
 						<template #reference>
-							<el-input v-model="aSIN" clearable="" placeholder="请输入,点击展开可输多个" @clear="clearAsin"
-								@blur="clearObj">
+							<el-input v-model="aSIN" clearable="" placeholder="请输入,点击展开可输多个" @clear="clearAsin" @blur="clearObj">
 								<template #suffix>
 									<el-icon class="el-input__icon">
-										<ArrowDownBold @click="showTextarea(2, visibleTextarea2)"
-											v-if="!visibleTextarea2" />
+										<ArrowDownBold @click="showTextarea(2, visibleTextarea2)" v-if="!visibleTextarea2" />
 										<ArrowUpBold @click="showTextarea(2, visibleTextarea2)" v-else />
 									</el-icon>
 								</template>
@@ -75,8 +71,7 @@
 					</el-select>
 				</el-form-item>
 				<el-form-item label="采购国">
-					<el-select v-model="queryParams.purchasingCountry" class="m-2" style="width: 240px"
-						@change="handleQuery">
+					<el-select v-model="queryParams.purchasingCountry" class="m-2" style="width: 240px" @change="handleQuery">
 						<el-option label="UAE" value="UAE" />
 						<el-option label="SA" value="SA" />
 						<el-option label="CN" value="CN" />
@@ -95,8 +90,7 @@
 					</el-select>
 				</el-form-item>
 				<el-form-item label="负责人">
-					<el-input v-model="queryParams.creator" clearable="" placeholder="请输入负责人" @clear="clearObj"
-						@blur="clearObj" />
+					<el-input v-model="queryParams.creator" clearable="" placeholder="请输入负责人" @clear="clearObj" @blur="clearObj" />
 				</el-form-item>
 				<el-form-item label="Buybox">
 					<el-select v-model="queryParams.IsBuyBox" placeholder="全部" style="width: 240px">
@@ -107,7 +101,7 @@
 				</el-form-item>
 				<el-form-item>
 					<el-button-group>
-						<el-button type="primary" icon="ele-Search" @click="handleQuery"> 查询 </el-button>
+						<el-button type="primary" icon="ele-Search" @click="handleQuery" :disabled="queryLoading"> 查询 </el-button>
 						<el-button icon="ele-Refresh" @click="reset"> 重置 </el-button>
 					</el-button-group>
 				</el-form-item>
@@ -121,7 +115,7 @@
 						<template #dropdown>
 							<el-dropdown-menu>
 								<el-dropdown-item @click="Export"> 导出全部 </el-dropdown-item>
-								<el-dropdown-item @click="SelectedExport" :disabled="!selectedRowKeys?.length"> 导出选中 </el-dropdown-item>
+								<el-dropdown-item @click="SelectedExport" :disabled="!selectedRows?.length"> 导出选中 </el-dropdown-item>
 							</el-dropdown-menu>
 						</template>
 					</el-dropdown>
@@ -129,41 +123,145 @@
 						<el-radio-button label="中文表头" value="中文表头" @change="changeArea('CN')" />
 						<el-radio-button label="English header" value="English header" @change="changeArea('EN')" />
 					</el-radio-group>
-					<el-button type="primary" style="margin-left: 20px" :loading="exportDataLoading"
-						@click="exportDataDialog">导出记录</el-button>
+					<el-button type="primary" style="margin-left: 20px" :loading="exportDataLoading" @click="exportDataDialog">导出记录</el-button>
 				</div>
-				<tabDragColum :data="TableData" :name="`newasinmanagementData`" :area="area" @handleData="handleData" />
+				<tabDragColum :data="TableData" :name="`newasinmanagementData`" :area="area" @handleData="handleData" @handleRemarkData="handleRemarkData" />
 			</div>
 			<el-tabs v-model="selectcountry" type="card" style="height: 85%" @tab-click="handleClick">
 				<el-tab-pane :label="item.label" :name="item.name" style="height: 100%" v-for="item in tabsList">
-					<el-table :data="tableData" style="height: 100%" v-loading="loading" tooltip-effect="light"
-						row-key="id" border="" @selection-change="handleSelectionChange"
-						@sort-change="handleSortChange">
+					<el-table :data="tableData" style="height: 100%" v-loading="loading" tooltip-effect="light" row-key="id" border="" @selection-change="handleSelectionChange" @sort-change="handleSortChange">
 						<el-table-column type="selection" width="40" align="center" />
 						<!-- <el-table-column prop="no" label="序号" align="center" /> -->
 						<template v-for="(item, index) in TableData" :key="index">
-							<el-table-column v-if="item.dataIndex === 'rankOne' && item.checked" width="150"
-								:fixed="item.fixed" :prop="item.dataIndex"
-								:label="area == 'CN' ? item.titleCN : item.titleEN" align="center" sortable="custom"
-								:formatter="splitRank" />
-							<el-table-column v-else-if="item.dataIndex === 'backRankOne' && item.checked" width="150"
-								:fixed="item.fixed" :prop="item.dataIndex"
-								:label="area == 'CN' ? item.titleCN : item.titleEN" align="center" sortable="custom"
-								:formatter="splitRank" />
-							<el-table-column v-else-if="item.dataIndex === 'rankTwo' && item.checked" width="150"
-								:fixed="item.fixed" :prop="item.dataIndex"
-								:label="area == 'CN' ? item.titleCN : item.titleEN" align="center" sortable="custom"
-								:formatter="splitRank" />
-							<el-table-column v-else-if="item.dataIndex === 'backRankTwo' && item.checked" width="150"
-								:fixed="item.fixed" :prop="item.dataIndex"
-								:label="area == 'CN' ? item.titleCN : item.titleEN" align="center" sortable="custom"
-								:formatter="splitRank" />
-							<el-table-column v-else-if="item.dataIndex === 'days7Sales' && item.checked" width="150"
-								:fixed="item.fixed" :prop="item.dataIndex"
-								:label="area == 'CN' ? item.titleCN : item.titleEN" align="center">
+							<el-table-column
+								v-if="item.dataIndex === 'asin' && item.checked"
+								width="150"
+								:fixed="item.fixed"
+								:prop="item.dataIndex"
+								:label="area == 'CN' ? item.titleCN : item.titleEN"
+								align="center"
+							>
+								<template #header>
+									<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
+										<div style="display: flex; align-items: center; justify-content: center">
+											{{ area == 'CN' ? item.titleCN : item.titleEN }}
+											<QuestionFilled width="14" style="color: #ccc" v-show="item.remark" />
+										</div>
+										<template #content>
+											<div v-html="item.desc"></div>
+										</template>
+									</el-tooltip>
+									<div v-else>{{ area == 'CN' ? item.titleCN : item.titleEN }}</div>
+								</template>
+								<template #default="scope">
+									<el-link :href="queryParams.country === 'UAE' ? 'https://www.amazon.ae/dp/' + scope.row.asin : 'https://www.amazon.sa/dp/' + scope.row.asin" target="_blank" style="color: red">{{
+										scope.row.asin
+									}}</el-link>
+								</template>
+							</el-table-column>
+							<el-table-column
+								v-else-if="item.dataIndex === 'rankOne' && item.checked"
+								width="150"
+								:fixed="item.fixed"
+								:prop="item.dataIndex"
+								:label="area == 'CN' ? item.titleCN : item.titleEN"
+								align="center"
+								sortable="custom"
+								:formatter="splitRank"
+							>
+								<template #header>
+									<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
+										<div style="display: flex; align-items: center; justify-content: center">
+											{{ area == 'CN' ? item.titleCN : item.titleEN }}
+											<QuestionFilled width="14" style="color: #ccc" v-show="item.remark" />
+										</div>
+										<template #content>
+											<div v-html="item.desc"></div>
+										</template>
+									</el-tooltip>
+									<div v-else>{{ area == 'CN' ? item.titleCN : item.titleEN }}</div>
+								</template>
+							</el-table-column>
+							<el-table-column
+								v-else-if="item.dataIndex === 'backRankOne' && item.checked"
+								width="170"
+								:fixed="item.fixed"
+								:prop="item.dataIndex"
+								:label="area == 'CN' ? item.titleCN : item.titleEN"
+								align="center"
+								sortable="custom"
+								:formatter="splitRank"
+							>
+								<template #header>
+									<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
+										<div style="display: flex; align-items: center; justify-content: center">
+											{{ area == 'CN' ? item.titleCN : item.titleEN }}
+											<QuestionFilled width="14" style="color: #ccc" v-show="item.remark" />
+										</div>
+										<template #content>
+											<div v-html="item.desc"></div>
+										</template>
+									</el-tooltip>
+									<div v-else>{{ area == 'CN' ? item.titleCN : item.titleEN }}</div>
+								</template>
+							</el-table-column>
+							<el-table-column
+								v-else-if="item.dataIndex === 'rankTwo' && item.checked"
+								width="150"
+								:fixed="item.fixed"
+								:prop="item.dataIndex"
+								:label="area == 'CN' ? item.titleCN : item.titleEN"
+								align="center"
+								sortable="custom"
+								:formatter="splitRank"
+							>
+								<template #header>
+									<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
+										<div style="display: flex; align-items: center; justify-content: center">
+											{{ area == 'CN' ? item.titleCN : item.titleEN }}
+											<QuestionFilled width="14" style="color: #ccc" v-show="item.remark" />
+										</div>
+										<template #content>
+											<div v-html="item.desc"></div>
+										</template>
+									</el-tooltip>
+									<div v-else>{{ area == 'CN' ? item.titleCN : item.titleEN }}</div>
+								</template>
+							</el-table-column>
+							<el-table-column
+								v-else-if="item.dataIndex === 'backRankTwo' && item.checked"
+								width="150"
+								:fixed="item.fixed"
+								:prop="item.dataIndex"
+								:label="area == 'CN' ? item.titleCN : item.titleEN"
+								align="center"
+								sortable="custom"
+								:formatter="splitRank"
+							>
+								<template #header>
+									<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
+										<div style="display: flex; align-items: center; justify-content: center">
+											{{ area == 'CN' ? item.titleCN : item.titleEN }}
+											<QuestionFilled width="14" style="color: #ccc" v-show="item.remark" />
+										</div>
+										<template #content>
+											<div v-html="item.desc"></div>
+										</template>
+									</el-tooltip>
+									<div v-else>{{ area == 'CN' ? item.titleCN : item.titleEN }}</div>
+								</template>
+							</el-table-column>
+							<!-- <el-table-column
+								v-else-if="item.dataIndex === 'days7Sales' && item.checked"
+								width="150"
+								:fixed="item.fixed"
+								:prop="item.dataIndex"
+								:label="area == 'CN' ? item.titleCN : item.titleEN"
+								align="center"
+							>
 								<template #header>
 									<el-tooltip effect="dark" placement="bottom">
-										<div style="display:flex;align-items:center;justify-content:center">
+										<div style="display: flex; align-items: center; justify-content: center">
 											{{ area == 'CN' ? item.titleCN : item.titleEN }}
 											<QuestionFilled width="14" style="color: #ccc" />
 										</div>
@@ -172,13 +270,18 @@
 										</template>
 									</el-tooltip>
 								</template>
-							</el-table-column>
-							<el-table-column v-else-if="item.dataIndex === 'days30Sales' && item.checked" width="150"
-								:fixed="item.fixed" :prop="item.dataIndex"
-								:label="area == 'CN' ? item.titleCN : item.titleEN" align="center">
+							</el-table-column> -->
+							<!-- <el-table-column
+								v-else-if="item.dataIndex === 'days30Sales' && item.checked"
+								width="150"
+								:fixed="item.fixed"
+								:prop="item.dataIndex"
+								:label="area == 'CN' ? item.titleCN : item.titleEN"
+								align="center"
+							>
 								<template #header>
 									<el-tooltip effect="dark" placement="bottom">
-										<div style="display:flex;align-items:center;justify-content:center">
+										<div style="display: flex; align-items: center; justify-content: center">
 											{{ area == 'CN' ? item.titleCN : item.titleEN }}
 											<QuestionFilled width="14" style="color: #ccc" />
 										</div>
@@ -187,27 +290,50 @@
 										</template>
 									</el-tooltip>
 								</template>
+							</el-table-column> -->
+							<el-table-column
+								v-else-if="item.checked"
+								:fixed="item.fixed"
+								:width="item.width"
+								:prop="item.dataIndex"
+								show-overflow-tooltip
+								:label="area == 'CN' ? item.titleCN : item.titleEN"
+								align="center"
+							>
+								<template #header>
+									<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
+										<div style="display: flex; align-items: center; justify-content: center">
+											{{ area == 'CN' ? item.titleCN : item.titleEN }}
+											<QuestionFilled width="14" style="color: #ccc" v-show="item.remark" />
+										</div>
+										<template #content>
+											<div v-html="item.desc"></div>
+										</template>
+									</el-tooltip>
+									<div v-else>{{ area == 'CN' ? item.titleCN : item.titleEN }}</div>
+								</template>
 							</el-table-column>
-							<el-table-column v-else-if="item.checked" :fixed="item.fixed" :width="item.width"
-								:prop="item.dataIndex" show-overflow-tooltip
-								:label="area == 'CN' ? item.titleCN : item.titleEN" align="center" />
 						</template>
 					</el-table>
 				</el-tab-pane>
 			</el-tabs>
-			<el-pagination v-model:currentPage="tableParams.page" v-model:page-size="tableParams.pageSize"
-				:total="tableParams.total" :page-sizes="[10, 20, 50, 100, 500, 1000]" small="" background=""
-				@size-change="handleSizeChange" @current-change="handleCurrentChange"
-				layout="total, sizes, prev, pager, next, jumper" />
+			<el-pagination
+				v-model:currentPage="tableParams.page"
+				v-model:page-size="tableParams.pageSize"
+				:total="tableParams.total"
+				:page-sizes="[10, 20, 50, 100, 500, 1000]"
+				small=""
+				background=""
+				@size-change="handleSizeChange"
+				@current-change="handleCurrentChange"
+				layout="total, sizes, prev, pager, next, jumper"
+			/>
 			<el-dialog v-model="exportVisible" title="导出历史记录" @close="close" width="1000px">
-				<SvgIcon style="margin-bottom: 10px; display: flex; justify-content: flex-end; cursor: pointer"
-					name="iconfont icon-shuaxin" :size="22" title="刷新" @click="multipleExport" />
-				<el-table :data="exportData" style="height: 100%" v-loading="exportTableLoading" tooltip-effect="light"
-					row-key="id" border="">
+				<SvgIcon style="margin-bottom: 10px; display: flex; justify-content: flex-end; cursor: pointer" name="iconfont icon-shuaxin" :size="22" title="刷新" @click="multipleExport" />
+				<el-table :data="exportData" style="height: 100%" v-loading="exportTableLoading" tooltip-effect="light" row-key="id" border="">
 					<el-table-column prop="fileUrl" label="文件地址" align="center" width="280px" show-overflow-tooltip>
 						<template #default="scope">
-							<el-link type="success"
-								:href="scope.row.fileUrl">{{ scope.row.fileUrl === null ? '无文件' : scope.row.fileUrl.split('http://192.168.1.81:5568/ASINData/')[1] }}</el-link>
+							<el-link type="success" :href="scope.row.fileUrl">{{ scope.row.fileUrl === null ? '无文件' : scope.row.fileUrl.split('http://192.168.1.81:5568/ASINData/')[1] }}</el-link>
 						</template>
 					</el-table-column>
 					<el-table-column prop="state" label="状态" width="130px" align="center">
@@ -221,17 +347,24 @@
 					<el-table-column prop="exportedBy" width="135px" label="导出人" align="center" />
 					<el-table-column prop="remark" label="备注" align="center" show-overflow-tooltip />
 				</el-table>
-				<el-pagination v-model:currentPage="tableParams1.page" v-model:page-size="tableParams1.pageSize"
-					:total="tableParams1.total" :page-sizes="[10, 20, 50, 100, 500, 1000]" small="" background=""
-					@size-change="handleSizeChange1" @current-change="handleCurrentChange1"
-					layout="total, sizes, prev, pager, next, jumper" />
+				<el-pagination
+					v-model:currentPage="tableParams1.page"
+					v-model:page-size="tableParams1.pageSize"
+					:total="tableParams1.total"
+					:page-sizes="[10, 20, 50, 100, 500, 1000]"
+					small=""
+					background=""
+					@size-change="handleSizeChange1"
+					@current-change="handleCurrentChange1"
+					layout="total, sizes, prev, pager, next, jumper"
+				/>
 			</el-dialog>
 		</el-card>
 	</div>
 </template>
 
 <script lang="ts" setup name="asinData">
-import { ref, watch, h, onBeforeUnmount, onUpdated } from 'vue';
+import { ref, watch, h, onMounted, onUpdated } from 'vue';
 import { ElMessageBox, ElMessage, ElNotification, ElTooltip } from 'element-plus';
 import { auth } from '/@/utils/authFunction';
 //import { formatDate } from '/@/utils/formatTime';
@@ -245,8 +378,13 @@ import tabDragColum from '/@/components/tabDragColum/index.vue';
 import { useDebounce } from '/@/utils/debounce';
 import down from '/@/assets/down.png';
 import up from '/@/assets/up.png';
+import regexHelper from '/@/utils/regexHelper';
+import { clearEmptyDataByAny } from '/@/utils/constHelper';
+import { el } from 'element-plus/es/locale';
 
+const { clearCharactersByRegex } = regexHelper();
 const loading = ref(false);
+const queryLoading = ref(false);
 const Exportloading = ref(false);
 const exportDataLoading = ref(false);
 const exportTableLoading = ref(false);
@@ -257,6 +395,7 @@ const dialogFormVisible = ref(false);
 const exportVisible = ref(false);
 const ifClose = ref(false);
 const visibleTextarea1 = ref(false);
+const isWatch = ref(true);
 const visibleTextarea2 = ref(false);
 const erpAndGoodsName = ref('');
 const aSIN = ref('');
@@ -294,6 +433,8 @@ const changeArea = (val) => {
 		area1.value = 'English header';
 	}
 };
+
+
 const TableData = ref<any>([
 	{
 		titleCN: 'ERP-SKU',
@@ -302,6 +443,8 @@ const TableData = ref<any>([
 		checked: true,
 		fixed: true,
 		width: '120',
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '中文NAME',
@@ -310,6 +453,8 @@ const TableData = ref<any>([
 		checked: true,
 		width: '145',
 		fixed: true,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: 'ASIN',
@@ -318,6 +463,8 @@ const TableData = ref<any>([
 		width: '110',
 		checked: true,
 		fixed: true,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '品牌',
@@ -326,6 +473,8 @@ const TableData = ref<any>([
 		checked: true,
 		width: '90',
 		fixed: true,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '发货数量',
@@ -334,6 +483,8 @@ const TableData = ref<any>([
 		checked: true,
 		width: '130',
 		fixed: true,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '包装规格',
@@ -342,6 +493,8 @@ const TableData = ref<any>([
 		checked: true,
 		width: '75',
 		fixed: true,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '是否下架',
@@ -350,6 +503,8 @@ const TableData = ref<any>([
 		checked: true,
 		width: '75',
 		fixed: true,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '采购国',
@@ -358,6 +513,8 @@ const TableData = ref<any>([
 		checked: true,
 		width: '100',
 		fixed: true,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '上架站点',
@@ -366,6 +523,8 @@ const TableData = ref<any>([
 		checked: true,
 		width: '100',
 		fixed: true,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: 'Buybox',
@@ -374,6 +533,8 @@ const TableData = ref<any>([
 		checked: true,
 		width: '150',
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: 'Update date',
@@ -382,6 +543,8 @@ const TableData = ref<any>([
 		width: '160',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: 'Buybox',
@@ -390,6 +553,8 @@ const TableData = ref<any>([
 		width: '120',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: 'Update date',
@@ -398,6 +563,8 @@ const TableData = ref<any>([
 		width: '125',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: 'SELLER',
@@ -406,6 +573,8 @@ const TableData = ref<any>([
 		width: '85',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '占有率',
@@ -414,6 +583,8 @@ const TableData = ref<any>([
 		width: '85',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '大类排名(本次)',
@@ -422,6 +593,8 @@ const TableData = ref<any>([
 		width: '125',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '大类排名(上次)',
@@ -430,6 +603,8 @@ const TableData = ref<any>([
 		width: '125',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '小类排名(本次)',
@@ -438,6 +613,8 @@ const TableData = ref<any>([
 		width: '125',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '小类排名(上次)',
@@ -446,6 +623,8 @@ const TableData = ref<any>([
 		width: '125',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '评论',
@@ -454,6 +633,8 @@ const TableData = ref<any>([
 		titleEN: 'Review Star',
 		width: '120',
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '评论数量',
@@ -462,6 +643,8 @@ const TableData = ref<any>([
 		titleEN: 'Reviews',
 		width: '100',
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '跟卖数量',
@@ -470,6 +653,8 @@ const TableData = ref<any>([
 		checked: true,
 		width: '140',
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '视频',
@@ -478,6 +663,8 @@ const TableData = ref<any>([
 		titleEN: 'Video',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: 'A+',
@@ -486,6 +673,8 @@ const TableData = ref<any>([
 		titleEN: 'A+',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '活动',
@@ -494,6 +683,8 @@ const TableData = ref<any>([
 		width: '85',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: 'Coupon',
@@ -502,6 +693,8 @@ const TableData = ref<any>([
 		width: '85',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '历史销量',
@@ -510,6 +703,8 @@ const TableData = ref<any>([
 		width: '110',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '亚马逊周销量',
@@ -518,6 +713,8 @@ const TableData = ref<any>([
 		width: '110',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '亚马逊月销量',
@@ -526,6 +723,8 @@ const TableData = ref<any>([
 		width: '120',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '亚马逊仓库存',
@@ -534,6 +733,8 @@ const TableData = ref<any>([
 		width: '120',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: 'ERP库存',
@@ -542,6 +743,8 @@ const TableData = ref<any>([
 		width: '120',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: 'DF库存SHOWAY',
@@ -550,6 +753,8 @@ const TableData = ref<any>([
 		width: '145',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: 'Listing Inventory Status',
@@ -558,6 +763,8 @@ const TableData = ref<any>([
 		width: '155',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '最低COST',
@@ -566,6 +773,8 @@ const TableData = ref<any>([
 		width: '150',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '最低COST利润率',
@@ -574,6 +783,8 @@ const TableData = ref<any>([
 		width: '150',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '当前Cost Price',
@@ -582,6 +793,8 @@ const TableData = ref<any>([
 		width: '150',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '货币单位',
@@ -590,6 +803,8 @@ const TableData = ref<any>([
 		width: '110',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: 'Our List Price',
@@ -598,6 +813,8 @@ const TableData = ref<any>([
 		width: '120',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: 'Buybox price',
@@ -606,6 +823,8 @@ const TableData = ref<any>([
 		width: '110',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: 'Cost Profit',
@@ -614,6 +833,8 @@ const TableData = ref<any>([
 		width: '110',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '亚马逊佣金',
@@ -622,6 +843,8 @@ const TableData = ref<any>([
 		width: '125',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: 'Cost Profit Rate',
@@ -630,6 +853,8 @@ const TableData = ref<any>([
 		width: '125',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: 'Offer是否存在',
@@ -638,6 +863,8 @@ const TableData = ref<any>([
 		width: '120',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '页面是否存在',
@@ -646,6 +873,8 @@ const TableData = ref<any>([
 		width: '120',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '页面高价预警',
@@ -654,6 +883,8 @@ const TableData = ref<any>([
 		width: '120',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '页面低价预警',
@@ -662,6 +893,8 @@ const TableData = ref<any>([
 		width: '120',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '负责人',
@@ -670,11 +903,29 @@ const TableData = ref<any>([
 		width: '100',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 ]);
 const handleData = (list: any) => {
 	if (list?.length) {
-		TableData.value = list;
+		// TableData.value = list;
+		list.map((item, index) => {
+			if (item.dataIndex === TableData.value[index].dataIndex) {
+				TableData.value[index].checked = item.checked;
+				TableData.value[index].fixed = item.fixed;
+			}
+		});
+	}
+};
+const handleRemarkData = (list: any) => {
+	if (list?.length) {
+		list.map((item, index) => {
+			if (item.dataIndex === TableData.value[index].dataIndex) {
+				TableData.value[index].desc = item.desc;
+				TableData.value[index].remark = item.remark;
+			}
+		});
 	}
 };
 const splitRank = (row, column) => {
@@ -767,23 +1018,11 @@ const handleClick = (tab, event): void => {
 
 const Export = () => {
 	loading.value = true;
-	if (queryParams.value.erpSkuList?.length > 0) {
-		// queryParams.value.erpTextArea = '';
-		queryParams.value.erpAndGoodsName = '';
-	} else {
-		queryParams.value.erpAndGoodsName = erpAndGoodsName.value;
-		queryParams.value.erpSkuList = null;
-	}
-	if (queryParams.value.aSINList?.length > 0) {
-		// queryParams.value.asinTextArea = '';
-		queryParams.value.aSIN = '';
-	} else {
-		queryParams.value.aSIN = aSIN.value;
-		queryParams.value.aSINList = null;
-	}
-	if (!Session.get('queryObj')?.ifquery) {
+	if (Session.get('queryObj')?.ifquery === false) {
 		queryParams.value.country = Session.get('queryObj')?.country ?? 'UAE';
-		queryParams.value.erpAndGoodsName = Session.get('queryObj')?.erpAndGoodsName ?? '';
+		erpAndGoodsName.value = Session.get('queryObj')?.erpAndGoodsName ?? null;
+		queryParams.value.erpTextArea = Session.get('queryObj')?.erpSkuList ?? null;
+		handleConfirm(1);
 		selectcountry.value = Session.get('queryObj')?.country ?? 'UAE';
 	}
 	const input = {
@@ -806,7 +1045,7 @@ const SelectedExport = () => {
 	const formData = {
 		country: selectcountry.value,
 		idLists: selectedRows.value,
-		IsSelect: true
+		IsSelect: true,
 	};
 	if (area.value === 'CN') {
 		Chinese(formData);
@@ -922,30 +1161,41 @@ const showTextarea = (type, bol) => {
 const handleConfirm = (type) => {
 	let str_array = [];
 	if (type === 1) {
-		str_array = queryParams.value.erpTextArea?.split(/[(\r\n)\r\n]+/);
+		str_array = clearCharactersByRegex(queryParams.value.erpTextArea + '');
 	} else {
-		str_array = queryParams.value.asinTextArea?.split(/[(\r\n)\r\n]+/);
+		str_array = clearCharactersByRegex(queryParams.value.asinTextArea + '');
 	}
-	let arr = str_array?.map((item, index) => {
-		if (item === '') {
-			str_array.splice(index, 1);
-		} else {
-			return item.trim();
-		}
-	});
+	//去除数组里面的空字符以及null
+	let arr = clearEmptyDataByAny(str_array);
 	if (type === 1) {
-		queryParams.value.erpSkuList = arr;
-		if(arr?.length>0){
+		//if (queryParams.value.erpTextArea?.length) {
+		//queryParams.value.erpSkuList = arr;
+		if (arr?.length > 0) {
 			erpAndGoodsName.value = arr + '';
 		}
-
+		//}
 		visibleTextarea1.value = false;
 	} else {
-		queryParams.value.aSINList = arr;
-		aSIN.value = arr + '';
+		//if (queryParams.value.asinTextArea?.length) {
+		//queryParams.value.aSINList = arr;
+		if (arr?.length > 0) {
+			aSIN.value = arr + '';
+		}
+		//}
 		visibleTextarea2.value = false;
 	}
 	// handleQuery()
+};
+
+const resetQueryConditionsByASIN = () => {
+	queryParams.value.asinTextArea = '';
+	queryParams.value.aSINList = '';
+	aSIN.value = '';
+};
+const resetQueryConditionsByErpSku = () => {
+	queryParams.value.erpTextArea = '';
+	queryParams.value.erpSkuList = null;
+	erpAndGoodsName.value = '';
 };
 
 // 改变页码序号
@@ -970,7 +1220,7 @@ const clearObj = () => {
 };
 // 重置
 const reset = () => {
-	queryParams.value = { country: 'UAE' ,erpSkuList: null};
+	queryParams.value = { country: 'UAE', erpSkuList: null };
 	aSIN.value = '';
 	erpAndGoodsName.value = '';
 	Session.set('queryObj', {});
@@ -999,34 +1249,20 @@ const handleQuery = async () => {
 		return;
 	}
 	loading.value = true;
-	// 工作人员选中手动清除，所以注释
-	if (queryParams.value.erpSkuList?.length > 0) {
-		// queryParams.value.erpTextArea = '';
-		queryParams.value.erpAndGoodsName = '';
-	} else {
-		queryParams.value.erpAndGoodsName = erpAndGoodsName.value;
-		queryParams.value.erpSkuList = null;
-	}
-	if (queryParams.value.aSINList?.length > 0) {
-		// queryParams.value.asinTextArea = '';
-		queryParams.value.aSIN = '';
-	} else {
-		queryParams.value.aSIN = aSIN.value;
-		queryParams.value.aSINList = null;
-	}
+	queryLoading.value = true;
 	if (Session.get('queryObj')?.ifquery === false) {
 		queryParams.value.country = Session.get('queryObj')?.country ?? 'UAE';
-		queryParams.value.erpAndGoodsName = Session.get('queryObj')?.erpAndGoodsName ?? '';
-		erpAndGoodsName.value = queryParams.value.erpAndGoodsName
-		// queryParams.value.erpSkuList = Session.get('queryObj')?.erpSkuList ?? null;
-		queryParams.value.erpTextArea = Session.get('queryObj')?.erpSkuList ?? null;
-		handleConfirm(1)
+		//监听事件没有执行完就已经触发查询事件，所以直接拿到需要搜索的sku赋值给ErpSkuList
+		queryParams.value.erpSkuList = clearEmptyDataByAny(clearCharactersByRegex(Session.get('queryObj')?.erpAndGoodsName ?? null));
+		erpAndGoodsName.value = Session.get('queryObj')?.erpAndGoodsName ?? null;
 		selectcountry.value = Session.get('queryObj')?.country ?? 'UAE';
+		Session.set('queryObj', {});
 	}
 	var res = await AsinDataPage(Object.assign(queryParams.value, tableParams.value));
 	tableData.value = res.data.result?.items ?? [];
 	tableParams.value.total = res.data.result?.total;
 	loading.value = false;
+	queryLoading.value = false;
 };
 // 改变页面容量
 const handleSizeChange = (val: number) => {
@@ -1049,60 +1285,127 @@ function handleSelectionChange(val: any) {
 }
 handleQuery();
 
+watch(
+	() => queryParams.value.asinTextArea,
+	() => {
+		//isWatch为true时才修改数据，防止死循环
+		if(isWatch.value){
+			isWatch.value = false;
+			let str_array = clearCharactersByRegex(queryParams.value.asinTextArea + ''.trim());
+			let arr = clearEmptyDataByAny(str_array);
+			if (arr?.length > 0) {
+				//if (arr[0] !== undefined) {
+				queryParams.value.aSINList = arr;
+				aSIN.value = arr;
+			//} else {
+			//queryParams.value.aSINList = null;
+			//}
+			} else {
+				queryParams.value.aSINList = null;
+				aSIN.value = '';
+			}
+		}else{
+			isWatch.value = true;
+		}
+	}
+);
+
+watch(
+	() => aSIN.value,
+	() => {
+		//isWatch为true时才修改数据，防止死循环
+		if(isWatch.value){
+			isWatch.value = false;
+			let str_array = clearCharactersByRegex(aSIN.value.trim());
+			let arr = clearEmptyDataByAny(str_array);
+			if (arr?.length > 0) {
+				//if (arr[0] !== undefined) {
+				queryParams.value.aSINList = arr;
+				queryParams.value.asinTextArea = arr;
+				//} else {
+				//queryParams.value.aSINList = null;
+				//}
+			} else {
+				queryParams.value.aSINList = null;
+				queryParams.value.asinTextArea = '';
+			}
+		}else
+		{
+			isWatch.value = true;
+		}
+	}
+);
+
+watch(
+	() => erpAndGoodsName.value,
+	() => {
+		//isWatch为true时才修改数据，防止死循环
+		if(isWatch.value){
+			isWatch.value = false;
+			let str_array = clearCharactersByRegex(erpAndGoodsName.value.trim());
+			let arr = clearEmptyDataByAny(str_array);
+			if (arr?.length > 0) {
+				//if (arr[0] !== undefined && arr[0] !== null && arr[0] !== '') {
+				queryParams.value.erpSkuList = arr;
+				queryParams.value.erpTextArea = arr;
+				//} else {
+				//queryParams.value.erpSkuList = null;
+				//}
+			} else {
+				queryParams.value.erpSkuList = null;
+				queryParams.value.erpTextArea = '';
+			}
+		}else{
+			isWatch.value = true;
+		}
+	}
+);
 
 watch(
 	() => queryParams.value.erpTextArea,
 	() => {
-		let str_array = queryParams.value.erpTextArea?.split(/[(\r\n)\r\n]+/);
-		let arr = str_array?.map((item, index) => {
-			if (item === '') {
-				str_array.splice(index, 1);
-			} else {
-				return item.trim();
-			}
-		});
-		if (arr?.length > 0) {
-			if (arr[0] !== undefined) {
+		//isWatch为true时才修改数据，防止死循环
+		if(isWatch.value){
+			isWatch.value = false;
+			let str_array = clearCharactersByRegex(queryParams.value.erpTextArea.trim());
+			let arr = clearEmptyDataByAny(str_array);
+			if (arr?.length > 0) {
+				//if (arr[0] !== undefined && arr[0] !== null && arr[0] !== '') {
 				queryParams.value.erpSkuList = arr;
+				erpAndGoodsName.value = arr;
+				//} else {
+				//queryParams.value.erpSkuList = null;
+				//}
 			} else {
 				queryParams.value.erpSkuList = null;
+				erpAndGoodsName.value = '';
 			}
-		}
-	}
-);
-watch(
-	() => queryParams.value.asinTextArea,
-	() => {
-		let str_array = queryParams.value.asinTextArea?.split(/[(\r\n)\r\n]+/);
-		let arr = str_array?.map((item, index) => {
-			if (item === '') {
-				str_array.splice(index, 1);
-			} else {
-				return item.trim();
-			}
-		});
-		if (arr?.length > 0) {
-			if (arr[0] !== undefined) {
-				queryParams.value.aSINList = arr;
-			} else {
-				queryParams.value.aSINList = null;
-			}
+		}else{
+			isWatch.value = true;
 		}
 	}
 );
 
-
-onUpdated(()=>{
-	if(Session.get('queryObj')?.ifquery === false && queryParams.value.erpTextArea !== Session.get('queryObj')?.erpSkuList){
+onUpdated(() => {
+	if (
+		Session.get('queryObj')?.ifquery === false &&
+		(queryParams.value.erpTextArea !== Session.get('queryObj')?.erpSkuList || queryParams.value.erpAndGoodsName !== Session.get('queryObj')?.erpAndGoodsName)
+	) {
+		aSIN.value = '';
+		erpAndGoodsName.value = '';
+		queryParams.value = { country: 'UAE', erpSkuList: null, asinTextArea: null, aSINList: null };
 		handleQuery();
 	}
-})
-onBeforeUnmount(()=>{
-	queryParams.value = { country: 'UAE' ,erpSkuList: null};
+});
+
+onMounted(() => {
+	queryParams.value = { country: 'UAE', erpSkuList: null };
 	aSIN.value = '';
 	erpAndGoodsName.value = '';
-	Session.set('queryObj', {});
-})
+	if (Session.get('queryObj')?.ifquery !== false) {
+		Session.set('queryObj', {});
+	}
+});
 </script>
 
 <style lang="less" scoped>
@@ -1150,6 +1453,9 @@ onBeforeUnmount(()=>{
 }
 
 /deep/ .cell {
+	display:flex;
+	align-items:center;
+	justify-content:center;
 	white-space: nowrap;
 }
 
@@ -1159,8 +1465,9 @@ onBeforeUnmount(()=>{
 
 /deep/ .el-textarea__inner {
 	box-shadow: initial;
-	padding: 0;
-	margin: 4px 0 4px 3px;
+	margin:0;
+	padding:5px;
 	height: 142px !important;
 }
+
 </style>

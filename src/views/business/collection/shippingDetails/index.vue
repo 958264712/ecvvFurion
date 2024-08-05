@@ -320,7 +320,8 @@ const resetfun = (): void => {
 	Object.keys(queryParams).forEach((key: any) => {
 		queryParams[key] = '';
 	});
-	queryParams = { destination: '迪拜' };
+	//queryParams = { destination: '迪拜' };
+	queryParams.destination = '迪拜';
 	getAppPage();
 };
 //判断标签是否存在于集合中

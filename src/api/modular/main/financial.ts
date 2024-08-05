@@ -10,7 +10,24 @@ enum Api {
 	pYYPurchaseOrderPage = '/api/pYYPurchaseOrder/page',
 	pYYPurchaseOrderupdate = '/api/pYYPurchaseOrder/update',
 	importPurchaseUnitPrice = '/api/pYYPurchaseOrder/importPurchaseUnitPrice',
+	initialInventoryDataPage = '/api/initialInventoryData/page',
+	importInitialInventoryData = '/api/initialInventoryData/import',
 }
+// 期初库存数据导入
+export const importInitialInventoryData = (params?: any) =>
+	request({
+		url: Api.importInitialInventoryData,
+		method: 'post',
+		data: params,
+		responseType: 'blob',
+	});
+// 期初库存数据
+export const initialInventoryDataPage = (params?: any) =>
+	request({
+		url: Api.initialInventoryDataPage,
+		method: 'get',
+		data: params,
+	});
 // 亚马逊平台佣金利率修改历史记录表
 export const returnedGoods = (params?: any) =>
 	request({

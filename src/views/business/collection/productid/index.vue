@@ -2,8 +2,8 @@
 	<div class="collectionOrderInfo-container">
 		<el-card shadow="hover" :body-style="{ paddingBottom: '0' }">
 			<el-form :model="queryList" :inline="true">
-				<el-form-item label="内部唯一识别码">
-					<el-input v-model="queryList.internalUniqueID" clearable="" placeholder="请输入内部唯一识别码" />
+				<el-form-item label="内部唯一识别码或内部品名">
+					<el-input v-model="queryList.internalUniqueID" clearable="" placeholder="请输入内部唯一识别码或内部品名" />
 				</el-form-item>
 				<el-form-item label="采购员">
 					<el-input v-model="queryList.purchaser" clearable="" placeholder="请输入采购员" />

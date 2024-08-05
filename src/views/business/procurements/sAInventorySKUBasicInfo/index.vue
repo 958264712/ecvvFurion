@@ -58,7 +58,7 @@ const handleQuery = async () => {
 
 function Export() {
 	loading.value = true;
-	sAExportInventorySKUBasicInfo({ exchangeRate: exchangeRate.value.value }).then((res: any) => {
+	sAExportInventorySKUBasicInfo(Object.assign(queryParams.value, tableParams.value, { exchangeRate: exchangeRate.value.value })).then((res: any) => {
 		loading.value = false;
 		other.downloadfile(res);
 		handleQuery();
@@ -146,7 +146,7 @@ getData();
 				<el-table-column prop="comprehensiveSupplyPriceAED" align="center" label="综合供货价AED" width="85"
 					show-overflow-tooltip="" />
 				<el-table-column prop="comprehensiveInitialUnitPriceAED" align="center" label="综合头程单价AED" width="90"
-					show-overflow-tooltip="" />
+					GetInventorySKUBasicInfoInput show-overflow-tooltip="" />
 				<el-table-column prop="seaComprehensiveInitialUnitPriceAED" align="center" label="综合海运单价"
 					show-overflow-tooltip="" />
 				<el-table-column prop="emptyComprehensiveInitialUnitPriceAED" align="center" label="综合空运单价"

@@ -57,7 +57,7 @@ const handleQuery = async () => {
 
 function Export() {
 	loading.value = true;
-	uAEExportInventorySKUBasicInfo({ exchangeRate: exchangeRate.value.value }).then((res: any) => {
+	uAEExportInventorySKUBasicInfo(Object.assign(queryParams.value, tableParams.value,{ exchangeRate: exchangeRate.value.value })).then((res: any) => {
 		loading.value = false;
 		other.downloadfile(res);
 		handleQuery();

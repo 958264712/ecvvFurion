@@ -13,10 +13,10 @@
 						<el-button type="primary" icon="ele-Search" @click="handleQuery"
 							v-auth="'uAE_ProcurementDetails:page'"> 查询 </el-button>
 						<el-button icon="ele-Refresh" @click="() => {
-							queryParams = {};
-							handleQuery();
-						}
-							">
+			queryParams = {};
+			handleQuery();
+		}
+			">
 							重置
 						</el-button>
 					</el-button-group>
@@ -26,8 +26,8 @@
 		<el-card class="full-table" shadow="hover" style="margin-top: 8px">
 			<div class="importDiv" style="width: 100%">
 				<div style="float: left;">
-					<el-upload :on-change="Imports" :multiple="false" action="#" :show-file-list="false"
-						:auto-upload="false" name="file">
+					<el-upload ref="uploadRef" :disabled="ifdisabled" :on-change="Imports" :multiple="false" action="#"
+						:show-file-list="false" :auto-upload="false" name="file">
 						<el-button :loading="ImportsSalesloading" type="primary">导入</el-button>
 					</el-upload>
 				</div>
@@ -77,8 +77,8 @@
 
 			</div>
 			<el-table :data="tableData" size="lagre" style="width: 100%" v-loading="loading" tooltip-effect="light"
-				@sort-change="sortfun" @selection-change="handleSelectionChange" :header-cell-style="customHeaderCellStyle"
-				:cell-style="customCellStyle" row-key="id" border="">
+				@sort-change="sortfun" @selection-change="handleSelectionChange"
+				:header-cell-style="customHeaderCellStyle" :cell-style="customCellStyle" row-key="id" border="">
 				<el-table-column type="selection" width="55" class-name="custom-header" />
 				<el-table-column prop="images" label="图片" width="120" align="center" sortableshow-overflow-tooltip="">
 					<template #default="scope">
@@ -92,7 +92,8 @@
 				<el-table-column prop="orderID" label="Order ID" sortable width="160" align="center"
 					sortableshow-overflow-tooltip="" />
 				<el-table-column prop="asin" label="ASIN" sortable align="center" sortableshow-overflow-tooltip="" />
-				<el-table-column prop="erpsku" label="ERPSKU" sortable align="center" sortableshow-overflow-tooltip="" />
+				<el-table-column prop="erpsku" label="ERPSKU" sortable align="center"
+					sortableshow-overflow-tooltip="" />
 				<el-table-column prop="itemQuantity" label="Item Quantity" sortable align="center"
 					sortableshow-overflow-tooltip="" />
 				<el-table-column prop="trackingID" label="Tracking ID" sortable align="center"
@@ -128,7 +129,7 @@ const DFDeliveryloading = ref(false);
 const dialogFormVisible = ref(false);
 const tableData = ref<any>([]);
 const HistoryData = ref<any>([]);
-
+const ifdisabled = ref(true);
 const queryParams = ref<inventoryParamsType>({});
 const IsImage = ref(false);
 const tableParams = ref({
@@ -141,18 +142,25 @@ const tableParams = ref({
 let selectedRows = ref<any>([]);
 function Imports(file: any) {
 	ImportsSalesloading.value = true;
+	ifdisabled.value = true;
 	const formData = new FormData();
 	formData.append('file', file.raw);
 	ImportDFShippingList(formData).then((res: any) => {
 		ImportsSalesloading.value = false;
+		ifdisabled.value = false;
 		if (res.data.code == 200) {
 			ElMessage.success('导入成功');
 			handleQuery();
 		} else {
 			ImportsSalesloading.value = false;
+			ifdisabled.value = false;
 			ElMessage.error('导入失败'); // + res.message
 		}
-	});
+	})
+		.catch(arr => {
+			ImportsSalesloading.value = false;
+			ifdisabled.value = false;
+		})
 }
 
 // 改变页面容量

@@ -5,10 +5,14 @@ import other from '/@/utils/other.ts';
 import { ElMessage } from 'element-plus';
 import { useRouter } from 'vue-router';
 import { Session } from '/@/utils/storage';
-import { ArrowDownBold, ArrowUpBold } from '@element-plus/icons-vue';
+import { ArrowDownBold, ArrowUpBold,QuestionFilled } from '@element-plus/icons-vue';
 import { SKUOperationPage, SKUOperationUpdate, SKUOperationExport } from '/@/api/modular/main/sotckSkuOperations';
 import tabDragColum from '/@/components/tabDragColum/index.vue';
+import { clearEmptyDataByAny } from '/@/utils/constHelper';
+import regexHelper from '/@/utils/regexHelper'; 
+import { el } from 'element-plus/es/locale';
 
+const { clearCharactersByRegex } = regexHelper();
 const router = useRouter();
 const queryParams = ref<any>({});
 const tableParams = ref<any>({ PageNo: 1, PageSize: 20 });
@@ -24,6 +28,7 @@ const loading = ref(false);
 const Exportloading = ref<any>(false);
 const visibleTextarea1 = ref(false);
 const erpAndGoodsName = ref('');
+const isWatch = ref(true);
 
 const area = ref('CN');
 const month = new Date().getMonth() + 1;
@@ -80,6 +85,8 @@ const TableData = ref<any>([
 		dataIndex: 'site',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '库存SKU',
@@ -87,6 +94,8 @@ const TableData = ref<any>([
 		dataIndex: 'inventorySKU',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '库存品名',
@@ -94,6 +103,8 @@ const TableData = ref<any>([
 		dataIndex: 'inventoryProductName',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '销售属性',
@@ -101,6 +112,8 @@ const TableData = ref<any>([
 		dataIndex: 'salesAttributes',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '产品CAT',
@@ -108,6 +121,8 @@ const TableData = ref<any>([
 		dataIndex: 'productCAT',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '采购国',
@@ -115,6 +130,8 @@ const TableData = ref<any>([
 		dataIndex: 'purchasingCountry',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '产品是否淘汰',
@@ -122,6 +139,8 @@ const TableData = ref<any>([
 		dataIndex: 'itemStatus',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '有效ASIN数',
@@ -129,6 +148,8 @@ const TableData = ref<any>([
 		dataIndex: 'listCount',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '库存',
@@ -136,6 +157,8 @@ const TableData = ref<any>([
 		dataIndex: 'inventoryQuantity',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '在途数量',
@@ -143,6 +166,8 @@ const TableData = ref<any>([
 		dataIndex: 'inTransitQuantity',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '库存周转状态',
@@ -150,6 +175,8 @@ const TableData = ref<any>([
 		dataIndex: 'stockTurnover',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '周转天数',
@@ -157,6 +184,8 @@ const TableData = ref<any>([
 		dataIndex: 'turnoverTime',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '上周7日销量',
@@ -164,6 +193,8 @@ const TableData = ref<any>([
 		dataIndex: 'lastShippedUnits',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '本周7日销量',
@@ -171,6 +202,8 @@ const TableData = ref<any>([
 		dataIndex: 'thisShippedUnits',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '周销量趋势',
@@ -178,6 +211,8 @@ const TableData = ref<any>([
 		dataIndex: 'weekTrend',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: month + '月AMZ销量',
@@ -185,12 +220,16 @@ const TableData = ref<any>([
 		dataIndex: 'shippedUnits_P0',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: month1 + '月AMZ销量',
 		titleEN: month1 + 'Month AMZ sales',
 		dataIndex: 'shippedUnits_P1',
 		checked: true,
+		remark: false,
+		desc: '',
 		fixed: false,
 	},
 	{
@@ -198,6 +237,8 @@ const TableData = ref<any>([
 		titleEN: month2 + 'Month AMZ sales',
 		dataIndex: 'shippedUnits_P2',
 		checked: true,
+		remark: false,
+		desc: '',
 		fixed: false,
 	},
 	{
@@ -205,6 +246,8 @@ const TableData = ref<any>([
 		titleEN: month3 + 'Month AMZ sales',
 		dataIndex: 'shippedUnits_P3',
 		checked: true,
+		remark: false,
+		desc: '',
 		fixed: false,
 	},
 	{
@@ -213,6 +256,8 @@ const TableData = ref<any>([
 		dataIndex: 'shippedUnits_P4',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: month5 + '月AMZ销量',
@@ -220,6 +265,8 @@ const TableData = ref<any>([
 		dataIndex: 'shippedUnits_P5',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '首次上架时间',
@@ -227,6 +274,8 @@ const TableData = ref<any>([
 		dataIndex: 'createTime',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '累计采购数量',
@@ -234,6 +283,8 @@ const TableData = ref<any>([
 		dataIndex: 'totalQuantityShipped',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: 'UAE月入库数量',
@@ -241,6 +292,8 @@ const TableData = ref<any>([
 		dataIndex: 'uaeCurrentInventoryQuantity',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: 'SA月入库数量',
@@ -248,6 +301,8 @@ const TableData = ref<any>([
 		dataIndex: 'saCurrentInventoryQuantity',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: 'UAE月出库数量',
@@ -255,6 +310,8 @@ const TableData = ref<any>([
 		dataIndex: 'uaeCurrentOutboundQuantity',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: 'SA月出库数量',
@@ -262,6 +319,8 @@ const TableData = ref<any>([
 		dataIndex: 'saCurrentOutboundQuantity',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '现负责人',
@@ -269,12 +328,29 @@ const TableData = ref<any>([
 		dataIndex: 'creator',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 ]);
 
 const handleData = (list: any) => {
 	if (list?.length) {
-		TableData.value = list;
+		list.map((item, index) => {
+			if (item.dataIndex === TableData.value[index].dataIndex) {
+				TableData.value[index].checked = item.checked;
+				TableData.value[index].fixed = item.fixed;
+			}
+		});
+	}
+};
+const handleRemarkData = (list: any) => {
+	if (list?.length) {
+		list.map((item, index) => {
+			if (item.dataIndex === TableData.value[index].dataIndex) {
+				TableData.value[index].desc = item.desc;
+				TableData.value[index].remark = item.remark;
+			}
+		});
 	}
 };
 const buyer = ref([
@@ -376,20 +452,20 @@ const handleQuery = async (): void => {
 	if (activeName.value === 'ALL') {
 		queryParams.value.Site = null;
 	}
-	if (queryParams.value.ErpSkuList?.length > 0) {
+	//if (queryParams.value.ErpSkuList?.length > 0) {
 		// queryParams.value.erpTextArea = '';
-		queryParams.value.ErpSku = '';
-	} else {
-		queryParams.value.ErpSku = erpAndGoodsName.value;
-		queryParams.value.ErpSkuList = null;
-	}
+		//queryParams.value.ErpSku = '';
+	//} else {
+		//queryParams.value.ErpSku = erpAndGoodsName.value;
+		//queryParams.value.ErpSkuList = null;
+	//}
 
 	var res = await SKUOperationPage(Object.assign(queryParams.value, tableParams.value));
 	tableData.value = res.data.result?.items ?? [];
 	tableParams.value.total = res.data.result?.total;
 	tableParams.value.PageNo = res.data.result?.page;
 	tableParams.value.PageSize = res.data.result?.pageSize;
-	res.data.result?.items.map((item) => {
+	res.data.result?.items.map((item: { id: any; }) => {
 		disabledList.value.push(item.id);
 	});
 	loading.value = false;
@@ -405,13 +481,13 @@ const selectChange = (selection: any): void => {
 	selectedRows.value = [];
 	selectedRowErp.value = ''
 	selectedRows.value = selection;
-	selection.map((item: any,index:number) => {
+	selection.map((item: any, index: number) => {
 		selectedRowKeys.value.push(item.id);
-		if(activeName.value !== 'ALL'){
-			if(index=== selection.length -1){
+		if (activeName.value !== 'ALL') {
+			if (index === selection.length - 1) {
 				selectedRowErp.value += item.inventorySKU
-			}else{
-				selectedRowErp.value += item.inventorySKU+'\n'
+			} else {
+				selectedRowErp.value += item.inventorySKU + '\n'
 			}
 		}
 	});
@@ -431,8 +507,15 @@ const AllExport = async (): void => {
 	if (activeName.value === 'ALL') {
 		queryParams.value.Site = null;
 	}
+	//if (queryParams.value.erpSkuList?.length > 0) {
+		// queryParams.value.erpTextArea = '';
+		//queryParams.value.ErpSku = '';
+	//} else {
+		//queryParams.value.ErpSku = erpAndGoodsName.value;
+		//queryParams.value.erpSkuList = null;
+	//}
 	Exportloading.value = true;
-	await SKUOperationExport(Object.assign({ type: 0, isImages: false, area: area.value, site: queryParams.value.Site })).then((res) => {
+	await SKUOperationExport(Object.assign(queryParams.value, tableParams.value, { type: 0, isImages: false, area: area.value })).then((res) => {
 		other.downloadfile(res);
 		selectedRows.value = [];
 		Exportloading.value = false;
@@ -480,24 +563,27 @@ const handleRouter = (storeSku: string, site: string) => {
 	}
 };
 
-const handleConfirm = (type) => {
+const handleConfirm = () => {
 	let str_array = [];
-	str_array = queryParams.value.erpTextArea?.split(/[(\r\n)\r\n]+/);
-	let arr = str_array?.map((item, index) => {
-		if (item === '') {
-			str_array.splice(index, 1);
-		} else {
-			return item.trim();
-		}
-	});
-	queryParams.value.ErpSkuList = arr;
-	erpAndGoodsName.value = arr + '';
+	if(queryParams.value.erpTextArea?.length){
+		str_array = clearCharactersByRegex(queryParams.value.erpTextArea + '');
+		let arr = clearEmptyDataByAny(str_array)
+		//queryParams.value.ErpSkuList = arr;
+		erpAndGoodsName.value = arr + '';
+	}
 	visibleTextarea1.value = false;
 };
+
+const resetQueryConditions =() => {
+	queryParams.value.erpTextArea = '';
+	queryParams.value.erpSkuList = null;
+	erpAndGoodsName.value = '';
+}
+
 const clearErp = () => {
 	erpAndGoodsName.value = '';
 	queryParams.value.ErpSku = '';
-	queryParams.value.ErpSkuList = null;
+	queryParams.value.erpTextArea = null;
 	Session.set('queryObj', { ifquery: true });
 };
 // 重置
@@ -509,30 +595,58 @@ const reset = () => {
 };
 
 const handleErpList = () => {
-	Session.set('queryObj', { country: activeName.value, erpSkuList: selectedRowErp.value, ifquery: false });
+	Session.set('queryObj', { country: activeName.value, erpAndGoodsName: selectedRowErp.value, ifquery: false });
 	router.push({ path: '/operation/asin/asindata' });
 }
 
 watch(
-	() => queryParams.value.erpTextArea,
+	() => erpAndGoodsName.value,
 	() => {
-		let str_array = queryParams.value.erpTextArea?.split(/[(\r\n)\r\n]+/);
-		let arr = str_array?.map((item, index) => {
-			if (item === '') {
-				str_array.splice(index, 1);
-			} else {
-				return item.trim();
+		if(isWatch.value){
+			isWatch.value = false;
+			let str_array =  clearCharactersByRegex(erpAndGoodsName.value.trim());
+			let arr = clearEmptyDataByAny(str_array);
+			if (arr?.length > 0) {
+				//if (arr[0] !== undefined) {
+				queryParams.value.erpSkuList = arr;
+				queryParams.value.erpTextArea = arr;
+				//} else {
+					//queryParams.value.ErpSkuList = null;
+				//}
+			}else{
+				queryParams.value.erpSkuList = null;
+				queryParams.value.erpTextArea = '';
 			}
-		});
-		if (arr?.length > 0) {
-			if (arr[0] !== undefined) {
-				queryParams.value.ErpSkuList = arr;
-			} else {
-				queryParams.value.ErpSkuList = null;
-			}
+		}else{
+			isWatch.value = true;
 		}
 	}
 );
+
+watch(
+	() => queryParams.value.erpTextArea,
+	() => {
+		if(isWatch.value){
+			isWatch.value = false;
+			let str_array =  clearCharactersByRegex(queryParams.value.erpTextArea.trim());
+			let arr = clearEmptyDataByAny(str_array);
+			if (arr?.length > 0) {
+				//if (arr[0] !== undefined) {
+				queryParams.value.erpSkuList = arr;
+				erpAndGoodsName.value = arr;
+				//} else {
+					//queryParams.value.ErpSkuList = null;
+				//}
+			}else{
+				queryParams.value.erpSkuList = null;
+				erpAndGoodsName.value = '';
+			}
+		}else{
+			isWatch.value = true;
+		}
+	}
+);
+
 // 站点改变调用接口
 watch(
 	() => activeName.value,
@@ -548,38 +662,29 @@ onMounted(() => {
 	<div class="stock_sku_operations">
 		<el-card shadow="hover" :body-style="{ paddingBottom: '0' }">
 			<el-form :model="queryParams" ref="queryForm" :inline="true">
-				<el-form-item label="品号/库存SKU">
+				<el-form-item label="品名/库存SKU">
 					<!-- <el-input v-model="queryParams.ErpSku" clearable="" placeholder="请输入品号/库存SKU" /> -->
 					<el-popover :visible="visibleTextarea1" placement="bottom" :width="250">
 						<el-scrollbar height="150px" style="border: 1px solid var(--el-border-color)">
-							<el-input
-								v-model="queryParams.erpTextArea"
-								style="width: 215px"
-								:autosize="{ minRows: 1, maxRows: 200 }"
-								type="textarea"
-								placeholder="可输入多个ERP-SKU精确查询，每行一个，最多支持200个"
-							/>
+							<el-input v-model="queryParams.erpTextArea" style="width: 215px"
+								:autosize="{ minRows: 1, maxRows: 200 }" type="textarea"
+								placeholder="可输入多个ERP-SKU精确查询，每行一个，最多支持200个" />
 						</el-scrollbar>
 						<div style="text-align: right; margin-top: 20px">
-							<span style="float: left">{{ queryParams.ErpSkuList?.length ?? 0 }}/200</span>
-							<el-button
-								type="info"
-								@click="
-									() => {
-										queryParams.ErpSku = '';
-										erpAndGoodsName = '';
-									}
-								"
-								>重置</el-button
-							>
+							<span style="float: left">{{ queryParams.erpSkuList?.length ?? 0 }}/200</span>
+							<el-button type="info" @click="resetQueryConditions()
+			">重置</el-button>
 							<el-button type="primary" @click="handleConfirm()">确定</el-button>
 						</div>
 						<template #reference>
-							<el-input v-model="erpAndGoodsName" clearable="" placeholder="请输入,点击展开可输多个" @clear="clearErp" @blur="clearObj">
+							<el-input v-model="erpAndGoodsName" clearable="" placeholder="请输入,点击展开可输多个"
+								@clear="clearErp" @blur="clearObj">
 								<template #suffix>
-									<el-icon class="el-input__icon"
-										><ArrowDownBold @click="visibleTextarea1 = !visibleTextarea1" v-if="!visibleTextarea1" /><ArrowUpBold @click="visibleTextarea1 = !visibleTextarea1" v-else
-									/></el-icon>
+									<el-icon class="el-input__icon">
+										<ArrowDownBold @click="visibleTextarea1 = !visibleTextarea1"
+											v-if="!visibleTextarea1" />
+										<ArrowUpBold @click="visibleTextarea1 = !visibleTextarea1" v-else />
+									</el-icon>
 								</template>
 							</el-input>
 						</template>
@@ -587,22 +692,26 @@ onMounted(() => {
 				</el-form-item>
 				<el-form-item label="采购国">
 					<el-select clearable="" v-model="queryParams.PurchasingCountry" placeholder="全部">
-						<el-option v-for="(item, index) in buyer" :key="index" :value="item.value" :label="item.label" />
+						<el-option v-for="(item, index) in buyer" :key="index" :value="item.value"
+							:label="item.label" />
 					</el-select>
 				</el-form-item>
 				<el-form-item label="产品是否淘汰">
 					<el-select clearable="" v-model="queryParams.ItemStatus" placeholder="请选择">
-						<el-option v-for="(item, index) in ifoutProduct" :key="index" :value="item.value" :label="item.label" />
+						<el-option v-for="(item, index) in ifoutProduct" :key="index" :value="item.value"
+							:label="item.label" />
 					</el-select>
 				</el-form-item>
 				<el-form-item label="库存周转状态">
 					<el-select clearable="" v-model="queryParams.StockTurnover" placeholder="请选择">
-						<el-option v-for="(item, index) in stockStatus" :key="index" :value="item.value" :label="item.label" />
+						<el-option v-for="(item, index) in stockStatus" :key="index" :value="item.value"
+							:label="item.label" />
 					</el-select>
 				</el-form-item>
 				<el-form-item label="周销量趋势">
 					<el-select clearable="" v-model="queryParams.WeekTrend" placeholder="请选择">
-						<el-option v-for="(item, index) in weekSales" :key="index" :value="item.value" :label="item.label" />
+						<el-option v-for="(item, index) in weekSales" :key="index" :value="item.value"
+							:label="item.label" />
 					</el-select>
 				</el-form-item>
 				<!-- <el-form-item label="月销量趋势">
@@ -625,14 +734,18 @@ onMounted(() => {
 		<el-card class="full-table" shadow="hover" style="margin-top: 8px" :body-style="{ padding: '10px 20px' }">
 			<div class="settingf" style="margin-bottom: 5px; display: flex; justify-content: space-between">
 				<div>
-					<el-button type="primary" @click="batchModify" style="margin-right: 0px" :disabled="!selectedRowKeys?.length"> 批量修改 </el-button>
-					<el-button type="primary" @click="handleErpList" style="margin-right: 10px" :disabled="activeName === 'ALL'"> 查询ASIN详情 </el-button>
+					<el-button type="primary" @click="batchModify" style="margin-right: 0px"
+						:disabled="!selectedRowKeys?.length"> 批量修改 </el-button>
+					<el-button type="primary" @click="handleErpList" style="margin-right: 10px"
+						:disabled="(activeName !== 'UAE' || activeName !== 'SA') && !selectedRowErp?.length"> 查询ASIN详情
+					</el-button>
 					<el-dropdown style="margin-right: 20px">
 						<el-button type="primary" :loading="Exportloading"> 导出 </el-button>
 						<template #dropdown>
 							<el-dropdown-menu>
 								<el-dropdown-item @click="AllExport">导出所有</el-dropdown-item>
-								<el-dropdown-item @click="SelectedExport" :disabled="!selectedRowKeys?.length">导出选中</el-dropdown-item>
+								<el-dropdown-item @click="SelectedExport"
+									:disabled="!selectedRowKeys?.length">导出选中</el-dropdown-item>
 							</el-dropdown-menu>
 						</template>
 					</el-dropdown>
@@ -641,65 +754,131 @@ onMounted(() => {
 						<el-radio-button label="English header" value="English header" @change="changeArea('EN')" />
 					</el-radio-group>
 				</div>
-				<tabDragColum :data="TableData" :name="`stockSkuOperationsData`" :area="area" @handleData="handleData" />
+				<tabDragColum :data="TableData" :name="`stockSkuOperationsData`" :area="area"
+					@handleData="handleData" @handleRemarkData="handleRemarkData"/>
 			</div>
 			<el-tabs v-model="activeName" type="card" style="height: 85%" @tab-click="handleClick">
 				<el-tab-pane :label="item.label" :name="item.name" style="height: 100%" v-for="item in tabsList">
-					<el-table :data="tableData" style="height: 100%" v-loading="loading" tooltip-effect="light" row-key="id" @selection-change="(selection: any) => selectChange(selection)">
+					<el-table :data="tableData" style="height: 100%" v-loading="loading" tooltip-effect="light"
+						row-key="id" @selection-change="(selection: any) => selectChange(selection)">
 						<el-table-column type="selection" width="55" />
 						<el-table-column type="index" :label="area == 'CN' ? '序号' : 'NO.'" width="55" align="center" />
 						<template v-for="(item, index) in TableData" :key="index">
-							<el-table-column v-if="item.checked && item.dataIndex === 'site'" :prop="item.dataIndex" :fixed="item.fixed" :label="area == 'CN' ? item.titleCN : item.titleEN" align="center">
+							<el-table-column v-if="item.checked && item.dataIndex === 'site'" :prop="item.dataIndex"
+								:fixed="item.fixed" :label="area == 'CN' ? item.titleCN : item.titleEN" align="center">
+								<template #header>
+									<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
+										<div style="display: flex; align-items: center; justify-content: center">
+											{{ area == 'CN' ? item.titleCN : item.titleEN }}
+											<QuestionFilled width="14" style="color: #ccc" v-show="item.remark" />
+										</div>
+										<template #content>
+											<div v-html="item.desc"></div>
+										</template>
+									</el-tooltip>
+									<div v-else>{{ area == 'CN' ? item.titleCN : item.titleEN }}</div>
+								</template>
 								<template #default="scope">
-									<img :src="'https://raw.githubusercontent.com/okbuynow/OKPIC/main/50x50/' + scope.row.inventorySKU + '.jpg'" />
+									<img
+										:src="'https://raw.githubusercontent.com/okbuynow/OKPIC/main/50x50/' + scope.row.inventorySKU + '.jpg'" />
 								</template>
 							</el-table-column>
-							<el-table-column v-else-if="item.checked && item.dataIndex === 'inventorySKU'" width="110" :fixed="item.fixed" :prop="item.dataIndex" :label="area == 'CN' ? item.titleCN : item.titleEN" align="center">
+							<el-table-column v-else-if="item.checked && item.dataIndex === 'inventorySKU'" width="110"
+								:fixed="item.fixed" :prop="item.dataIndex"
+								:label="area == 'CN' ? item.titleCN : item.titleEN" align="center">
+								<template #header>
+									<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
+										<div style="display: flex; align-items: center; justify-content: center">
+											{{ area == 'CN' ? item.titleCN : item.titleEN }}
+											<QuestionFilled width="14" style="color: #ccc" v-show="item.remark" />
+										</div>
+										<template #content>
+											<div v-html="item.desc"></div>
+										</template>
+									</el-tooltip>
+									<div v-else>{{ area == 'CN' ? item.titleCN : item.titleEN }}</div>
+								</template>
 								<template #default="scope">
-									<span style="color: red" @click="handleRouter(scope.row.inventorySKU, activeName)">{{ scope.row.inventorySKU }} </span>
+									<el-link style="color: red"
+										@click="handleRouter(scope.row.inventorySKU, activeName)">{{ scope.row.inventorySKU }}
+									</el-link>
 								</template>
 							</el-table-column>
-							<el-table-column
-								v-else-if="item.checked && item.dataIndex === 'itemStatus'"
-								:fixed="item.fixed"
-								:prop="item.dataIndex"
-								:label="area == 'CN' ? item.titleCN : item.titleEN"
-								width="100"
-								align="center"
-							>
+							<el-table-column v-else-if="item.checked && item.dataIndex === 'itemStatus'"
+								:fixed="item.fixed" :prop="item.dataIndex"
+								:label="area == 'CN' ? item.titleCN : item.titleEN" width="100" align="center">
+								<template #header>
+									<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
+										<div style="display: flex; align-items: center; justify-content: center">
+											{{ area == 'CN' ? item.titleCN : item.titleEN }}
+											<QuestionFilled width="14" style="color: #ccc" v-show="item.remark" />
+										</div>
+										<template #content>
+											<div v-html="item.desc"></div>
+										</template>
+									</el-tooltip>
+									<div v-else>{{ area == 'CN' ? item.titleCN : item.titleEN }}</div>
+								</template>
 								<template #default="scope">
-									<el-select clearable="" v-model="scope.row.itemStatus" placeholder="请选择" :disabled="disabledAuto(scope)">
-										<el-option v-for="(item, index) in ifoutProduct" :key="index" :value="item.value" :label="item.label" />
+									<el-select clearable="" v-model="scope.row.itemStatus" placeholder="请选择"
+										:disabled="disabledAuto(scope)">
+										<el-option v-for="(item, index) in ifoutProduct" :key="index"
+											:value="item.value" :label="item.label" />
 									</el-select>
 								</template>
 							</el-table-column>
-							<el-table-column v-else-if="item.checked && item.dataIndex === 'listCount'" :fixed="item.fixed" :prop="item.dataIndex" :label="area == 'CN' ? item.titleCN : item.titleEN" align="center">
+							<el-table-column v-else-if="item.checked && item.dataIndex === 'listCount'"
+								:fixed="item.fixed" :prop="item.dataIndex"
+								:label="area == 'CN' ? item.titleCN : item.titleEN" align="center">
+								<template #header>
+									<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
+										<div style="display: flex; align-items: center; justify-content: center">
+											{{ area == 'CN' ? item.titleCN : item.titleEN }}
+											<QuestionFilled width="14" style="color: #ccc" v-show="item.remark" />
+										</div>
+										<template #content>
+											<div v-html="item.desc"></div>
+										</template>
+									</el-tooltip>
+									<div v-else>{{ area == 'CN' ? item.titleCN : item.titleEN }}</div>
+								</template>
 								<template #default="scope">
-									<span style="color: red" @click="handleRouter(scope.row.inventorySKU, activeName)">{{ scope.row.listCount }} </span>
+									<el-link style="color: red"
+										@click="handleRouter(scope.row.inventorySKU, activeName)">{{ scope.row.listCount }}
+									</el-link>
 								</template>
 							</el-table-column>
-							<el-table-column v-else-if="item.checked" :fixed="item.fixed" :prop="item.dataIndex" :label="area == 'CN' ? item.titleCN : item.titleEN" width="120" align="center" />
+							<el-table-column v-else-if="item.checked" :fixed="item.fixed" :prop="item.dataIndex"
+								:label="area == 'CN' ? item.titleCN : item.titleEN" width="120" align="center" >
+								<template #header>
+									<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
+										<div style="display: flex; align-items: center; justify-content: center">
+											{{ area == 'CN' ? item.titleCN : item.titleEN }}
+											<QuestionFilled width="14" style="color: #ccc" v-show="item.remark" />
+										</div>
+										<template #content>
+											<div v-html="item.desc"></div>
+										</template>
+									</el-tooltip>
+									<div v-else>{{ area == 'CN' ? item.titleCN : item.titleEN }}</div>
+								</template>
+						</el-table-column>
 						</template>
 						<el-table-column label="操作" width="140" align="center" fixed="right">
 							<template #default="scope">
-								<el-button size="small" text type="primary" @click="disabledfun(scope)">{{ disabledList.some((item) => item === scope.row.id) ? '编辑' : '保存' }}</el-button>
+								<el-button size="small" text type="primary"
+									@click="disabledfun(scope)">{{ disabledList.some((item) => item === scope.row.id) ? '编辑' : '保存' }}</el-button>
 							</template>
 						</el-table-column>
 					</el-table>
 				</el-tab-pane>
 			</el-tabs>
-			<el-pagination
-				v-model:currentPage="tableParams.PageNo"
-				v-model:page-size="tableParams.PageSize"
-				:total="tableParams.total"
-				:page-sizes="[10, 20, 50, 100, 500, 1000]"
-				small=""
-				background=""
-				@size-change="handleSizeChange"
-				@current-change="handleCurrentChange"
-				layout="total, sizes, prev, pager, next, jumper"
-			/>
-			<editDialog ref="editDialogRef" :title="editCostpeice_BatchTitle" @reloadTable="handleQuery" @idList="idList" />
+			<el-pagination v-model:currentPage="tableParams.PageNo" v-model:page-size="tableParams.PageSize"
+				:total="tableParams.total" :page-sizes="[10, 20, 50, 100, 500, 1000]" small="" background=""
+				@size-change="handleSizeChange" @current-change="handleCurrentChange"
+				layout="total, sizes, prev, pager, next, jumper" />
+			<editDialog ref="editDialogRef" :title="editCostpeice_BatchTitle" @reloadTable="handleQuery"
+				@idList="idList" />
 		</el-card>
 	</div>
 </template>
@@ -721,6 +900,7 @@ onMounted(() => {
 	//     overflow:auto;
 	// }
 }
+
 /deep/ .cell {
 	white-space: nowrap;
 }
@@ -728,10 +908,11 @@ onMounted(() => {
 /deep/ .el-table td.el-table__cell div {
 	overflow: hidden;
 }
+
 /deep/ .el-textarea__inner {
 	box-shadow: initial;
-	padding: 0;
-	margin: 4px 0 4px 3px;
+	padding: 5px;
+	margin: 0;
 	height: 142px !important;
 }
 </style>

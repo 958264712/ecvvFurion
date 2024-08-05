@@ -100,7 +100,7 @@ function ImportforPO(file: any, ifCover = false) {
 		})
 		.catch((res) => {
 			loading1.value = false;
-			const result = res.toString().split('据')[2]
+			const result = res.toString().split('|')[1]
 			ElMessageBox({
 				message:h('p',{style:"overflow-wrap:break-word"},`${result} in the data has already been imported. If you needs to be imported again, the original ${result} will be overwritten: it is a duplicate PO number`),
 				title:'Prompt Message',

@@ -4,6 +4,8 @@ declare type AsinParamsType = {
     goodsName?: string;
     erpSku?: string;
     origin?: string;
+    aSINList?: any;
+    asinTextArea?: string;
 }
 declare type PoParamsType = {
     po?: string;

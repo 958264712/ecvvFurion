@@ -48,7 +48,7 @@
 					</div>
 				</div>
 				<tabDragColum :data="TableData" :name="`InventoryManagementData`" :area="area"
-					@handleData="handleData" />
+					@handleData="handleData" @handleRemarkData="handleRemarkData"/>
 			</div>
 			<el-table :data="tableData" size="lagre" style="width: 100%" v-loading="loading" tooltip-effect="light"
 				@sort-change="sortfun" @selection-change="handleSelectionChange"
@@ -58,6 +58,18 @@
 					<el-table-column v-if="item.checked && item.dataIndex === 'images'" :prop="item.dataIndex"
 						:fixed="item.fixed" width="80" :label="area == 'CN' ? item.titleCN : item.titleEN"
 						align="center">
+						<template #header>
+							<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
+								<div style="display: flex; align-items: center; justify-content: center">
+									{{ area == 'CN' ? item.titleCN : item.titleEN }}
+									<QuestionFilled width="14" style="color: #ccc" v-show="item.remark" />
+								</div>
+								<template #content>
+									<div v-html="item.desc"></div>
+								</template>
+							</el-tooltip>
+							<div v-else>{{ area == 'CN' ? item.titleCN : item.titleEN }}</div>
+						</template>
 						<template #default="scope">
 							<div class="demo-image__preview">
 								<el-image style="width: 60px; height: 60px"
@@ -73,6 +85,18 @@
 					<el-table-column v-else-if="item.checked && item.dataIndex === 'uaeSuggestedProcurementQuantity'"
 						:fixed="item.fixed" :prop="item.dataIndex" :label="area == 'CN' ? item.titleCN : item.titleEN"
 						sortable align="center" width="175">
+						<template #header>
+							<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
+								<div style="display: flex; align-items: center; justify-content: center">
+									{{ area == 'CN' ? item.titleCN : item.titleEN }}
+									<QuestionFilled width="14" style="color: #ccc" v-show="item.remark" />
+								</div>
+								<template #content>
+									<div v-html="item.desc"></div>
+								</template>
+							</el-tooltip>
+							<div v-else>{{ area == 'CN' ? item.titleCN : item.titleEN }}</div>
+						</template>
 						<template #default="scope">
 							<div v-if="scope.row.uaeSuggestedProcurementQuantity > 0">
 								{{ scope.row.uaeSuggestedProcurementQuantity }}
@@ -83,6 +107,18 @@
 					<el-table-column v-else-if="item.checked && item.dataIndex === 'saSuggestedProcurementQuantity'"
 						:fixed="item.fixed" :prop="item.dataIndex" :label="area == 'CN' ? item.titleCN : item.titleEN"
 						sortable align="center" width="170">
+						<template #header>
+							<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
+								<div style="display: flex; align-items: center; justify-content: center">
+									{{ area == 'CN' ? item.titleCN : item.titleEN }}
+									<QuestionFilled width="14" style="color: #ccc" v-show="item.remark" />
+								</div>
+								<template #content>
+									<div v-html="item.desc"></div>
+								</template>
+							</el-tooltip>
+							<div v-else>{{ area == 'CN' ? item.titleCN : item.titleEN }}</div>
+						</template>
 						<template #default="scope">
 							<div v-if="scope.row.saSuggestedProcurementQuantity > 0">
 								{{ scope.row.saSuggestedProcurementQuantity }}
@@ -92,7 +128,20 @@
 					</el-table-column>
 					<el-table-column v-else-if="item.checked" :fixed="item.fixed" :prop="item.dataIndex"
 						:label="area == 'CN' ? item.titleCN : item.titleEN" sortable width="185" align="center"
-						sortableshow-overflow-tooltip="" />
+						sortableshow-overflow-tooltip="" >
+								<template #header>
+									<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
+										<div style="display: flex; align-items: center; justify-content: center">
+											{{ area == 'CN' ? item.titleCN : item.titleEN }}
+											<QuestionFilled width="14" style="color: #ccc" v-show="item.remark" />
+										</div>
+										<template #content>
+											<div v-html="item.desc"></div>
+										</template>
+									</el-tooltip>
+									<div v-else>{{ area == 'CN' ? item.titleCN : item.titleEN }}</div>
+								</template>
+							</el-table-column>
 				</template>
 			</el-table>
 			<el-pagination v-model:currentPage="tableParams.page" v-model:page-size="tableParams.pageSize"
@@ -111,6 +160,7 @@ import { ElMessageBox, ElMessage, ElNotification } from 'element-plus';
 import { InventoryManagementInfo, ImportInventoryManagement } from '/@/api/modular/main/uAE_ProcurementDetails.ts';
 import other from '/@/utils/other.ts';
 import { Right } from '@element-plus/icons-vue/dist/types';
+import { QuestionFilled } from '@element-plus/icons-vue';
 import errorDialog from './component/error_table.vue';
 import axios from 'axios';
 import tabDragColum from '/@/components/tabDragColum/index.vue';
@@ -132,168 +182,231 @@ const TableData = ref<any>([
 		dataIndex: 'images',
 		checked: true,
 		fixed: false,
+		remark: false,
 	},
 	{
 		titleCN: 'ErpSKU',
 		dataIndex: 'erpSKU',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: 'ItemName',
 		dataIndex: 'itemName',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: 'Origin',
 		dataIndex: 'origin',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: 'UAE PO QTY',
 		dataIndex: 'uaepoqty',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: 'UAE NEW PO',
 		dataIndex: 'poDataSourceUAE',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: 'UAE DF QTY',
 		dataIndex: 'uaedfqty',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: 'SA PO QTY',
 		dataIndex: 'sapoqty',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: 'SA NEW PO',
 		dataIndex: 'poDataSourceSA',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: 'SA DF QTY',
 		dataIndex: 'sadfqty',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: 'UAE-Order QTY',
 		dataIndex: 'uaeOrderQTY',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: 'SA-Order QTY',
 		dataIndex: 'saOrderQTY',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '订单数量汇总',
 		dataIndex: 'orderQuantitySummary',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: 'ERP可用库存-UAE仓',
 		dataIndex: 'erpAvailableStockUAE',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: 'ERP可用库存-SA仓',
 		dataIndex: 'erpAvailableStockSA',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '已下单数量-UAE',
 		dataIndex: 'uaeOrderedQuantity',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '已下单数量-SA',
 		dataIndex: 'saOrderedQuantity',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '未订购数量-UAE',
 		dataIndex: 'unorderedQuantityUAE',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '未订购数量-SA',
 		dataIndex: 'unorderedQuantitySA',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '在途数量-UAE',
 		dataIndex: 'uaeQuantityInTransit',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '在途数量-SA',
 		dataIndex: 'saQuantityInTransit',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: 'UAE缺货数量',
 		dataIndex: 'uaeOutOfStockQuantity',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: 'SA缺货数量',
 		dataIndex: 'saOutOfStockQuantity',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '缺货总数量',
 		dataIndex: 'totalOutOfStockQuantity',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '近30天销量-UAE',
 		dataIndex: 'shippedUnitsUAE',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '近30天销量-SA',
 		dataIndex: 'shippedUnitsSA',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: 'UAE建议采购数量',
 		dataIndex: 'uaeSuggestedProcurementQuantity',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: 'SA建议采购数量',
 		dataIndex: 'saSuggestedProcurementQuantity',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
+	},
+	{
+		titleCN: '上架日期',
+		dataIndex: 'listingDateTime',
+		checked: true,
+		fixed: false,
+		remark: false,
+		desc: '',
 	},
 ]);
 
@@ -397,28 +510,6 @@ const importFormList = ref<any>([
 	},
 ])
 let selectedRows = ref<any>([]);
-// function Imports(file: any) {
-// 	ImportsSalesloading.value = true;
-// 	const formData = new FormData();
-// 	formData.append('file', file.raw);
-// 	formData.append('type', Typevalue.value);
-// 	formData.append('table', Namevalue.value);
-// 	ImportInventoryManagement(formData).then((res: any) => {
-// 		ImportsSalesloading.value = false;
-// 		if (res.data.code == 200) {
-// 			if (res.data.result == null) {
-// 				ElMessage.success('导入成功');
-// 				handleQuery();
-// 			} else {
-// 				errorDTitle.value = '金蝶采购云申请单';
-// 				errorDialogRef.value.openDialog(res.data.result);
-// 			}
-// 		} else {
-// 			ImportsSalesloading.value = false;
-// 			ElMessage.error('导入失败'); // + res.message
-// 		}
-// 	});
-// }
 
 const importClose = (bol: boolean) => {
 	dialogFormVisible.value = bol
@@ -428,7 +519,22 @@ const importQuery = () => {
 }
 const handleData = (list: any) => {
 	if (list?.length) {
-		TableData.value = list;
+		list.map((item, index) => {
+			if (item.dataIndex === TableData.value[index].dataIndex) {
+				TableData.value[index].checked = item.checked;
+				TableData.value[index].fixed = item.fixed;
+			}
+		});
+	}
+};
+const handleRemarkData = (list: any) => {
+	if (list?.length) {
+		list.map((item, index) => {
+			if (item.dataIndex === TableData.value[index].dataIndex) {
+				TableData.value[index].desc = item.desc;
+				TableData.value[index].remark = item.remark;
+			}
+		});
 	}
 };
 // 改变页面容量
@@ -465,7 +571,7 @@ function AllExport() {
 		IsImage: IsImage.value,
 	};
 	axios
-		.post((import.meta.env.VITE_API_URL as any) + `/api/inventoryManagement/Export`, formData, {
+		.post((import.meta.env.VITE_API_URL as any) + `/api/inventoryManagement/Export`, Object.assign(queryParams.value, tableParams.value, formData), {
 			responseType: 'blob', // 将响应解析为二进制数据
 		})
 		// service({
@@ -507,7 +613,7 @@ function SelectedExport() {
 	Exportloading.value = true;
 	const formData = {
 		type: 0,
-		ErpSku: selectedRows.value,
+		ErpSkus: selectedRows.value,
 		IsImage: IsImage.value,
 	};
 	axios
@@ -553,9 +659,10 @@ function ExportPurchaseQuantity(site) {
 	const formData = {
 		type: 1,
 		IsImage: IsImage.value,
+		Site: site
 	};
 	axios
-		.post((import.meta.env.VITE_API_URL as any) + `/api/inventoryManagement/exportPurchaseQuantity/` + site, formData, {
+		.post((import.meta.env.VITE_API_URL as any) + `/api/inventoryManagement/exportPurchaseQuantity`, Object.assign(queryParams.value, tableParams.value, formData), {
 			responseType: 'blob', // 将响应解析为二进制数据
 		})
 		.then((data) => {
@@ -645,5 +752,17 @@ handleQuery();
 	font-size: 16px;
 	width: 20%;
 	text-align: right;
+}
+/deep/ .cell {
+	display:flex;
+	align-items:center;
+	justify-content:center;
+	white-space: nowrap;
+}
+/deep/ .el-textarea__inner {
+	box-shadow: initial;
+	margin:0;
+	padding:5px;
+	height: 142px !important;
 }
 </style>

@@ -103,11 +103,11 @@ const Amazonimport = useDebounce((file: any) => {
 			ElMessage.error('上传失败：' + res.message);
 		}
 	});
-},500);
+}, 500);
 // 导出用户文件
 const AmazonExport = () => {
 	loading1.value = true;
-	AmazondataExportSA(switchingDate())
+	AmazondataExportSA(Object.assign(queryParams.value))
 		.then((res) => {
 			loading1.value = false;
 			downloadfile(res);
@@ -276,7 +276,8 @@ handleQuery();
 						<el-input v-model="queryParams.rank" clearable="" placeholder="请输入Rank" />
 					</el-form-item>
 					<el-form-item label="MonitorState">
-						<el-input-number v-model="queryParams.monitorState" clearable="" placeholder="请输入MonitorState" />
+						<el-input-number v-model="queryParams.monitorState" clearable=""
+							placeholder="请输入MonitorState" />
 					</el-form-item>
 					<el-form-item label="Reviews">
 						<el-input v-model="queryParams.reviews" clearable="" placeholder="请输入Reviews" />
@@ -298,10 +299,10 @@ handleQuery();
 					<el-button-group>
 						<el-button type="primary" icon="ele-Search" @click="handleQuery"> 查询 </el-button>
 						<el-button icon="ele-Refresh" @click="() => {
-							queryParams = {};
-							handleQuery();
-						}
-							">
+			queryParams = {};
+			handleQuery();
+		}
+			">
 							重置
 						</el-button>
 						<el-button :icon="advanced ? 'ele-ArrowUp' : 'ele-ArrowDown'"
@@ -337,8 +338,8 @@ handleQuery();
 				</el-table-column>
 				<el-table-column prop="remark" label="Remark" fixed="left" align="center" width="150"
 					show-overflow-tooltip="" />
-				<el-table-column prop="monitorState" label="Price Alarm" fixed="left" align="center" sortable width="150"
-					show-overflow-tooltip="">
+				<el-table-column prop="monitorState" label="Price Alarm" fixed="left" align="center" sortable
+					width="150" show-overflow-tooltip="">
 					<template #default="scope">
 						<el-select v-if="scope.row.monitorState === 0" placeholder="已下架"
 							@change="monitorChange('1', scope.row)">
@@ -398,8 +399,8 @@ handleQuery();
 					show-overflow-tooltip="" />
 				<el-table-column prop="adjustMoney" label="AdjustMoney" align="center" sortable width="150"
 					show-overflow-tooltip="" />
-				<el-table-column prop="adjustedPercentage" label="AdjustedPercentage" align="center" sortable width="150"
-					show-overflow-tooltip="" />
+				<el-table-column prop="adjustedPercentage" label="AdjustedPercentage" align="center" sortable
+					width="150" show-overflow-tooltip="" />
 				<el-table-column prop="adjusPriceUpperLimit" label="AdjusPriceUpperLimit" align="center" sortable
 					width="150" show-overflow-tooltip="" />
 				<el-table-column prop="buyboxRate" label="BuyboxRate" align="center" sortable width="150"
@@ -423,13 +424,14 @@ handleQuery();
 					show-overflow-tooltip="" />
 				<el-table-column prop="sellerCount" label="SellerCount" align="center" sortable width="150"
 					show-overflow-tooltip="" />
-				<el-table-column prop="followInfo" label="FollowInfo" align="center" width="150" show-overflow-tooltip="" />
+				<el-table-column prop="followInfo" label="FollowInfo" align="center" width="150"
+					show-overflow-tooltip="" />
 				<el-table-column prop="existDesc" label="ExistDesc" align="center" sortable width="150"
 					show-overflow-tooltip="" />
 				<el-table-column prop="existVideo" label="ExistVideo" align="center" sortable width="150"
 					show-overflow-tooltip="" />
-				<el-table-column prop="discountPercentage" label="DiscountPercentage" align="center" sortable width="200"
-					show-overflow-tooltip="" />
+				<el-table-column prop="discountPercentage" label="DiscountPercentage" align="center" sortable
+					width="200" show-overflow-tooltip="" />
 				<el-table-column prop="promotionEvent" label="PromotionEvent" align="center" width="150"
 					show-overflow-tooltip="" />
 				<el-table-column prop="coupon" label="Coupon" align="center" sortable width="150"
@@ -468,4 +470,5 @@ handleQuery();
 	align-items: center;
 	width: 500px;
 	margin-bottom: 20px;
-}</style>
+}
+</style>

@@ -123,7 +123,7 @@ const openEdit = (row: any) => {
 // 导出ASIN
 function Export() {
 	loading1.value = true;
-	ExportASIN({ site: area.value }).then((res: any) => {
+	ExportASIN(Object.assign(queryParams.value, tableParams.value, { site: area.value })).then((res: any) => {
 		loading1.value = false;
 		other.downloadfile(res);
 		handleQuery();

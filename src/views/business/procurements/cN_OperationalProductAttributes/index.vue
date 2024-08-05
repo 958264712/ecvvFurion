@@ -74,7 +74,7 @@ const delCN_OperationalProductAttributes = (row: any) => {
 				IsEdit.value = false;
 			}
 		})
-		.catch(() => {});
+		.catch(() => { });
 };
 const validateinventorySKU = () => {
 	const objectWithIsEditTrue = tableData.value.find((obj: any) => obj.IsEdit === true);
@@ -228,10 +228,9 @@ function AllExport() {
 	const formData = {
 		type: 1,
 	};
-	axios
-		.post((import.meta.env.VITE_API_URL as any) + `/api/cN_OperationalProductAttributes/export`, formData, {
-			responseType: 'blob', // 将响应解析为二进制数据
-		})
+	axios.post(import.meta.env.VITE_API_URL as any + `/api/cN_OperationalProductAttributes/export`, Object.assign(queryParams.value, tableParams.value, formData), {
+		responseType: 'blob' // 将响应解析为二进制数据
+	})
 		// service({
 		.then((data) => {
 			downloadfile(data);
@@ -347,15 +346,11 @@ handleQuery();
 				<el-form-item>
 					<el-button-group>
 						<el-button type="primary" icon="ele-Search" @click="handleQuery"> 查询 </el-button>
-						<el-button
-							icon="ele-Refresh"
-							@click="
-								() => {
-									queryParams = {};
-									handleQuery();
-								}
-							"
-						>
+						<el-button icon="ele-Refresh" @click="() => {
+				queryParams = {};
+				handleQuery();
+			}
+			">
 							重置
 						</el-button>
 					</el-button-group>
@@ -364,7 +359,8 @@ handleQuery();
 		</el-card>
 		<el-card class="full-table" shadow="hover" style="margin-top: 8px">
 			<div>
-				<el-upload style="float: left" :on-change="Imports" :multiple="false" action="#" :show-file-list="false" :auto-upload="false" name="file">
+				<el-upload style="float: left" :on-change="Imports" :multiple="false" action="#" :show-file-list="false"
+					:auto-upload="false" name="file">
 					<el-button :loading="loading" type="primary">导入</el-button>
 				</el-upload>
 				<div class="flex flex-wrap items-center" style="float: left; margin-left: 10px">
@@ -379,23 +375,29 @@ handleQuery();
 					</el-dropdown>
 				</div>
 			</div>
-			<el-table :data="tableData" size="lagre" style="width: 100%" v-loading="loading" tooltip-effect="light" @selection-change="handleSelectionChange" row-key="id" border="">
+			<el-table :data="tableData" size="lagre" style="width: 100%" v-loading="loading" tooltip-effect="light"
+				@selection-change="handleSelectionChange" row-key="id" border="">
 				<el-table-column width="140" align="center" fixed="left" show-overflow-tooltip="">
 					<template #header>
-						<el-button style="background-color: transparent; border: none; color: #df1515" icon="ele-Setting"></el-button>
+						<el-button style="background-color: transparent; border: none; color: #df1515"
+							icon="ele-Setting"></el-button>
 					</template>
 					<template #default="scope">
 						<el-tooltip class="box-item" effect="dark" content="新增" placement="bottom">
-							<el-button icon="ele-CirclePlus" size="small" text="" type="primary" @click="AddRow()"></el-button>
+							<el-button icon="ele-CirclePlus" size="small" text="" type="primary"
+								@click="AddRow()"></el-button>
 						</el-tooltip>
 						<el-tooltip class="box-item" effect="dark" content="保存" placement="bottom">
-							<el-button v-if="scope.row.IsEdit" icon="ele-Document" size="small" text="" type="primary" @click="SAVE(scope.row)"></el-button>
+							<el-button v-if="scope.row.IsEdit" icon="ele-Document" size="small" text="" type="primary"
+								@click="SAVE(scope.row)"></el-button>
 						</el-tooltip>
 						<el-tooltip class="box-item" effect="dark" content="编辑" placement="bottom">
-							<el-button v-if="!scope.row.IsEdit" icon="ele-Edit" size="small" text="" type="primary" @click="openEdit(scope.row)"></el-button>
+							<el-button v-if="!scope.row.IsEdit" icon="ele-Edit" size="small" text="" type="primary"
+								@click="openEdit(scope.row)"></el-button>
 						</el-tooltip>
 						<el-tooltip class="box-item" effect="dark" content="删除" placement="bottom">
-							<el-button icon="ele-Delete" size="small" text="" type="primary" @click="delCN_OperationalProductAttributes(scope.row)"> </el-button>
+							<el-button icon="ele-Delete" size="small" text="" type="primary"
+								@click="delCN_OperationalProductAttributes(scope.row)"> </el-button>
 						</el-tooltip>
 					</template>
 				</el-table-column>
@@ -403,15 +405,19 @@ handleQuery();
 				<el-table-column prop="inventorySKU" label="库存SKU" align="center" sortable show-overflow-tooltip="">
 					<template #default="scope">
 						<div @dblclick="openEdit(scope.row)">
-							<el-input :class="{ 'sku-input': scope.row.IsinventorySKU }" class="custom-input" v-if="scope.row.IsEdit" type="text" v-model="scope.row.inventorySKU" clearable="" />
+							<el-input :class="{ 'sku-input': scope.row.IsinventorySKU }" class="custom-input"
+								v-if="scope.row.IsEdit" type="text" v-model="scope.row.inventorySKU" clearable="" />
 							<div v-else>{{ scope.row.inventorySKU }}</div>
 						</div>
 					</template>
 				</el-table-column>
-				<el-table-column prop="inventoryProductName" label="库存品名" align="center" sortable show-overflow-tooltip="">
+				<el-table-column prop="inventoryProductName" label="库存品名" align="center" sortable
+					show-overflow-tooltip="">
 					<template #default="scope">
 						<div @dblclick="openEdit(scope.row)">
-							<el-input :class="{ 'sku-input': scope.row.IsinventoryProductName }" class="custom-input" v-if="scope.row.IsEdit" type="text" v-model="scope.row.inventoryProductName" clearable="" />
+							<el-input :class="{ 'sku-input': scope.row.IsinventoryProductName }" class="custom-input"
+								v-if="scope.row.IsEdit" type="text" v-model="scope.row.inventoryProductName"
+								clearable="" />
 							<div v-else>{{ scope.row.inventoryProductName }}</div>
 						</div>
 					</template>
@@ -419,7 +425,8 @@ handleQuery();
 				<el-table-column prop="salesAttributes" label="销售属性" align="center" sortable show-overflow-tooltip="">
 					<template #default="scope">
 						<div @dblclick="openEdit(scope.row)">
-							<el-input :class="{ 'sku-input': scope.row.IssalesAttributes }" class="custom-input" v-if="scope.row.IsEdit" type="text" v-model="scope.row.salesAttributes" clearable="" />
+							<el-input :class="{ 'sku-input': scope.row.IssalesAttributes }" class="custom-input"
+								v-if="scope.row.IsEdit" type="text" v-model="scope.row.salesAttributes" clearable="" />
 							<div v-else>{{ scope.row.salesAttributes }}</div>
 						</div>
 					</template>
@@ -427,7 +434,8 @@ handleQuery();
 				<el-table-column prop="productCAT" label="产品CAT" align="center" sortable show-overflow-tooltip="">
 					<template #default="scope">
 						<div @dblclick="openEdit(scope.row)">
-							<el-input :class="{ 'sku-input': scope.row.IsproductCAT }" class="custom-input" v-if="scope.row.IsEdit" type="text" v-model="scope.row.productCAT" clearable="" />
+							<el-input :class="{ 'sku-input': scope.row.IsproductCAT }" class="custom-input"
+								v-if="scope.row.IsEdit" type="text" v-model="scope.row.productCAT" clearable="" />
 							<div v-else>{{ scope.row.productCAT }}</div>
 						</div>
 					</template>
@@ -435,7 +443,9 @@ handleQuery();
 				<el-table-column prop="purchasingCountry" label="采购国" align="center" sortable show-overflow-tooltip="">
 					<template #default="scope">
 						<div @dblclick="openEdit(scope.row)">
-							<el-input :class="{ 'sku-input': scope.row.IspurchasingCountry }" class="custom-input" v-if="scope.row.IsEdit" type="text" v-model="scope.row.purchasingCountry" clearable="" />
+							<el-input :class="{ 'sku-input': scope.row.IspurchasingCountry }" class="custom-input"
+								v-if="scope.row.IsEdit" type="text" v-model="scope.row.purchasingCountry"
+								clearable="" />
 							<div v-else>{{ scope.row.purchasingCountry }}</div>
 						</div>
 					</template>
@@ -443,40 +453,41 @@ handleQuery();
 				<el-table-column prop="specsUnit" label="SpecsUnit" align="center" sortable show-overflow-tooltip="">
 					<template #default="scope">
 						<div @dblclick="openEdit(scope.row)">
-							<el-input :class="{ 'sku-input': scope.row.IsspecsUnit }" class="custom-input" v-if="scope.row.IsEdit" type="text" v-model="scope.row.specsUnit" clearable="" />
+							<el-input :class="{ 'sku-input': scope.row.IsspecsUnit }" class="custom-input"
+								v-if="scope.row.IsEdit" type="text" v-model="scope.row.specsUnit" clearable="" />
 							<div v-else>{{ scope.row.specsUnit }}</div>
 						</div>
 					</template>
 				</el-table-column>
-				<el-table-column
-					label="操作"
-					width="140"
-					align="center"
-					sortable
-					fixed="right"
-					show-overflow-tooltip=""
-					v-if="auth('cN_OperationalProductAttributes:edit') || auth('cN_OperationalProductAttributes:delete')"
-				>
+				<el-table-column prop="listingDateTime" label="上架日期" align="center" sortable show-overflow-tooltip="">
 					<template #default="scope">
-						<el-button icon="ele-Edit" size="small" text="" type="primary" @click="openEditCN_OperationalProductAttributes(scope.row)" v-auth="'cN_OperationalProductAttributes:edit'">
+						<div @dblclick="openEdit(scope.row)">
+							<el-date-picker  type="datetime" :class="{ 'sku-input': scope.row.IslistingDateTime }" class="custom-input"
+								v-if="scope.row.IsEdit"  v-model="scope.row.listingDateTime" clearable="" />
+							<div v-else>{{ scope.row.listingDateTime }}</div>
+						</div>
+					</template>
+				</el-table-column>
+				<el-table-column label="操作" width="140" align="center" sortable fixed="right" show-overflow-tooltip=""
+					v-if="auth('cN_OperationalProductAttributes:edit') || auth('cN_OperationalProductAttributes:delete')">
+					<template #default="scope">
+						<el-button icon="ele-Edit" size="small" text="" type="primary"
+							@click="openEditCN_OperationalProductAttributes(scope.row)"
+							v-auth="'cN_OperationalProductAttributes:edit'">
 							编辑
 						</el-button>
-						<el-button icon="ele-Delete" size="small" text="" type="primary" @click="delCN_OperationalProductAttributes(scope.row)" v-auth="'cN_OperationalProductAttributes:delete'"> 删除 </el-button>
+						<el-button icon="ele-Delete" size="small" text="" type="primary"
+							@click="delCN_OperationalProductAttributes(scope.row)"
+							v-auth="'cN_OperationalProductAttributes:delete'"> 删除 </el-button>
 					</template>
 				</el-table-column>
 			</el-table>
-			<el-pagination
-				v-model:currentPage="tableParams.page"
-				v-model:page-size="tableParams.pageSize"
-				:total="tableParams.total"
-				:page-sizes="[50, 100, 500, 1000]"
-				small=""
-				background=""
-				@size-change="handleSizeChange"
-				@current-change="handleCurrentChange"
-				layout="total, sizes, prev, pager, next, jumper"
-			/>
-			<editDialog ref="editDialogRef" :title="editCN_OperationalProductAttributesTitle" @reloadTable="handleQuery" />
+			<el-pagination v-model:currentPage="tableParams.page" v-model:page-size="tableParams.pageSize"
+				:total="tableParams.total" :page-sizes="[50, 100, 500, 1000]" small="" background=""
+				@size-change="handleSizeChange" @current-change="handleCurrentChange"
+				layout="total, sizes, prev, pager, next, jumper" />
+			<editDialog ref="editDialogRef" :title="editCN_OperationalProductAttributesTitle"
+				@reloadTable="handleQuery" />
 		</el-card>
 	</div>
 </template>

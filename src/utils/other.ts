@@ -8,6 +8,7 @@ import { useThemeConfig } from '/@/stores/themeConfig';
 import { i18n } from '/@/i18n/index';
 import { Local } from '/@/utils/storage';
 import { verifyUrl } from '/@/utils/toolsValidate';
+import { ElMessage } from 'element-plus';
 
 // 引入组件
 const SvgIcon = defineAsyncComponent(() => import('/@/components/svgIcon/index.vue'));
@@ -237,6 +238,14 @@ export const handQueue = (
 	}
 }
 
+export const beforeUpload = (rawFile:any) => {
+	const isXLSX = rawFile.raw.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+	if (!isXLSX) {
+		ElMessage.error('导入的文件类型不符，请选择.xlsx文件类型再次上传');
+		return false;
+	}
+	return true;
+};
 
 /**
  * 统一批量导出
@@ -251,6 +260,7 @@ export const handQueue = (
  * @method handleOpenLink 打开外部链接
  * @method downloadfile 导出函数
  * @method handQueue 并发函数
+ * @method beforeUpload 约束导入是否为excel格式
  */
 const other = {
 	elSvg: (app: App) => {
@@ -284,6 +294,9 @@ const other = {
 		downloadfile(val);
 	},
 	handQueue: (val: any) => {
+		handQueue(val);
+	},
+	beforeUpload: (val: any) => {
 		handQueue(val);
 	},
 };

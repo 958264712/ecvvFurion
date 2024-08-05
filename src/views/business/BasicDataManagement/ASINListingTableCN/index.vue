@@ -144,12 +144,12 @@
 					<el-button style="width: 80px;height: 27px;" :class="{ 'buttonBackground': area == 'SA' }"
 						v-if="IsAdmin || area == 'SA'" @click="area = 'SA'; switchLanguage()">SA Sourcing</el-button> -->
 				</el-button-group>
-				<tabDragColum :data="TableData" :name="`TableData`" :area="area" @handleData="handleData" />
+				<tabDragColum :data="TableData" :name="`TableData`" :area="area" @handleData="handleData" @handleRemarkData="handleRemarkData"/>
 			</div>
 			<el-table ref="scrollContainer" :data="tableData" size="lagre" style="width: 100%" v-loading="loading" tooltip-effect="light" @selection-change="handleSelectionChange" row-key="id" border="">
 				<el-table-column width="140" align="center" fixed="left" show-overflow-tooltip="">
 					<template #header>
-						<el-button style="background-color: transparent; border: none; color: #df1515" icon="ele-Setting"></el-button>
+						<el-button style="background-color: transparent; border: none; color: #df1515">操作</el-button>
 					</template>
 					<template #default="scope">
 						<el-tooltip class="box-item" effect="dark" content="复制" placement="bottom">
@@ -183,6 +183,18 @@
 						width="150"
 						show-overflow-tooltip=""
 					>
+						<template #header>
+							<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
+								<div style="display: flex; align-items: center; justify-content: center">
+									{{ area == 'CN' ? item.titleCN : item.titleEN }}
+									<QuestionFilled width="14" style="color: #ccc" v-show="item.remark" />
+								</div>
+								<template #content>
+									<div v-html="item.desc"></div>
+								</template>
+							</el-tooltip>
+							<div v-else>{{ area == 'CN' ? item.titleCN : item.titleEN }}</div>
+						</template>
 						<template #default="scope">
 							<!-- @dblclick="openEdit(scope.row)" 暂时不使用 -->
 							<div>
@@ -200,6 +212,18 @@
 						align="center"
 						show-overflow-tooltip=""
 					>
+						<template #header>
+							<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
+								<div style="display: flex; align-items: center; justify-content: center">
+									{{ area == 'CN' ? item.titleCN : item.titleEN }}
+									<QuestionFilled width="14" style="color: #ccc" v-show="item.remark" />
+								</div>
+								<template #content>
+									<div v-html="item.desc"></div>
+								</template>
+							</el-tooltip>
+							<div v-else>{{ area == 'CN' ? item.titleCN : item.titleEN }}</div>
+						</template>
 						<template #default="scope">
 							<!-- @dblclick="openEdit(scope.row)" 暂时不使用 -->
 							<div>
@@ -217,6 +241,18 @@
 						width="160"
 						show-overflow-tooltip=""
 					>
+						<template #header>
+							<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
+								<div style="display: flex; align-items: center; justify-content: center">
+									{{ area == 'CN' ? item.titleCN : item.titleEN }}
+									<QuestionFilled width="14" style="color: #ccc" v-show="item.remark" />
+								</div>
+								<template #content>
+									<div v-html="item.desc"></div>
+								</template>
+							</el-tooltip>
+							<div v-else>{{ area == 'CN' ? item.titleCN : item.titleEN }}</div>
+						</template>
 						<template #default="scope">
 							<!-- @dblclick="openEdit(scope.row)" 暂时不使用 -->
 							<div>
@@ -234,6 +270,18 @@
 						width="150"
 						show-overflow-tooltip=""
 					>
+						<template #header>
+							<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
+								<div style="display: flex; align-items: center; justify-content: center">
+									{{ area == 'CN' ? item.titleCN : item.titleEN }}
+									<QuestionFilled width="14" style="color: #ccc" v-show="item.remark" />
+								</div>
+								<template #content>
+									<div v-html="item.desc"></div>
+								</template>
+							</el-tooltip>
+							<div v-else>{{ area == 'CN' ? item.titleCN : item.titleEN }}</div>
+						</template>
 						<template #default="scope">
 							<div>{{ scope.row.goodsName }}</div>
 						</template>
@@ -248,6 +296,18 @@
 						v-show="item.checked"
 						show-overflow-tooltip=""
 					>
+						<template #header>
+							<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
+								<div style="display: flex; align-items: center; justify-content: center">
+									{{ area == 'CN' ? item.titleCN : item.titleEN }}
+									<QuestionFilled width="14" style="color: #ccc" v-show="item.remark" />
+								</div>
+								<template #content>
+									<div v-html="item.desc"></div>
+								</template>
+							</el-tooltip>
+							<div v-else>{{ area == 'CN' ? item.titleCN : item.titleEN }}</div>
+						</template>
 						<template #default="scope">
 							<!-- @dblclick="openEdit(scope.row)" 暂时不使用 -->
 							<div>
@@ -265,6 +325,18 @@
 						width="100"
 						show-overflow-tooltip=""
 					>
+						<template #header>
+							<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
+								<div style="display: flex; align-items: center; justify-content: center">
+									{{ area == 'CN' ? item.titleCN : item.titleEN }}
+									<QuestionFilled width="14" style="color: #ccc" v-show="item.remark" />
+								</div>
+								<template #content>
+									<div v-html="item.desc"></div>
+								</template>
+							</el-tooltip>
+							<div v-else>{{ area == 'CN' ? item.titleCN : item.titleEN }}</div>
+						</template>
 						<template #default="scope">
 							<!-- @dblclick="openEdit(scope.row)" 暂时不使用 -->
 							<div>
@@ -282,6 +354,18 @@
 						width="100"
 						show-overflow-tooltip=""
 					>
+						<template #header>
+							<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
+								<div style="display: flex; align-items: center; justify-content: center">
+									{{ area == 'CN' ? item.titleCN : item.titleEN }}
+									<QuestionFilled width="14" style="color: #ccc" v-show="item.remark" />
+								</div>
+								<template #content>
+									<div v-html="item.desc"></div>
+								</template>
+							</el-tooltip>
+							<div v-else>{{ area == 'CN' ? item.titleCN : item.titleEN }}</div>
+						</template>
 						<template #default="scope">
 							<!-- @dblclick="openEdit(scope.row)" 暂时不使用 -->
 							<div>
@@ -300,6 +384,18 @@
 						width="150"
 						show-overflow-tooltip=""
 					>
+						<template #header>
+							<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
+								<div style="display: flex; align-items: center; justify-content: center">
+									{{ area == 'CN' ? item.titleCN : item.titleEN }}
+									<QuestionFilled width="14" style="color: #ccc" v-show="item.remark" />
+								</div>
+								<template #content>
+									<div v-html="item.desc"></div>
+								</template>
+							</el-tooltip>
+							<div v-else>{{ area == 'CN' ? item.titleCN : item.titleEN }}</div>
+						</template>
 						<template #default="scope">
 							<!-- @dblclick="openEdit(scope.row)" 暂时不使用 -->
 							<div>
@@ -318,6 +414,18 @@
 						width="120"
 						show-overflow-tooltip=""
 					>
+						<template #header>
+							<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
+								<div style="display: flex; align-items: center; justify-content: center">
+									{{ area == 'CN' ? item.titleCN : item.titleEN }}
+									<QuestionFilled width="14" style="color: #ccc" v-show="item.remark" />
+								</div>
+								<template #content>
+									<div v-html="item.desc"></div>
+								</template>
+							</el-tooltip>
+							<div v-else>{{ area == 'CN' ? item.titleCN : item.titleEN }}</div>
+						</template>
 						<template #default="scope">
 							<!-- @dblclick="openEdit(scope.row)" 暂时不使用 -->
 							<div>
@@ -338,6 +446,18 @@
 						width="100"
 						show-overflow-tooltip=""
 					>
+						<template #header>
+							<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
+								<div style="display: flex; align-items: center; justify-content: center">
+									{{ area == 'CN' ? item.titleCN : item.titleEN }}
+									<QuestionFilled width="14" style="color: #ccc" v-show="item.remark" />
+								</div>
+								<template #content>
+									<div v-html="item.desc"></div>
+								</template>
+							</el-tooltip>
+							<div v-else>{{ area == 'CN' ? item.titleCN : item.titleEN }}</div>
+						</template>
 						<template #default="scope">
 							<!-- @dblclick="openEdit(scope.row)" 暂时不使用 -->
 							<div>
@@ -358,6 +478,18 @@
 						width="200"
 						show-overflow-tooltip=""
 					>
+						<template #header>
+							<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
+								<div style="display: flex; align-items: center; justify-content: center">
+									{{ area == 'CN' ? item.titleCN : item.titleEN }}
+									<QuestionFilled width="14" style="color: #ccc" v-show="item.remark" />
+								</div>
+								<template #content>
+									<div v-html="item.desc"></div>
+								</template>
+							</el-tooltip>
+							<div v-else>{{ area == 'CN' ? item.titleCN : item.titleEN }}</div>
+						</template>
 						<template #default="scope">
 							<!-- @dblclick="openEdit(scope.row)" 暂时不使用 -->
 							<div>
@@ -375,6 +507,18 @@
 						width="120"
 						show-overflow-tooltip=""
 					>
+						<template #header>
+							<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
+								<div style="display: flex; align-items: center; justify-content: center">
+									{{ area == 'CN' ? item.titleCN : item.titleEN }}
+									<QuestionFilled width="14" style="color: #ccc" v-show="item.remark" />
+								</div>
+								<template #content>
+									<div v-html="item.desc"></div>
+								</template>
+							</el-tooltip>
+							<div v-else>{{ area == 'CN' ? item.titleCN : item.titleEN }}</div>
+						</template>
 						<template #default="scope">
 							<!-- @dblclick="openEdit(scope.row)" 暂时不使用 -->
 							<div>
@@ -391,6 +535,18 @@
 						align="center"
 						show-overflow-tooltip=""
 					>
+						<template #header>
+							<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
+								<div style="display: flex; align-items: center; justify-content: center">
+									{{ area == 'CN' ? item.titleCN : item.titleEN }}
+									<QuestionFilled width="14" style="color: #ccc" v-show="item.remark" />
+								</div>
+								<template #content>
+									<div v-html="item.desc"></div>
+								</template>
+							</el-tooltip>
+							<div v-else>{{ area == 'CN' ? item.titleCN : item.titleEN }}</div>
+						</template>
 						<template #default="scope" @dblclick="openEdit(scope.row)">
 							<!-- @dblclick="openEdit(scope.row)" 暂时不使用 -->
 							<el-input v-if="scope.row.IsEdit" type="text" v-model="scope.row.creator" clearable="" @keyup.enter.native="keyDown" />
@@ -407,6 +563,18 @@
 						align="center"
 						show-overflow-tooltip=""
 					>
+						<template #header>
+							<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
+								<div style="display: flex; align-items: center; justify-content: center">
+									{{ area == 'CN' ? item.titleCN : item.titleEN }}
+									<QuestionFilled width="14" style="color: #ccc" v-show="item.remark" />
+								</div>
+								<template #content>
+									<div v-html="item.desc"></div>
+								</template>
+							</el-tooltip>
+							<div v-else>{{ area == 'CN' ? item.titleCN : item.titleEN }}</div>
+						</template>
 						<template #default="scope">
 							<!-- @dblclick="openEdit(scope.row)" 暂时不使用 -->
 							<div>
@@ -440,12 +608,16 @@ import { auth } from '/@/utils/authFunction';
 //import { formatDate } from '/@/utils/formatTime';
 import { SAINListingTablePage, Save, ImportCN, ImportUAE, Delete, Update, GetUserRole } from '/@/api/modular/main/SAINListingTable.ts';
 import axios from 'axios';
-import { ArrowDownBold, ArrowUpBold } from '@element-plus/icons-vue';
+import { ArrowDownBold, ArrowUpBold, QuestionFilled } from '@element-plus/icons-vue';
 import router from '/@/router';
 import other from '/@/utils/other.ts';
 import tabDragColum from '/@/components/tabDragColum/index.vue';
 import importDialog from './component/importDialog.vue';
+import { clearEmptyDataByAny } from '/@/utils/constHelper';
+import regexhelper from '/@/utils/regexHelper';
+import { el } from 'element-plus/es/locale';
 
+const { clearCharactersByRegex } = regexhelper();
 const Exportloading = ref(false);
 const editDialogRef = ref();
 const loading = ref(false);
@@ -456,6 +628,8 @@ const importDialogRef = ref();
 const excelName = ref('');
 const url = ref('');
 const tableAddress = ref('');
+
+const isWatch = ref(true);
 
 const tableData = ref<any>([]);
 const selectedRows = ref<any>([]);
@@ -479,6 +653,8 @@ const TableData = ref<any>([
 		dataIndex: 'asin',
 		checked: true,
 		fixed: false,
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '店铺SKU',
@@ -486,6 +662,8 @@ const TableData = ref<any>([
 		checked: true,
 		fixed: false,
 		dataIndex: 'storeSKU',
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: 'ERP-SKU',
@@ -493,6 +671,8 @@ const TableData = ref<any>([
 		checked: true,
 		fixed: false,
 		dataIndex: 'erpSku',
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '中文NAME',
@@ -500,6 +680,8 @@ const TableData = ref<any>([
 		checked: true,
 		fixed: false,
 		dataIndex: 'goodsName',
+		remark: false,
+		desc: '',
 	},
 
 	{
@@ -508,6 +690,8 @@ const TableData = ref<any>([
 		checked: true,
 		fixed: false,
 		dataIndex: 'singleOrderQTY',
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '包装规格',
@@ -515,6 +699,8 @@ const TableData = ref<any>([
 		checked: true,
 		fixed: false,
 		dataIndex: 'specsUnit',
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '品牌',
@@ -522,6 +708,8 @@ const TableData = ref<any>([
 		checked: true,
 		fixed: false,
 		dataIndex: 'brand',
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: 'EAN编码',
@@ -529,6 +717,8 @@ const TableData = ref<any>([
 		checked: true,
 		fixed: false,
 		dataIndex: 'ean',
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '是否下架',
@@ -536,6 +726,8 @@ const TableData = ref<any>([
 		checked: true,
 		fixed: false,
 		dataIndex: 'list_Unlist',
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '下架原因',
@@ -543,6 +735,8 @@ const TableData = ref<any>([
 		checked: true,
 		fixed: false,
 		dataIndex: 'remove_Reason',
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '上架平台',
@@ -550,6 +744,8 @@ const TableData = ref<any>([
 		checked: true,
 		fixed: false,
 		dataIndex: 'addASINAccount',
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '上传日期',
@@ -557,6 +753,8 @@ const TableData = ref<any>([
 		checked: true,
 		fixed: false,
 		dataIndex: 'createTime',
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '负责人',
@@ -564,6 +762,8 @@ const TableData = ref<any>([
 		checked: true,
 		fixed: false,
 		dataIndex: 'creator',
+		remark: false,
+		desc: '',
 	},
 	{
 		titleCN: '备注',
@@ -571,6 +771,8 @@ const TableData = ref<any>([
 		checked: true,
 		fixed: false,
 		dataIndex: 'remark',
+		remark: false,
+		desc: '',
 	},
 	{
 		checked: true,
@@ -578,6 +780,8 @@ const TableData = ref<any>([
 		titleCN: '操作',
 		titleEN: 'Operation',
 		dataIndex: '',
+		remark: false,
+		desc: '',
 	},
 ]);
 const Getarea = () => {
@@ -593,13 +797,29 @@ const Getarea = () => {
 	});
 };
 const switchLanguage = () => {
+	aSIN.value = '';
 	queryParams.value = {};
 	handleQuery();
 };
 
 const handleData = (list: any) => {
 	if (list?.length) {
-		TableData.value = list;
+		list.map((item, index) => {
+			if (item.dataIndex === TableData.value[index].dataIndex) {
+				TableData.value[index].checked = item.checked;
+				TableData.value[index].fixed = item.fixed;
+			}
+		});
+	}
+};
+const handleRemarkData = (list: any) => {
+	if (list?.length) {
+		list.map((item, index) => {
+			if (item.dataIndex === TableData.value[index].dataIndex) {
+				TableData.value[index].desc = item.desc;
+				TableData.value[index].remark = item.remark;
+			}
+		});
 	}
 };
 const clearAsin = () => {
@@ -612,13 +832,13 @@ const handleQuery = async () => {
 	loading.value = true;
 	tableParams.value.Site = area.value;
 
-	if (queryParams.value.aSINList?.length > 0) {
-		// queryParams.value.asinTextArea = '';
-		queryParams.value.aSIN = '';
-	} else {
-		queryParams.value.aSIN = aSIN.value;
-		queryParams.value.aSINList = null;
-	}
+	//if (queryParams.value.aSINList?.length > 0) {
+	// queryParams.value.asinTextArea = '';
+	//queryParams.value.aSIN = '';
+	//} else {
+	//queryParams.value.aSIN = aSIN.value;
+	//queryParams.value.aSINList = null;
+	//}
 
 	var res = await SAINListingTablePage(Object.assign(queryParams.value, tableParams.value));
 	tableData.value = res.data.result?.items ?? [];
@@ -655,20 +875,14 @@ const handleCurrentChange = (val: number) => {
 };
 const handleConfirm = () => {
 	let str_array = [];
-	str_array = queryParams.value.asinTextArea?.split(/[(\r\n)\r\n]+/);
-	let arr = str_array?.map((item, index) => {
-		if (item === '') {
-			str_array.splice(index, 1);
-		} else {
-			return item.trim();
-		}
-	});
-	queryParams.value.aSINList = arr;
-	aSIN.value = arr + '';
+	if (queryParams.value.asinTextArea?.length) {
+		str_array = clearCharactersByRegex(queryParams.value.asinTextArea + '');
+		let arr = clearEmptyDataByAny(str_array);
+		aSIN.value = arr + '';
+	}
 	visibleTextarea2.value = false;
 	// handleQuery()
 };
-// 导入ASINListingTableCN
 // function Imports(file: any) {
 // 	loading3.value = true;
 // 	const formData = new FormData();
@@ -734,8 +948,15 @@ function AllExport() {
 		type: 1,
 		Site: area.value,
 	};
+	if (queryParams.value.aSINList?.length > 0) {
+		// queryParams.value.asinTextArea = '';
+		queryParams.value.aSIN = '';
+	} else {
+		queryParams.value.aSIN = aSIN.value;
+		queryParams.value.aSINList = null;
+	}
 	axios
-		.post((import.meta.env.VITE_API_URL as any) + `/api/aSINListingTable/export`, formData, {
+		.post((import.meta.env.VITE_API_URL as any) + `/api/aSINListingTable/export`, Object.assign(queryParams.value, tableParams.value, formData), {
 			responseType: 'blob', // 将响应解析为二进制数据
 		})
 		// service({
@@ -1091,22 +1312,49 @@ const validateEan = () => {
 };
 Getarea();
 watch(
-	() => queryParams.value.asinTextArea,
+	() => aSIN.value,
 	() => {
-		let str_array = queryParams.value.asinTextArea?.split(/[(\r\n)\r\n]+/);
-		let arr = str_array?.map((item, index) => {
-			if (item === '') {
-				str_array.splice(index, 1);
-			} else {
-				return item.trim();
-			}
-		});
-		if (arr?.length > 0) {
-			if (arr[0] !== undefined) {
+		if (isWatch.value) {
+			isWatch.value = false;
+			let str_array = clearCharactersByRegex(aSIN.value + '');
+			let arr = clearEmptyDataByAny(str_array);
+			if (arr?.length > 0) {
+				//if (arr[0] !== undefined) {
 				queryParams.value.aSINList = arr;
+				queryParams.value.asinTextArea = arr;
+				//} else {
+				//queryParams.value.aSINList = null;
+				//}
 			} else {
 				queryParams.value.aSINList = null;
+				queryParams.value.asinTextArea = '';
 			}
+		} else {
+			isWatch.value = true;
+		}
+	}
+);
+
+watch(
+	() => queryParams.value.asinTextArea,
+	() => {
+		if (isWatch.value && queryParams.value.asinTextArea !== undefined) {
+			isWatch.value = false;
+			let str_array = clearCharactersByRegex(queryParams.value.asinTextArea + '');
+			let arr = clearEmptyDataByAny(str_array);
+			if (arr?.length > 0) {
+				//if (arr[0] !== undefined) {
+				queryParams.value.aSINList = arr;
+				aSIN.value = arr;
+				//} else {
+				//queryParams.value.aSINList = null;
+				//}
+			} else {
+				queryParams.value.aSINList = null;
+				aSIN.value = '';
+			}
+		} else {
+			isWatch.value = true;
 		}
 	}
 );
@@ -1160,8 +1408,8 @@ watch(
 
 /deep/ .el-textarea__inner {
 	box-shadow: initial;
-	padding: 0;
-	margin: 4px 0 4px 3px;
+	padding:5px;
+	margin: 0;
 	height: 142px !important;
 }
 </style>
