@@ -144,7 +144,7 @@
 					<el-button style="width: 80px;height: 27px;" :class="{ 'buttonBackground': area == 'SA' }"
 						v-if="IsAdmin || area == 'SA'" @click="area = 'SA'; switchLanguage()">SA Sourcing</el-button> -->
 				</el-button-group>
-				<tabDragColum :data="TableData" :name="`TableData`" :area="area" @handleData="handleData" @handleRemarkData="handleRemarkData"/>
+				<tabDragColum :data="TableData" :name="`TableData`" :area="area" @handleData="handleData" @handleRemarkData="handleRemarkData" />
 			</div>
 			<el-table ref="scrollContainer" :data="tableData" size="lagre" style="width: 100%" v-loading="loading" tooltip-effect="light" @selection-change="handleSelectionChange" row-key="id" border="">
 				<el-table-column width="140" align="center" fixed="left" show-overflow-tooltip="">
@@ -460,12 +460,10 @@
 						</template>
 						<template #default="scope">
 							<!-- @dblclick="openEdit(scope.row)" 暂时不使用 -->
-							<div>
-								<el-select :disabled="!scope.row.IsEdit" v-model="scope.row.list_Unlist" :placeholder="area == 'CN' ? '请选择' : 'Please select'" clearable>
-									<el-option label="List" value="List"></el-option>
-									<el-option label="Unlist" value="Unlist"></el-option>
-								</el-select>
-							</div>
+							<el-select :disabled="!scope.row.IsEdit" v-model="scope.row.list_Unlist" :placeholder="area == 'CN' ? '请选择' : 'Please select'" clearable>
+								<el-option label="List" value="List"></el-option>
+								<el-option label="Unlist" value="Unlist"></el-option>
+							</el-select>
 						</template>
 					</el-table-column>
 					<el-table-column
@@ -856,6 +854,7 @@ const openAddASINBasicData = () => {
 		path: '/business/BasicDataManagement/ASINListingTableCN/ASINListingTableCNAdd',
 		query: {
 			area: area.value,
+			name:'ASIN上架表'+area.value+'新增'
 		},
 	});
 	// editASINBasicDataTitle.value = '添加ASIN上架表数据';
@@ -1402,13 +1401,13 @@ watch(
 	padding: 0;
 }
 
-/deep/ .el-table td.el-table__cell div {
+:deep(.el-table td.el-table__cell div) {
 	overflow: hidden;
 }
 
-/deep/ .el-textarea__inner {
+:deep(.el-textarea__inner) {
 	box-shadow: initial;
-	padding:5px;
+	padding: 5px;
 	margin: 0;
 	height: 142px !important;
 }

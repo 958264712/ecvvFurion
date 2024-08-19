@@ -29,7 +29,7 @@ const Exportloading = ref<any>(false);
 const visibleTextarea1 = ref(false);
 const erpAndGoodsName = ref('');
 const isWatch = ref(true);
-
+const queryLoading = ref(false);
 const area = ref('CN');
 const month = new Date().getMonth() + 1;
 let month1, month2, month3, month4, month5;
@@ -448,6 +448,7 @@ const changeArea = (val) => {
 };
 const handleQuery = async (): void => {
 	loading.value = true;
+	queryLoading.value = true;
 	queryParams.value.Site = activeName.value;
 	if (activeName.value === 'ALL') {
 		queryParams.value.Site = null;
@@ -468,6 +469,7 @@ const handleQuery = async (): void => {
 	res.data.result?.items.map((item: { id: any; }) => {
 		disabledList.value.push(item.id);
 	});
+	queryLoading.value = false;
 	loading.value = false;
 };
 // 切换站点
@@ -725,7 +727,8 @@ onMounted(() => {
 				</el-form-item>
 				<el-form-item>
 					<el-button-group>
-						<el-button type="primary" icon="ele-Search" @click="handleQuery"> 查询 </el-button>
+						<el-button type="primary" icon="ele-Search" :disabled="queryLoading" @click="handleQuery"> 查询
+						</el-button>
 						<el-button icon="ele-Refresh" @click="reset"> 重置 </el-button>
 					</el-button-group>
 				</el-form-item>
@@ -887,7 +890,7 @@ onMounted(() => {
 	margin-bottom: 10px;
 }
 
-/deep/ .el-tabs--card {
+:deep( .el-tabs--card) {
 	.el-tabs__header {
 		margin: 0;
 	}
@@ -901,15 +904,15 @@ onMounted(() => {
 	// }
 }
 
-/deep/ .cell {
+:deep(.cell) {
 	white-space: nowrap;
 }
 
-/deep/ .el-table td.el-table__cell div {
+:deep( .el-table td.el-table__cell div ){
 	overflow: hidden;
 }
 
-/deep/ .el-textarea__inner {
+:deep(.el-textarea__inner) {
 	box-shadow: initial;
 	padding: 5px;
 	margin: 0;

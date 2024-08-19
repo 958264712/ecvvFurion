@@ -201,7 +201,7 @@
 							</el-form-item>
 						</el-col>
 						<div style="margin: 0 auto; position: relative">
-							<el-button :disabled="!isCommit || !compile" type="primary" @click="commit()">提交</el-button>
+							<el-button :disabled="!compile" type="primary" @click="commit()">提交</el-button>
 							<el-button v-if="!isCommit" type="primary"
 								style="positihandleselectchacon: absolute; left: -11px; background-color: rgba(0, 0, 0, 0); border: 0"
 								@click="commitzz()">提交</el-button>
@@ -2158,7 +2158,7 @@ function actualArrivalDateChange(val: any) {
 <style scoped lang="less">
 .titleForm {
 	width: 100px;
-	transform: translate(50%);
+	transform: translate(0%);
 	color: red;
 }
 

@@ -390,7 +390,7 @@ handleQuery();
 :deep(.el-dialog__title) {
 	color: white;
 }
-/deep/ .el-textarea__inner {
+:deep( .el-textarea__inner) {
 	box-shadow: initial;
 	margin:0;
 	padding:5px;

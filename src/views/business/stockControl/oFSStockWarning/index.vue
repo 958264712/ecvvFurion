@@ -296,7 +296,7 @@ handleQuery();
 	</div>
 </template>
 <style scoped lang="less">
-/deep/.el-table__cell {
+:deep(.el-table__cell) {
 	z-index: auto !important;
 }
 </style>

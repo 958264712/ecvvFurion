@@ -374,15 +374,15 @@ const handleCurrentChange = (val: number) => {
 	}
 }
 
-/deep/ .el-pagination {
+:deep(.el-pagination) {
 	margin: 22px 0 -10px 0 !important;
 }
 
-/deep/ .cell {
+:deep(.cell) {
 	white-space: nowrap;
 }
 
-/deep/ .el-table td.el-table__cell div {
+:deep(.el-table td.el-table__cell div) {
 	overflow: hidden;
 }
 </style>

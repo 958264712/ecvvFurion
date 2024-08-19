@@ -1438,7 +1438,7 @@ onMounted(() => {
 	padding: 0;
 }
 
-/deep/ .el-tabs--card {
+:deep( .el-tabs--card) {
 	.el-tabs__header {
 		margin: 0;
 	}
@@ -1448,22 +1448,22 @@ onMounted(() => {
 	}
 }
 
-/deep/ .el-pagination {
+:deep( .el-pagination) {
 	margin: 22px 0 -10px 0 !important;
 }
 
-/deep/ .cell {
+:deep( .cell) {
 	display:flex;
 	align-items:center;
 	justify-content:center;
 	white-space: nowrap;
 }
 
-/deep/ .el-table td.el-table__cell div {
+:deep( .el-table td.el-table__cell div) {
 	overflow: hidden;
 }
 
-/deep/ .el-textarea__inner {
+:deep( .el-textarea__inner) {
 	box-shadow: initial;
 	margin:0;
 	padding:5px;

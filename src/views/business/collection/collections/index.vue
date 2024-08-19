@@ -18,6 +18,7 @@
 				</el-form-item>
 				<el-form-item label="目的地">
 					<el-select v-model="queryList.destination" filterable clearable>
+						<el-option label="美国" value="美国" />
 						<el-option label="迪拜" value="迪拜" />
 						<el-option label="沙特" value="沙特" />
 					</el-select>

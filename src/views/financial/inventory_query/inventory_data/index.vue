@@ -88,7 +88,7 @@ const TableData = ref<any>([
 	},
 	{
 		titleCN: '期末平均单价',
-		dataIndex: 'transferInventoryUnitPrice',
+		dataIndex: 'averageUnitPrice',
 		checked: true,
 		fixed: false,
 	},
@@ -100,7 +100,7 @@ const TableData = ref<any>([
 	},
 	{
 		titleCN: '转库存单价',
-		dataIndex: 'finalQuantity',
+		dataIndex: 'transferInventoryUnitPrice',
 		checked: true,
 		fixed: false,
 	},
@@ -128,7 +128,7 @@ const openimportDialog = () => {
 // 查询
 const getAppPage = async (): void => {
 	loading.value = true;
-	if(queryParams.value.WarehouseName === '全部'){
+	if (queryParams.value.WarehouseName === '全部') {
 		queryParams.value.WarehouseName = null
 	}
 	await initialInventoryDataPage(Object.assign(queryParams.value, tableParams.value)).then((res) => {
@@ -139,7 +139,7 @@ const getAppPage = async (): void => {
 			tableData.value.push(element);
 		});
 	});
-	if(queryParams.value.WarehouseName === null){
+	if (queryParams.value.WarehouseName === null) {
 		queryParams.value.WarehouseName = '全部'
 	}
 	loading.value = false;
@@ -169,25 +169,21 @@ const handleCurrentChange = (val: number): void => {
 						<el-option value="阿联酋不良品仓6Z2" label="阿联酋不良品仓6Z2"></el-option>
 					</el-select>
 				</el-form-item>
-				<el-form-item label="库存SKU" >
-					<el-input placeholder="请输入" v-model="queryParams.erpSku" clearable/>
+				<el-form-item label="库存SKU">
+					<el-input placeholder="请输入" v-model="queryParams.erpSku" clearable />
 				</el-form-item>
 				<el-form-item label="商品名称">
-					<el-input placeholder="请输入" v-model="queryParams.goodsName" clearable/>
+					<el-input placeholder="请输入" v-model="queryParams.goodsName" clearable />
 				</el-form-item>
 				<el-form-item>
 					<el-button-group>
-						<el-button v-auth="'shippingDetails:page'" type="primary" icon="ele-Search" @click="getAppPage()" style="width: 70px; margin-right: 2px"> 查询 </el-button>
-						<el-button
-							icon="ele-Refresh"
-							@click="
-								() => {
-									queryParams = {WarehouseName:'全部'};
-									getAppPage();
-								}
-							"
-							style="width: 70px; margin-right: 2px"
-						>
+						<el-button v-auth="'shippingDetails:page'" type="primary" icon="ele-Search"
+							@click="getAppPage()" style="width: 70px; margin-right: 2px"> 查询 </el-button>
+						<el-button icon="ele-Refresh" @click="() => {
+			queryParams = { WarehouseName: '全部' };
+			getAppPage();
+		}
+			" style="width: 70px; margin-right: 2px">
 							重置
 						</el-button>
 					</el-button-group>
@@ -197,25 +193,22 @@ const handleCurrentChange = (val: number): void => {
 		<el-card class="full-table" shadow="hover" style="margin-top: 8px">
 			<div class="settingf" style="margin-bottom: 5px; display: flex; justify-content: space-between">
 				<div class="flex flex-wrap items-center">
-					<el-button :loading="loading1" type="primary" @click="openimportDialog" v-auth="'inventory_data:import'">导入</el-button>
+					<el-button :loading="loading1" type="primary" @click="openimportDialog"
+						v-auth="'inventory_data:import'">导入</el-button>
 				</div>
 			</div>
-			<el-table :data="tableData" size="large" style="width: 100%"  v-loading="loading" tooltip-effect="light">
+			<el-table :data="tableData" size="large" style="width: 100%" v-loading="loading" tooltip-effect="light">
 				<template v-for="(item, index) in TableData" :key="index">
-					<el-table-column :fixed="item.fixed" :prop="item.dataIndex" :label="area == 'CN' ? item.titleCN : item.titleEN" align="center" min-width="150" show-overflow-tooltip="" />
+					<el-table-column :fixed="item.fixed" :prop="item.dataIndex"
+						:label="area == 'CN' ? item.titleCN : item.titleEN" align="center" min-width="150"
+						show-overflow-tooltip="" />
 				</template>
 			</el-table>
-			<el-pagination
-				v-model:currentPage="tableParams.page"
-				v-model:page-size="tableParams.pageSize"
-				:total="tableParams.total"
-				:page-sizes="[50, 100, 500, 1000]"
-				small=""
-				background=""
-				@current-change="handleCurrentChange"
-				layout="total, sizes, prev, pager, next, jumper"
-			/>
-			<importDialog ref="importDialogRef" :excelName="excelName" :tableAddress="tableAddress" :area="area" :url="url" @reloadTable="handleQuery" />
+			<el-pagination v-model:currentPage="tableParams.page" v-model:page-size="tableParams.pageSize"
+				:total="tableParams.total" :page-sizes="[50, 100, 500, 1000]" small="" background=""
+				@current-change="handleCurrentChange" layout="total, sizes, prev, pager, next, jumper" />
+			<importDialog ref="importDialogRef" :excelName="excelName" :tableAddress="tableAddress" :area="area"
+				:url="url" @reloadTable="handleQuery" />
 		</el-card>
 	</div>
 </template>

@@ -353,12 +353,12 @@ const exportData = (val: number) => {
 
 .el-form {
 	.el-form-item {
-		/deep/ .el-form-item__label {
+		:deep(.el-form-item__label) {
 			font-size: 14px;
 			color: rgba(0, 0, 0, 0.85);
 		}
 
-		/deep/ .el-form-item__content {
+		:deep(.el-form-item__content) {
 			.el-input__wrapper {
 				width: 220px;
 				height: 30px;
@@ -374,7 +374,7 @@ const exportData = (val: number) => {
 }
 
 .head {
-	/deep/ .el-card__body {
+	:deep(.el-card__body) {
 		padding: 5px;
 		.el-row {
 			align-items: center;

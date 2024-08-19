@@ -84,8 +84,8 @@ service.interceptors.response.use(
 		// 获取状态码和返回数据
 		var status = res.status;
 		var serve = res.data;
-		
-		
+
+
 		// 处理 401
 		if (status === 401) {
 			clearAccessTokens();
@@ -120,14 +120,14 @@ service.interceptors.response.use(
 		} else if (serve.code === undefined) {
 			return Promise.resolve(res);
 		} else if (serve.code !== 200) {
-			var message,result;
+			var message, result;
 			// 判断 serve.message 是否为对象
 			if (serve.message && typeof serve.message == 'object') {
 				message = JSON.stringify(serve.message);
 			} else {
 				message = serve.message;
 			}
-			
+
 			if (serve.result && typeof serve.result == 'object') {
 				result = JSON.stringify(serve.result);
 			} else {
@@ -135,7 +135,7 @@ service.interceptors.response.use(
 			}
 
 			ElMessage.error(message);
-			throw new Error(message+result);
+			throw new Error(message + result);
 		}
 
 		return res;

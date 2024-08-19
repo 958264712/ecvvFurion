@@ -212,10 +212,7 @@ handleQuery();
 </template>
 
 <style lang="less" scoped>
-// .show_table{
-//   /deep/.el-table__body{
-//     width: 1600px !important;
-//   }
-// }</style>
+
+</style>
 
 

@@ -753,13 +753,13 @@ handleQuery();
 	width: 20%;
 	text-align: right;
 }
-/deep/ .cell {
+:deep(.cell) {
 	display:flex;
 	align-items:center;
 	justify-content:center;
 	white-space: nowrap;
 }
-/deep/ .el-textarea__inner {
+:deep(.el-textarea__inner) {
 	box-shadow: initial;
 	margin:0;
 	padding:5px;

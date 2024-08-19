@@ -38,7 +38,7 @@ const optionsList = ref<any>([
 const state = reactive({
 	homeOne: [
 		{
-			name: 'AE今天抓取数量',
+			name: 'UAE今天抓取数量',
 			num1: '125,12',
 			num3: '最后抓取时间：',
 			time: '',

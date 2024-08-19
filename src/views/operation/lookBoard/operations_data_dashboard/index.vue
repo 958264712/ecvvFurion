@@ -2,7 +2,8 @@
 	<el-card shadow="hover" :body-style="{ paddingLeft: '10px', paddingBottom: '60px', height: '100%' }">
 		<el-form :model="queryParams" ref="queryForm" :inline="true">
 			<el-form-item label="">
-				<el-date-picker :clearable="false" style="width: 100px" v-model="queryParams.Time1" :disabled="changeBtn" type="month" placeholder="请选择月份" :disabled-date="disabledDate" />
+				<el-date-picker :clearable="false" style="width: 100px" v-model="queryParams.Time1"
+					:disabled="changeBtn" type="month" placeholder="请选择月份" :disabled-date="disabledDate" />
 			</el-form-item>
 			<el-form-item label="">
 				<el-select @change="handleQuery()" v-model="queryParams.Site" class="select" :disabled="changeBtn">
@@ -21,27 +22,26 @@
 		<div class="common-layout">
 			<div class="HeadBox">
 				<el-divider style="margin: 0" />
-				<el-row style="padding: 5px" :gutter="20">
-					<el-col class="HeadCol" :span="3" v-for="(item, index) in operationsList">
-						<el-card
-							style="width: 200px"
-							:body-style="{ height: radio === '月' ? '175px' : '145px' }"
+				<el-row style="padding: 5px" :gutter="20" >
+					<el-col class="HeadCol" :span="3" v-for="(item, index) in operationsList1">
+						<el-card style="width: 200px" :body-style="{ height: radio === '月' ? '175px' : '145px' }"
 							shadow="always"
-							v-if="radio === '日' && item.name !== 'actualOutboundQuantity' && item.name !== 'outboundAmount' ? true : radio !== '日' ? true : false"
-						>
+							v-if="radio === '日' && item.name !== 'actualOutboundQuantity' && item.name !== 'outboundAmount' ? true : radio !== '日' ? true : false">
 							<div class="topdiv">
 								<div class="title" :title="item.title">{{ item.title }}</div>
 								<div class="label">
-									<span>{{ radio === '日' ? (item.name === 'amazonSales' || item.name === 'salesAmount' ? '上前日' : '今日') : radio === '周' ? '本周' : '本月' }}</span>
+									<span>{{ radio === '日' ? (item.name === 'amazonSales' || item.name === 'salesAmount' ? '大前天' : '今日') : radio === '周' ? '本周' : '本月' }}</span>
 									<strong :title="item.quantity">{{ item.quantity ? item.quantity : 0 }}</strong>
 								</div>
 								<div class="label">
 									<span>环比</span>
-									<span :title="item.month"> <img :src="`${toNumber(item.month) > 0 ? up : down}`" style="margin-right: 10px" />{{ item.month ? item.month : 0 }} </span>
+									<span :title="item.month"> <img :src="`${toNumber(item.month) > 0 ? up : down}`"
+											style="margin-right: 10px" />{{ item.month ? item.month : 0 }} </span>
 								</div>
 								<div v-if="radio === '月'" class="label">
 									<span>同比</span>
-									<span :title="item.year"> <img :src="`${toNumber(item.year) > 0 ? up : down}`" style="margin-right: 10px" />{{ item.year ? item.year : 0 }} </span>
+									<span :title="item.year"> <img :src="`${toNumber(item.year) > 0 ? up : down}`"
+											style="margin-right: 10px" />{{ item.year ? item.year : 0 }} </span>
 								</div>
 							</div>
 						</el-card>
@@ -157,6 +157,7 @@ const disabledDate = (time: Date) => {
 };
 const operationsData = ref<any>({});
 const operationsList = ref<operationsList[]>([]);
+const operationsList1 = ref<operationsList[]>([]);
 
 const changeBtn = ref(false)
 const changeBtnNum = ref(0)
@@ -246,7 +247,7 @@ const changeMonths = (data, month, item) => {
 	}
 	return data;
 };
-const dataymxMoney = async (face, echart, unit,type=1,twoEcharts,twoUnit) => {
+const dataymxMoney = async (face, echart, unit, type = 1, twoEcharts, twoUnit) => {
 	const myChart = echarts.init(echart.value);
 	let data = [0];
 	let data1 = [0];
@@ -258,10 +259,10 @@ const dataymxMoney = async (face, echart, unit,type=1,twoEcharts,twoUnit) => {
 	const month = date.getMonth() + 1;
 	queryParams.value.Time = year + '-' + month;
 
-	changeBtnNum.value ++
+	changeBtnNum.value++
 	await face(Object.assign(queryParams.value)).then((res) => {
 		if (res.data.code === 200 && res.data.type === 'success') {
-			changeBtnQueryNum.value ++
+			changeBtnQueryNum.value++
 			if (radio.value === '日') {
 				dayList.value.map((e, index) => {
 					res.data.result.thisMonth.map((item) => {
@@ -274,18 +275,18 @@ const dataymxMoney = async (face, echart, unit,type=1,twoEcharts,twoUnit) => {
 							data1[index] = item[unit];
 						}
 					});
-					if(type===2){
-					res.data.result.thisMonthAmount.map((item) => {
-						if (e === item.day) {
-							twodata[index] = item[twoUnit];
-						}
-					});
-					res.data.result.lastMonthAmount.map((item) => {
-						if (e === item.day) {
-							twodata1[index] = item[twoUnit];
-						}
-					});
-				}
+					if (type === 2) {
+						res.data.result.thisMonthAmount.map((item) => {
+							if (e === item.day) {
+								twodata[index] = item[twoUnit];
+							}
+						});
+						res.data.result.lastMonthAmount.map((item) => {
+							if (e === item.day) {
+								twodata1[index] = item[twoUnit];
+							}
+						});
+					}
 				});
 			} else if (radio.value === '周') {
 				res.data.result.thisMonth.map((item) => {
@@ -294,8 +295,8 @@ const dataymxMoney = async (face, echart, unit,type=1,twoEcharts,twoUnit) => {
 				res.data.result.lastMonth.map((item) => {
 					changeWeeks(data1, item.weeks, item[unit]);
 				});
-				if(type===2){
-				res.data.result.thisMonthAmount.map((item) => {
+				if (type === 2) {
+					res.data.result.thisMonthAmount.map((item) => {
 						changeWeeks(twodata, item.weeks, item[twoUnit]);
 					});
 					res.data.result.lastMonthAmount.map((item) => {
@@ -309,16 +310,16 @@ const dataymxMoney = async (face, echart, unit,type=1,twoEcharts,twoUnit) => {
 				res.data.result.lastYear?.map((item) => {
 					changeMonths(data1, item.month, item[unit]);
 				});
-				if(type===2){
+				if (type === 2) {
 					res.data.result.thisYearAmount?.map((item) => {
-					changeMonths(twodata, item.month, item[twoUnit]);
-				});
-				res.data.result.lastYearAmount?.map((item) => {
-					changeMonths(twodata1, item.month, item[twoUnit]);
-				});
+						changeMonths(twodata, item.month, item[twoUnit]);
+					});
+					res.data.result.lastYearAmount?.map((item) => {
+						changeMonths(twodata1, item.month, item[twoUnit]);
+					});
 				}
 			}
-		}else{
+		} else {
 			setTimeout(() => {
 				changeBtn.value = false
 				ElMessage({
@@ -328,7 +329,7 @@ const dataymxMoney = async (face, echart, unit,type=1,twoEcharts,twoUnit) => {
 			}, 30000);
 		}
 	});
-	
+
 	const options = {
 		tooltip: {
 			trigger: 'axis',
@@ -452,7 +453,7 @@ const dataymxMoney = async (face, echart, unit,type=1,twoEcharts,twoUnit) => {
 		],
 	};
 	myChart.setOption(options);
-	if(type===2){
+	if (type === 2) {
 		const TwoChart = echarts.init(twoEcharts.value);
 		TwoChart.setOption(options1);
 	}
@@ -467,6 +468,7 @@ const toNumber = (str) => {
 };
 // 获取数据
 const handleQuery = async () => {
+	operationsList.value = []
 	queryParams.value.TimePeriod = radio.value;
 	const date = new Date(queryParams.value.Time1);
 	const year = date.getFullYear();
@@ -498,7 +500,7 @@ const handleQuery = async () => {
 						};
 						break;
 					case 'actualOutboundQuantity':
-						operationsList.value[6] = {
+						operationsList.value[2] = {
 							title: `实际出库数量(${res.data.result.actualOutboundQuantityUnit})`,
 							quantity: res.data.result.actualOutboundQuantity,
 							month: res.data.result.actualOutboundQuantityMonthRatio,
@@ -508,7 +510,7 @@ const handleQuery = async () => {
 						};
 						break;
 					case 'outboundAmount':
-						operationsList.value[7] = {
+						operationsList.value[3] = {
 							title: `出库金额(${res.data.result.outboundAmountUnit})`,
 							quantity: res.data.result.outboundAmount,
 							month: res.data.result.outboundAmountMonthRatio,
@@ -518,7 +520,13 @@ const handleQuery = async () => {
 						};
 						break;
 					case 'poOrderQuantity':
-						operationsList.value[2] = {
+						let poOrderQuantityUnit = 0
+						if(radio.value === '日'){
+							poOrderQuantityUnit = 2
+						}else{
+							poOrderQuantityUnit = 4
+						}
+						operationsList.value[poOrderQuantityUnit] = {
 							title: `PO订单量(${res.data.result.poOrderQuantityUnit})`,
 							quantity: res.data.result.poOrderQuantity,
 							month: res.data.result.poOrderQuantityMonthRatio,
@@ -528,7 +536,13 @@ const handleQuery = async () => {
 						};
 						break;
 					case 'poOrderAmount':
-						operationsList.value[3] = {
+						let poOrderAmountUnit = 0
+						if(radio.value === '日'){
+							poOrderAmountUnit = 3
+						}else{
+							poOrderAmountUnit = 5
+						}
+						operationsList.value[poOrderAmountUnit] = {
 							title: `PO订单金额(${res.data.result.poOrderAmountUnit})`,
 							quantity: res.data.result.poOrderAmount,
 							month: res.data.result.poOrderAmountMonthRatio,
@@ -538,7 +552,13 @@ const handleQuery = async () => {
 						};
 						break;
 					case 'dfOrderQuantity':
-						operationsList.value[4] = {
+						let dfOrderQuantityUnit = 0
+						if(radio.value === '日'){
+							dfOrderQuantityUnit = 4
+						}else{
+							dfOrderQuantityUnit = 6
+						}
+						operationsList.value[dfOrderQuantityUnit] = {
 							title: `DF订单量(${res.data.result.dfOrderQuantityUnit})`,
 							quantity: res.data.result.dfOrderQuantity,
 							month: res.data.result.dfOrderQuantityMonthRatio,
@@ -548,7 +568,13 @@ const handleQuery = async () => {
 						};
 						break;
 					case 'dfOrderAmount':
-						operationsList.value[5] = {
+						let dfOrderAmountUnit = 0
+						if(radio.value === '日'){
+							dfOrderAmountUnit = 5
+						}else{
+							dfOrderAmountUnit = 7
+						}
+						operationsList.value[dfOrderAmountUnit] = {
 							title: `DF订单金额(${res.data.result.dfOrderAmountUnit})`,
 							quantity: res.data.result.dfOrderAmount,
 							month: res.data.result.dfOrderAmountMonthRatio,
@@ -559,19 +585,20 @@ const handleQuery = async () => {
 						break;
 				}
 			}
+			operationsList1.value = operationsList.value
 		}
 	});
 };
 const changeInterface = () => {
 	changeBtn.value = true
 	handleQuery();
-	dataymxMoney(amazonSales, ymxMoneyRef, 'shippedUnits',2,moneyCountRef, 'shippedCOGS');
+	dataymxMoney(amazonSales, ymxMoneyRef, 'shippedUnits', 2, moneyCountRef, 'shippedCOGS');
 	if (radio.value !== '日') {
 		dataymxMoney(actualOutboundQuantity, outCountRef, 'actualOutboundQuantity');
 		dataymxMoney(outboundAmount, outMoneyRef, 'outboundAmount');
 	}
-	dataymxMoney(pOOrderQuantity, POCountRef, 'poOrderAmount',2, POMoneyRef, 'poOrderAmount');
-	dataymxMoney(pOOrderQuantity, DFCountRef, 'poOrderAmount',2, DFMoneyRef, 'poOrderAmount');
+	dataymxMoney(pOOrderQuantity, POCountRef, 'poOrderAmount', 2, POMoneyRef, 'poOrderAmount');
+	dataymxMoney(pOOrderQuantity, DFCountRef, 'poOrderAmount', 2, DFMoneyRef, 'poOrderAmount');
 
 };
 // 监听月份和站点
@@ -591,9 +618,9 @@ watch(
 watch(
 	() => changeBtnQueryNum.value,
 	() => {
-		if(changeBtnQueryNum.value === changeBtnNum.value){
+		if (changeBtnQueryNum.value === changeBtnNum.value) {
 			changeBtn.value = false
-		}else{
+		} else {
 			changeBtn.value = true
 		}
 	}
@@ -606,7 +633,7 @@ const setLocalThemeConfig = () => {
 };
 // 初始值
 onMounted(() => {
-	themeConfig.value.isCollapse = !themeConfig.value.isCollapse;
+	//themeConfig.value.isCollapse = !themeConfig.value.isCollapse;
 	setLocalThemeConfig();
 	changeInterface();
 });
@@ -615,24 +642,31 @@ onMounted(() => {
 :deep(.el-row) {
 	margin: 0 !important;
 }
+
 :deep(.el-form--inline .el-form-item) {
 	margin-right: 12px;
 }
+
 .el-row:last-child {
 	margin-bottom: 0;
 }
+
 .select {
 	width: 100px;
+
 	:deep(.el-input) {
 		width: 100%;
 	}
 }
+
 .radio-group {
 	height: 24px;
+
 	:deep(.el-radio-button__inner) {
 		padding: 4px 19px;
 	}
 }
+
 .el-col {
 	border-radius: 4px;
 }
@@ -656,15 +690,18 @@ onMounted(() => {
 		white-space: nowrap;
 		margin-bottom: 20px;
 	}
+
 	.label {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
 		margin-bottom: 10px;
+
 		span:last-child {
 			font-size: 16px;
 		}
 	}
+
 	strong {
 		font-size: 20px;
 		overflow: hidden;

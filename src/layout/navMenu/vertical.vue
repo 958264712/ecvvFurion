@@ -102,13 +102,14 @@ onBeforeRouteUpdate((to) => {
 	// 修复：https://gitee.com/lyt-top/vue-next-admin/issues/I3YX6G
 	state.defaultActive = setParentHighlight(to);
 	const clientWidth = document.body.clientWidth;
-	if (clientWidth < 1000) themeConfig.value.isCollapse = false;
+	// 修改屏幕尺寸大小自适应收合菜单
+	if (clientWidth < 1900) themeConfig.value.isCollapse = true;
 });
 // 设置菜单的收起/展开
 watch(
 	() => themeConfig.value.isCollapse,
 	(isCollapse) => {
-		document.body.clientWidth <= 1000 ? (state.isCollapse = false) : (state.isCollapse = isCollapse);
+		document.body.clientWidth <= 1900 ? (state.isCollapse = false) : (state.isCollapse = false);
 	},
 	{
 		immediate: true,

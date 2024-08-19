@@ -453,7 +453,7 @@ const openEdit = async (id: any, row): void => {
 					if (res.data.type === 'success') {
 						ElMessage.success('Edit successfully');
 						disabledList.value.push(id);
-						handleQuery();
+						// handleQuery();
 					} else {
 						ElMessage.error('Edit failed ' + res.message);
 					}
@@ -716,7 +716,7 @@ handleQuery();
 	vertical-align: text-bottom;
 }
 
-/deep/ .el-select {
+:deep(.el-select) {
 	.el-input {
 		width: 100%;
 	}

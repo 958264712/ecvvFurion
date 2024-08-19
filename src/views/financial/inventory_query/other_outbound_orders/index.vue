@@ -39,6 +39,12 @@ const TableData = ref<any>([
 		fixed: false,
 	},
 	{
+		titleCN: '单价',
+		dataIndex: 'averageUnitPrice',
+		checked: true,
+		fixed: false,
+	},
+	{
 		titleCN: '总金额',
 		dataIndex: 'totalAmount',
 		checked: true,

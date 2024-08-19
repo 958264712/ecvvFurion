@@ -155,10 +155,12 @@ const exportPo = async (id: any, type: any) => {
 	if (type === 1) {
 		await exportPoFulfillingOrders({ id }, id).then((res) => {
 			other.downloadfile(res);
+			ElMessage.success('导出成功');
 		});
 	} else {
 		await exportConfirmedNewPOs({ id }, id).then((res) => {
 			other.downloadfile(res);
+			ElMessage.success('导出成功');
 		});
 	}
 	handleQuery();
@@ -563,7 +565,7 @@ onMounted(() => {
 	margin-bottom: 10px;
 }
 
-/deep/ .el-card {
+:deep( .el-card) {
 	.el-dialog__footer .dialog-footer {
 		display: flex;
 		justify-content: end;

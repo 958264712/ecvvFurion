@@ -25,7 +25,7 @@
 		</el-card>
 
 		<el-card class="full-table" shadow="hover" style="margin-top: 8px">
-			<el-table :data="state.menuData" v-loading="state.loading" row-key="id" :tree-props="{ children: 'children', hasChildren: 'hasChildren' }" border>
+			<el-table :data="state.menuData" v-loading="state.loading" row-key="id" :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"  border>
 				<el-table-column label="菜单名称" header-align="center" show-overflow-tooltip>
 					<template #default="scope">
 						<SvgIcon :name="scope.row.icon" />

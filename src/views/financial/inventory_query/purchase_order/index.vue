@@ -661,7 +661,7 @@ watch(
 	color: white;
 }
 
-/deep/ .el-textarea__inner {
+:deep( .el-textarea__inner) {
 	box-shadow: initial;
 	padding: 0;
 	margin: 4px 0 4px 3px;

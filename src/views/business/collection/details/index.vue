@@ -172,7 +172,7 @@
 							</el-form-item>
 							<el-form-item label="实际送仓日期" style="width: 90%">
 								<el-date-picker :disabled="!compile" v-model="collectionOrderInfo.actualDeliveryDate"
-									type="date" placeholder="请选择日期" />
+									type="date" placeholder="请选择日期" @change="actualDeliveryDateChange"/>
 							</el-form-item>
 							<el-form-item label="物流预计到仓日期" style="width: 90%">
 								<el-date-picker :disabled="!compile" v-model="collectionOrderInfo.estimatedDeliveryDate"
@@ -231,7 +231,7 @@ const state = reactive({
 	editMenuTitle: '',
 });
 let id = ref<any>();
-let collectionOrderInfo = reactive<any>({});
+let collectionOrderInfo = reactive<any>({state:'集货'});
 let compile = ref<boolean>(false);
 let allCompiles = ref(false);
 let selectedRows = ref<any>([]);
@@ -465,8 +465,13 @@ function departureDateChange(val: any) {
 			var date1 = new Date(val); new Date(date1.setDate(date1.getDate() + addDay)).toLocaleDateString();
 			collectionOrderInfo.estimatedDeliveryDate = date1;
 		}
-
 	}
+	collectionOrderInfo.state = '在途中';
+	var date2 = new Date(val); new Date(date2.setDate(date2.getDate() + 5)).toLocaleDateString();
+	collectionOrderInfo.actualArrivalDate = date2;
+}
+const actualDeliveryDateChange = () =>{
+	collectionOrderInfo.state = '已入仓';
 }
 //起飞开船日期改变获得预计送仓日期
 function actualArrivalDateChange(val: any) {
