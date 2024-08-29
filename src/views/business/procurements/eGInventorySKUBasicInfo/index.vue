@@ -1,17 +1,12 @@
-﻿<script lang="ts" setup="" name="sAInventorySKUBasicInfo">
+﻿<script lang="ts" setup="" name="eGInventorySKUBasicInfo">
 import { ref } from 'vue';
 import { ElMessageBox, ElMessage } from 'element-plus';
-import { auth } from '/@/utils/authFunction';
-//import { formatDate } from '/@/utils/formatTime';
-import { sAgetInventorySKUBasicInfo, sAExportInventorySKUBasicInfo, getInterestRate, updateConfig } from '/@/api/modular/main/uAE_ProcurementDetails.ts';
-import { getAPI } from '/@/utils/axios-utils';
-import { SysConfigApi } from '/@/api-services/api';
+import other from '/@/utils/other.ts';
+import { eGGetInventorySKUBasicInfo, eGExportInventorySKUBasicInfo, getInterestRate, updateConfig } from '/@/api/modular/main/uAE_ProcurementDetails.ts';
 const exchangeRate = ref<any>({
 	value: 0,
 });
 const setexchangeRate = ref<any>(true);
-import other from '/@/utils/other.ts';
-
 const loading = ref(false);
 const tableData = ref<any>([]);
 const queryParams = ref<inventoryParamsType>({});
@@ -19,7 +14,6 @@ const tableParams = ref({
 	exchangeRate: exchangeRate.value.value,
 	pageNo: 1,
 	pageSize: 50,
-	// inventorySKU : '123 ',
 	total: 0,
 });
 
@@ -36,7 +30,7 @@ const handleCurrentChange = (val: number) => {
 };
 const getData = () => {
 	const param = {
-		name: 'RMB/汇率',
+		code: 'sys_EG_exchange_rate',
 		page: 1,
 		pageSize: 1,
 	};
@@ -49,7 +43,7 @@ const getData = () => {
 const handleQuery = async () => {
 	loading.value = true;
 	tableParams.value.exchangeRate = exchangeRate.value.value;
-	var res = await sAgetInventorySKUBasicInfo(Object.assign(queryParams.value, tableParams.value));
+	var res = await eGGetInventorySKUBasicInfo(Object.assign(queryParams.value, tableParams.value));
 	tableData.value = res.data.result?.items ?? [];
 	tableParams.value.total = res.data.result?.total;
 	loading.value = false;
@@ -57,7 +51,7 @@ const handleQuery = async () => {
 
 function Export() {
 	loading.value = true;
-	sAExportInventorySKUBasicInfo(Object.assign(queryParams.value, tableParams.value, { exchangeRate: exchangeRate.value.value })).then((res: any) => {
+	eGExportInventorySKUBasicInfo(Object.assign(queryParams.value, tableParams.value, { exchangeRate: exchangeRate.value.value })).then((res: any) => {
 		loading.value = false;
 		other.downloadfile(res);
 		handleQuery();
@@ -82,8 +76,8 @@ const setItem = async (name: string, item: boolean) => {
 		ElMessage.error('请先设置RMB/汇率');
 	}
 };
-// handleQuery();
 getData();
+//handleQuery();
 </script>
 
 <template>
@@ -96,14 +90,9 @@ getData();
 				<el-form-item label="产品名称">
 					<el-input v-model="queryParams.goodsName" clearable="" placeholder="请输入产品名称" />
 				</el-form-item>
-				<!-- <el-form-item label="供应商货号">
-          <el-input v-model="queryParams.supplierItemNumber" clearable="" placeholder="请输入供应商货号" />
-
-        </el-form-item> -->
-
 				<el-form-item>
 					<el-button-group>
-						<el-button type="primary" icon="ele-Search" @click="handleQuery"> 查询 </el-button>
+						<el-button type="primary" icon="ele-Search" @click="handleQuery" > 查询 </el-button>
 						<el-button
 							icon="ele-Refresh"
 							@click="
@@ -121,7 +110,7 @@ getData();
 		</el-card>
 		<el-card class="full-table" shadow="hover" style="margin-top: 8px">
 			<div>
-				<el-button style="float: left" @click="Export" type="primary" size="small" v-auth="'sAInventorySKUBasicInfo:export'">导出库存Sku信息</el-button>
+				<el-button style="float: left" @click="Export" type="primary" size="small" v-auth="'eGInventorySKUBasicInfo:export'">导出</el-button>
 				<el-form-item
 					style="width: 300px; float: left; margin-left: 10px"
 					label="RMB/汇率"
@@ -139,23 +128,23 @@ getData();
 			</div>
 
 			<el-table :data="tableData" size="lagre" style="width: 100%" v-loading="loading" tooltip-effect="light" row-key="id" border="">
-				<el-table-column prop="inventorySKU1" align="center" label="库存SKU" width="120" />
-				<el-table-column prop="goodsName" align="center" label="产品名称" width="150" />
+				<el-table-column prop="inventorySKU1" align="center" label="库存SKU" width="120" show-overflow-tooltip="" />
+				<el-table-column prop="goodsName" align="center" label="产品名称" width="150" show-overflow-tooltip="" />
 				<el-table-column prop="purchasingCountry" align="center" label="采购国" width="60" show-overflow-tooltip="" />
 				<el-table-column prop="totalQuantityShipped" align="center" label="发货总数量" show-overflow-tooltip="" />
 				<el-table-column prop="totalProcurementCost" align="center" label="采购总成本" show-overflow-tooltip="" />
 				<el-table-column prop="totalCostOfCNHeadProcess" align="center" label="CN头程总成本" show-overflow-tooltip="" />
 				<el-table-column prop="comprehensiveProcurementUnitPrice" align="center" label="综合采购单价" show-overflow-tooltip="" />
 				<el-table-column prop="monetaryUnit" label="货币单位" align="center" width="60" show-overflow-tooltip="" />
-				<el-table-column prop="comprehensiveProcurementUnitPriceAED" align="center" label="综合采购单价SAR" width="85" show-overflow-tooltip="" />
-				<el-table-column prop="comprehensiveSupplyPriceAED" align="center" label="综合供货价SAR" width="85" show-overflow-tooltip="" />
-				<el-table-column prop="comprehensiveInitialUnitPriceAED" align="center" label="综合头程单价SAR" width="90" GetInventorySKUBasicInfoInput show-overflow-tooltip="" />
+				<el-table-column prop="comprehensiveProcurementUnitPriceAED" align="center" label="综合采购单价EGP" width="85" show-overflow-tooltip="" />
+				<el-table-column prop="comprehensiveSupplyPriceAED" align="center" label="综合供货价EGP" width="85" show-overflow-tooltip="" />
+				<el-table-column prop="comprehensiveInitialUnitPriceAED" align="center" label="综合头程单价EGP" width="90" show-overflow-tooltip="" />
 				<el-table-column prop="seaComprehensiveInitialUnitPriceAED" align="center" label="综合海运单价" show-overflow-tooltip="" />
 				<el-table-column prop="emptyComprehensiveInitialUnitPriceAED" align="center" label="综合空运单价" show-overflow-tooltip="" />
 				<el-table-column prop="quantityShippedInThePast90Days" align="center" label="近90天发货数量" width="90" show-overflow-tooltip="" />
-				<el-table-column prop="totalProcurementCostInThePast90DaysAED" align="center" label="近90天总采购成本SAR" width="100" show-overflow-tooltip="" />
-				<el-table-column prop="purchaseUnitPriceAEDInThePast90Days" align="center" label="近90天采购单价SAR" width="100" show-overflow-tooltip="" />
-				<el-table-column prop="lastYearcomprehensivePriceAED" align="center" label="去年综合采购单价SAR" width="100" show-overflow-tooltip="" />
+				<el-table-column prop="totalProcurementCostInThePast90DaysAED" align="center" label="近90天总采购成本EGP" width="100" show-overflow-tooltip="" />
+				<el-table-column prop="purchaseUnitPriceAEDInThePast90Days" align="center" label="近90天总采购单价EGP" width="100" show-overflow-tooltip="" />
+				<el-table-column prop="lastYearcomprehensivePriceAED" align="center" label="去年综合采购单价EGP" width="100" show-overflow-tooltip="" />
 				<el-table-column prop="salesAttributes" align="center" label="销售属性" show-overflow-tooltip="" />
 				<el-table-column prop="productCAT" align="center" label="产品CAT" show-overflow-tooltip="" />
 			</el-table>

@@ -6,7 +6,8 @@
 	"license": "MIT",
 	"scripts": {
 		"dev": "vite",
-		"build": "node --max_old_space_size=4096 node_modules/vite/bin/vite.js build",
+		"build:test": "cross-env VITE_NODE_ENV=development node --max_old_space_size=4096 node_modules/vite/bin/vite.js build --mode development",
+		"build:prod": "cross-env VITE_NODE_ENV=production node --max_old_space_size=4096 node_modules/vite/bin/vite.js build --mode production",
 		"lint-fix": "eslint --fix --ext .js --ext .jsx --ext .vue src/"
 	},
 	"dependencies": {

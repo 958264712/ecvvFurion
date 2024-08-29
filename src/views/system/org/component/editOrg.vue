@@ -9,8 +9,8 @@
 			</template>
 			<el-form :model="state.ruleForm" ref="ruleFormRef" label-width="auto">
 				<el-row :gutter="35">
-					<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
-						<el-form-item label="上级机构">
+					<el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
+						<el-form-item label="上级" prop="pid" :rules="[{ required: true, message: '上级机构不能为空', trigger: 'blur' }]">
 							<el-cascader
 								:options="props.orgData"
 								:props="{ checkStrictly: true, emitPath: false, value: 'id', label: 'name' }"
@@ -26,37 +26,17 @@
 							</el-cascader>
 						</el-form-item>
 					</el-col>
-					<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
-						<el-form-item label="机构名称" prop="name" :rules="[{ required: true, message: '机构名称不能为空', trigger: 'blur' }]">
+					<el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
+						<el-form-item label="名称" prop="name" :rules="[{ required: true, message: '机构名称不能为空', trigger: 'blur' }]">
 							<el-input v-model="state.ruleForm.name" placeholder="机构名称" clearable />
 						</el-form-item>
 					</el-col>
-					<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
-						<el-form-item label="机构编码" prop="code" :rules="[{ required: true, message: '机构编码不能为空', trigger: 'blur' }]">
-							<el-input v-model="state.ruleForm.code" placeholder="机构编码" clearable />
-						</el-form-item>
-					</el-col>
-					<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
-						<el-form-item label="机构类型">
-							<el-select v-model="state.ruleForm.orgType" filterable clearable class="w100">
-								<el-option v-for="item in state.orgTypeList" :key="item.value" :label="item.value" :value="item.code" />
-							</el-select>
-						</el-form-item>
-					</el-col>
-					<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
-						<el-form-item label="排序">
-							<el-input-number v-model="state.ruleForm.orderNo" placeholder="排序" class="w100" />
-						</el-form-item>
-					</el-col>
-					<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
+					<el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
 						<el-form-item label="状态">
-							<el-radio-group v-model="state.ruleForm.status">
-								<el-radio :label="1">启用</el-radio>
-								<el-radio :label="2">禁用</el-radio>
-							</el-radio-group>
+							<el-switch v-model="state.ruleForm.status" :active-value="1" :inactive-value="2" size="small" />
 						</el-form-item>
 					</el-col>
-					<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
+					<el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
 						<el-form-item label="备注">
 							<el-input v-model="state.ruleForm.remark" placeholder="请输入备注内容" clearable type="textarea" />
 						</el-form-item>
@@ -75,7 +55,7 @@
 
 <script lang="ts" setup name="sysEditOrg">
 import { onMounted, reactive, ref } from 'vue';
-
+import { ElMessage } from 'element-plus';
 import { getAPI } from '/@/utils/axios-utils';
 import { SysOrgApi, SysDictDataApi } from '/@/api-services/api';
 import { SysOrg, UpdateOrgInput } from '/@/api-services/models';
@@ -120,8 +100,10 @@ const submit = () => {
 		if (!valid) return;
 		if (state.ruleForm.id != undefined && state.ruleForm.id > 0) {
 			await getAPI(SysOrgApi).apiSysOrgUpdatePost(state.ruleForm);
+			ElMessage.success('更新成功')
 		} else {
 			await getAPI(SysOrgApi).apiSysOrgAddPost(state.ruleForm);
+			ElMessage.success('新增成功')
 		}
 		closeDialog();
 	});

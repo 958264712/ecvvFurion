@@ -13,7 +13,7 @@
 				<el-form-item>
 					<el-button-group>
 						<el-button type="primary" icon="ele-Search" @click="handleQuery"
-							v-auth="'uAE_ProcurementDetails:page'"> 查询 </el-button>
+							> 查询 </el-button>
 						<el-button icon="ele-Refresh" @click="() => {
 				queryParams = {};
 				handleQuery();
@@ -66,7 +66,7 @@
 				@size-change="handleSizeChange" @current-change="handleCurrentChange"
 				layout="total, sizes, prev, pager, next, jumper" />
 			<el-dialog v-model="visible" title="详情" @close="close" width="1000px">
-				<infoDataDialog :id="puyuanyunId" idName="BatchId" :weeks="weeks" :dataList="dataList"
+				<infoDataDialog :id="puyuanyunId" idName="Id" :weeks="weeks" :dataList="dataList"
 					:ifClose="ifClose" :pointerface="puyuanCloudInventoryPage" :formList="formList" />
 			</el-dialog>
 		</el-card>
@@ -197,7 +197,6 @@ const dataList = ref<any>([
 		label: '操作人',
 		prop: 'creator',
 	},
-
 ]);
 let selectedRows = ref<any>([]);
 const uploadRef = ref<any>(null);

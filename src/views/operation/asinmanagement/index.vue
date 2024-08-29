@@ -1194,7 +1194,7 @@ const resetQueryConditionsByASIN = () => {
 };
 const resetQueryConditionsByErpSku = () => {
 	queryParams.value.erpTextArea = '';
-	queryParams.value.erpSkuList = null;
+	queryParams.value.erpSkuList = undefined;
 	erpAndGoodsName.value = '';
 };
 
@@ -1206,13 +1206,13 @@ const handleCurrentChange1 = (val: number) => {
 const clearAsin = () => {
 	aSIN.value = '';
 	queryParams.value.asinTextArea = '';
-	queryParams.value.aSINList = null;
+	queryParams.value.aSINList = undefined;
 	Session.set('queryObj', { ifquery: true });
 };
 const clearErp = () => {
 	erpAndGoodsName.value = '';
 	queryParams.value.erpTextArea = '';
-	queryParams.value.erpSkuList = null;
+	queryParams.value.erpSkuList = undefined;
 	Session.set('queryObj', { ifquery: true });
 };
 const clearObj = () => {
@@ -1220,7 +1220,7 @@ const clearObj = () => {
 };
 // 重置
 const reset = () => {
-	queryParams.value = { country: 'UAE', erpSkuList: null };
+	queryParams.value = { country: 'UAE', erpSkuList: undefined };
 	aSIN.value = '';
 	erpAndGoodsName.value = '';
 	Session.set('queryObj', {});
@@ -1253,8 +1253,10 @@ const handleQuery = async () => {
 	if (Session.get('queryObj')?.ifquery === false) {
 		queryParams.value.country = Session.get('queryObj')?.country ?? 'UAE';
 		//监听事件没有执行完就已经触发查询事件，所以直接拿到需要搜索的sku赋值给ErpSkuList
-		queryParams.value.erpSkuList = clearEmptyDataByAny(clearCharactersByRegex(Session.get('queryObj')?.erpAndGoodsName ?? null));
-		erpAndGoodsName.value = Session.get('queryObj')?.erpAndGoodsName ?? null;
+		queryParams.value.erpSkuList = clearEmptyDataByAny(clearCharactersByRegex(Session.get('queryObj')?.erpAndGoodsName ?? undefined));
+		console.log(queryParams.value.erpSkuList,Session.get('queryObj'));
+		
+		erpAndGoodsName.value = Session.get('queryObj')?.erpAndGoodsName ?? undefined;
 		selectcountry.value = Session.get('queryObj')?.country ?? 'UAE';
 		Session.set('queryObj', {});
 	}
@@ -1301,7 +1303,7 @@ watch(
 			//queryParams.value.aSINList = null;
 			//}
 			} else {
-				queryParams.value.aSINList = null;
+				queryParams.value.aSINList = undefined;
 				aSIN.value = '';
 			}
 		}else{
@@ -1326,7 +1328,7 @@ watch(
 				//queryParams.value.aSINList = null;
 				//}
 			} else {
-				queryParams.value.aSINList = null;
+				queryParams.value.aSINList = undefined;
 				queryParams.value.asinTextArea = '';
 			}
 		}else
@@ -1352,7 +1354,7 @@ watch(
 				//queryParams.value.erpSkuList = null;
 				//}
 			} else {
-				queryParams.value.erpSkuList = null;
+				queryParams.value.erpSkuList = undefined;
 				queryParams.value.erpTextArea = '';
 			}
 		}else{
@@ -1377,7 +1379,7 @@ watch(
 				//queryParams.value.erpSkuList = null;
 				//}
 			} else {
-				queryParams.value.erpSkuList = null;
+				queryParams.value.erpSkuList = undefined;
 				erpAndGoodsName.value = '';
 			}
 		}else{
@@ -1393,13 +1395,13 @@ onUpdated(() => {
 	) {
 		aSIN.value = '';
 		erpAndGoodsName.value = '';
-		queryParams.value = { country: 'UAE', erpSkuList: null, asinTextArea: null, aSINList: null };
+		queryParams.value = { country: 'UAE', erpSkuList: undefined, asinTextArea: undefined, aSINList: undefined };
 		handleQuery();
 	}
 });
 
 onMounted(() => {
-	queryParams.value = { country: 'UAE', erpSkuList: null };
+	queryParams.value = { country: 'UAE', erpSkuList: undefined };
 	aSIN.value = '';
 	erpAndGoodsName.value = '';
 	if (Session.get('queryObj')?.ifquery !== false) {

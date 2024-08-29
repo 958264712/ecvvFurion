@@ -64,18 +64,22 @@ function Export() {
 	});
 }
 const setItem = async (name: string, item: boolean) => {
-	switch (name) {
-		case 'setexchangeRate':
-			setexchangeRate.value = !item
-			break;
-		default:
-			setexchangeRate.value = !item
-			break;
-	}
-	if (!item) {
-		await updateConfig(exchangeRate.value);
-		ElMessage.success('保存成功');
-		handleQuery()
+	if (exchangeRate.value.value > 0) {
+		switch (name) {
+			case 'setexchangeRate':
+				setexchangeRate.value = !item;
+				break;
+			default:
+				setexchangeRate.value = !item;
+				break;
+		}
+		if (!item) {
+			await updateConfig(exchangeRate.value);
+			ElMessage.success('保存成功');
+			handleQuery();
+		}
+	} else {
+		ElMessage.error('请先设置RMB/汇率');
 	}
 };
 getData();
@@ -99,8 +103,8 @@ getData();
 
 				<el-form-item>
 					<el-button-group>
-						<el-button type="primary" icon="ele-Search" @click="handleQuery"> 查询 </el-button>
-						<el-button icon="ele-Refresh" @click="() => {
+						<el-button type="primary" icon="ele-Search" @click="handleQuery" > 查询 </el-button>
+						<el-button icon="ele-Refresh"  @click="() => {
 			queryParams = {};
 			handleQuery();
 		}
@@ -113,7 +117,7 @@ getData();
 		</el-card>
 		<el-card class="full-table" shadow="hover" style="margin-top: 8px">
 			<div>
-				<el-button style="float: left;" @click="Export" type="primary" size="small">导出库存Sku信息</el-button>
+				<el-button style="float: left;" @click="Export" type="primary" size="small" v-auth="'uAEInventorySKUBasicInfo:export'">导出库存Sku信息</el-button>
 				<el-form-item style="width: 300px;float: left;margin-left: 10px;" label="RMB/汇率" :rules="[
 			{
 				required: true,
@@ -121,7 +125,7 @@ getData();
 				trigger: 'blur',
 			},
 		]">
-					<el-input v-model="exchangeRate.value" :disabled="setexchangeRate" style="width: 70%;" />
+					<el-input v-model="exchangeRate.value" type="number" :disabled="setexchangeRate" style="width: 70%;" />
 					<el-button type="primary" style="marginLeft: 10px"
 						@click="setItem('setexchangeRate', setexchangeRate)">{{ setexchangeRate ? '设置' : '保存' }}</el-button>
 				</el-form-item>

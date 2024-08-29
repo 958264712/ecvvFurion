@@ -10,6 +10,7 @@ import tabDragColum from '/@/components/tabDragColum/index.vue'
 
 const tagoptions = ref<any>([]);
 const tableData: any[] = ref([]);
+const destinationList = ref<any>([]);
 const queryParams = reactive<any>({
 	destination: '迪拜',
 	time: [],
@@ -332,7 +333,9 @@ function IsTag(tag: any) {
 	}
 	return "#DE2910";
 }
-onMounted(() => {
+onMounted(async() => {
+	const res = await getAPI(SysDictDataApi).apiSysDictDataDataListCodeGet('destination');
+	destinationList.value = res.data.result
 	getAppPage();
 });
 
@@ -396,9 +399,7 @@ function customCellStyle({ row, column, rowIndex, columnIndex }) {
 			<el-form :model="queryParams" :inline="true">
 				<el-form-item label="目的地">
 					<el-select v-model="queryParams.destination" clearable="" placeholder="请输入目的地" @change="getAppPage">
-						<el-option label="美国" value="美国" />
-						<el-option label="迪拜" value="迪拜" />
-						<el-option label="沙特" value="沙特" />
+						<el-option v-for="item in destinationList" :label="item.value" :value="item.value" />
 					</el-select>
 				</el-form-item>
 				<el-form-item label="出发日期">

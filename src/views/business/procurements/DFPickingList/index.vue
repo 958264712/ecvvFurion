@@ -54,7 +54,7 @@
 				<el-form-item>
 					<el-button-group>
 						<el-button type="primary" icon="ele-Search" @click="handleQuery"
-							v-auth="'uAE_ProcurementDetails:page'"> 查询 </el-button>
+							> 查询 </el-button>
 						<el-button icon="ele-Refresh" @click="() => {
 
 			QueryRole();

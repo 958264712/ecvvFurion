@@ -18,9 +18,7 @@
 				</el-form-item>
 				<el-form-item label="目的地">
 					<el-select v-model="queryList.destination" filterable clearable>
-						<el-option label="美国" value="美国" />
-						<el-option label="迪拜" value="迪拜" />
-						<el-option label="沙特" value="沙特" />
+						<el-option v-for="item in destinationList" :label="item.value" :value="item.value" />
 					</el-select>
 				</el-form-item>
 				<el-form-item label="采购合同号">
@@ -256,12 +254,13 @@ import { Refresh, Setting, DCaret, Grid } from '@element-plus/icons-vue';
 import { ElMessageBox, ElMessage, ElNotification } from 'element-plus';
 import { Session } from '/@/utils/storage';
 import { collectionOrderInfoPage } from '/@/api/modular/main/collections.ts';
-import { SysAuthApi, SysUserApi } from '/@/api-services/api';
+import { SysAuthApi, SysUserApi,SysDictDataApi } from '/@/api-services/api';
 const editDialogRef = ref();
 const loading = ref(true);
 let dialogFormVisible = ref(false);
 let Exportloading = ref<any>(false);
 let tableData = ref<any>([]);
+const destinationList = ref<any>([]);
 const queryParams = ref<any>({});
 let isExProtAll = ref<any>(false);
 let activeNames = ref('1');
@@ -1188,7 +1187,9 @@ function examine(val?: any): void {
 		router.push({ path: '/business/edit/edit?id', query: { id: val.row.id, name } });
 	}
 }
-onMounted(() => {
+onMounted(async() => {
+	const res = await getAPI(SysDictDataApi).apiSysDictDataDataListCodeGet('destination');
+	destinationList.value = res.data.result
 	getAppPage();
 	service({
 		url: '/api/collectionGoodsInfo/returnSelectBox',

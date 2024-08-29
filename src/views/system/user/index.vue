@@ -4,7 +4,7 @@
 			<el-col :span="4" :xs="24">
 				<OrgTree ref="orgTreeRef" @node-click="nodeClick" />
 			</el-col>
-			
+
 			<el-col :span="20" :xs="24">
 				<el-card shadow="hover" :body-style="{ paddingBottom: '0' }">
 					<el-form :model="state.queryParams" ref="queryForm" :inline="true">
@@ -16,6 +16,16 @@
 						</el-form-item> -->
 						<el-form-item label="手机号码">
 							<el-input v-model="state.queryParams.phone" placeholder="手机号码" clearable />
+						</el-form-item>
+						<el-form-item label="创建时间">
+							<el-date-picker start-placeholder="开始时间" end-placeholder="结束时间" type="daterange" v-model="state.queryParams.createTime" />
+						</el-form-item>
+						<el-form-item label="状态">
+							<el-select v-model="state.queryParams.status" clearable="" placeholder="请选择" @change="getAppPage">
+								<el-option label="全部" :value=null />
+								<el-option label="启用" :value=1 />
+								<el-option label="关闭" :value=2 />
+							</el-select>
 						</el-form-item>
 						<el-form-item>
 							<el-button-group>
@@ -32,46 +42,31 @@
 				<el-card class="full-table" shadow="hover" style="margin-top: 8px">
 					<el-table :data="state.userData" style="width: 100%" v-loading="state.loading" border>
 						<el-table-column type="index" label="序号" width="55" align="center" fixed />
-						<el-table-column prop="account" label="账号" width="120" align="center" fixed show-overflow-tooltip />
-						<el-table-column prop="nickName" label="昵称" width="120" align="center" show-overflow-tooltip />
-						<el-table-column label="头像" width="80" align="center" show-overflow-tooltip>
-							<template #default="scope">
-								<el-avatar :src="scope.row.avatar" size="small">{{ scope.row.nickName?.slice(0, 1) ?? scope.row.realName?.slice(0, 1) }} </el-avatar>
-							</template>
-						</el-table-column>
 						<el-table-column prop="realName" label="姓名" width="120" align="center" show-overflow-tooltip />
-						<el-table-column label="出生日期" width="100" align="center" show-overflow-tooltip>
-							<template #default="scope">
-								{{ formatDate(new Date(scope.row.birthday), 'YYYY-mm-dd') }}
-							</template>
-						</el-table-column>
+						<el-table-column prop="orgName" label="所属组织" width="120" align="center" show-overflow-tooltip />
+						<el-table-column prop="departmentName" label="部门" width="120" align="center"  show-overflow-tooltip />
+						<el-table-column prop="account" label="账号" width="120" align="center"  show-overflow-tooltip />
 						<el-table-column label="性别" width="70" align="center" show-overflow-tooltip>
 							<template #default="scope">
 								<el-tag type="success" v-if="scope.row.sex === 1"> 男 </el-tag>
 								<el-tag type="danger" v-else> 女 </el-tag>
 							</template>
 						</el-table-column>
-						<el-table-column prop="phone" label="手机号码" width="120" align="center" show-overflow-tooltip />
+						<el-table-column prop="phone" label="手机号" width="120" align="center" show-overflow-tooltip />
 						<el-table-column label="状态" width="70" align="center" show-overflow-tooltip>
 							<template #default="scope">
 								<el-switch v-model="scope.row.status" :active-value="1" :inactive-value="2" size="small" @change="changeStatus(scope.row)" v-auth="'sysUser:setStatus'" />
 							</template>
 						</el-table-column>
-						<el-table-column prop="orderNo" label="排序" width="70" align="center" show-overflow-tooltip />
-						<el-table-column prop="createTime" label="修改时间" width="160" align="center" show-overflow-tooltip />
 						<el-table-column prop="remark" label="备注" header-align="center" show-overflow-tooltip />
-						<el-table-column label="操作" width="110" align="center" fixed="right" show-overflow-tooltip>
+						<el-table-column prop="createTime" label="创建时间" width="160" align="center" show-overflow-tooltip />
+						<el-table-column prop="updateTime" label="更新时间" width="160" align="center" show-overflow-tooltip />
+						<el-table-column prop="operatorName" label="操作人" width="120" align="center" show-overflow-tooltip />
+						<el-table-column label="操作" width="200" align="center" fixed="right" show-overflow-tooltip>
 							<template #default="scope">
-								<el-button icon="ele-Edit" size="small" text type="primary" @click="openEditUser(scope.row)" v-auth="'sysUser:update'"> 编辑 </el-button>
-								<el-dropdown>
-									<el-button icon="ele-MoreFilled" size="small" text type="primary" style="padding-left: 12px" />
-									<template #dropdown>
-										<el-dropdown-menu>
-											<el-dropdown-item icon="ele-RefreshLeft" @click="resetUserPwd(scope.row)" :disabled="!auth('sysUser:resetPwd')"> 重置密码 </el-dropdown-item>
-											<el-dropdown-item icon="ele-Delete" @click="delUser(scope.row)" divided :disabled="!auth('sysUser:delete')"> 删除账号 </el-dropdown-item>
-										</el-dropdown-menu>
-									</template>
-								</el-dropdown>
+								<el-button size="small" text type="primary" @click="openEditUser(scope.row)" v-auth="'sysUser:update'"> 编辑 </el-button>
+								<el-button  size="small" text type="primary" @click="resetUserPwd(scope.row)" v-auth="'sysUser:resetPwd'"> 重置密码 </el-button>
+								<el-button  size="small" text type="primary" @click="delUser(scope.row)" v-auth="'sysUser:delete'"> 删除账号 </el-button>
 							</template>
 						</el-table-column>
 					</el-table>
@@ -101,6 +96,7 @@ import { formatDate } from '/@/utils/formatTime';
 import { auth } from '/@/utils/authFunction';
 import OrgTree from '/@/views/system/org/component/orgTree.vue';
 import EditUser from '/@/views/system/user/component/editUser.vue';
+import moment from 'moment';
 
 import { getAPI } from '/@/utils/axios-utils';
 import { SysUserApi, SysOrgApi } from '/@/api-services/api';
@@ -115,7 +111,6 @@ const state = reactive({
 	queryParams: {
 		orgId: -1,
 		account: undefined,
-		realName: undefined,
 		phone: undefined,
 	},
 	tableParams: {
@@ -134,7 +129,7 @@ onMounted(async () => {
 // 查询机构数据
 const loadOrgData = async () => {
 	state.loading = true;
-	var res = await getAPI(SysOrgApi).apiSysOrgListGet(0);
+	var res = await getAPI(SysOrgApi).getListByUserDropDownBox();
 	state.orgTreeData = res.data.result ?? [];
 	state.loading = false;
 };
@@ -142,10 +137,18 @@ const loadOrgData = async () => {
 // 查询操作
 const handleQuery = async () => {
 	state.loading = true;
+	if(state.queryParams.status === '全部'){
+		state.queryParams.status = null
+	}
+	state.queryParams.startTime = state.queryParams.createTime?.length ? moment(state.queryParams.createTime[0]).format('YYYY-MM-DD') : '';
+	state.queryParams.endTime = state.queryParams.createTime?.length ? moment(state.queryParams.createTime[1]).format('YYYY-MM-DD') : '';
 	let params = Object.assign(state.queryParams, state.tableParams);
 	var res = await getAPI(SysUserApi).apiSysUserPagePost(params);
 	state.userData = res.data.result?.items ?? [];
 	state.tableParams.total = res.data.result?.total;
+	if(state.queryParams.status === null){
+		state.queryParams.status = '全部'
+	}
 	state.loading = false;
 };
 
@@ -153,20 +156,21 @@ const handleQuery = async () => {
 const resetQuery = () => {
 	state.queryParams.orgId = -1;
 	state.queryParams.account = undefined;
-	state.queryParams.realName = undefined;
+	state.queryParams.status = undefined;
+	state.queryParams.createTime = undefined;
 	state.queryParams.phone = undefined;
 	handleQuery();
 };
 
 // 打开新增页面
 const openAddUser = () => {
-	state.editUserTitle = '添加账号';
+	state.editUserTitle = '新增';
 	editUserRef.value?.openDialog({ id: undefined, birthday: '2000-01-01', sex: 1, orderNo: 100, cardType: 0, cultureLevel: 5 });
 };
 
 // 打开编辑页面
 const openEditUser = (row: any) => {
-	state.editUserTitle = '编辑账号';
+	state.editUserTitle = '编辑';
 	editUserRef.value?.openDialog(row);
 };
 

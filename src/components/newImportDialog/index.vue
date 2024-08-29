@@ -2,7 +2,7 @@
 	<div class="tableImport-container">
 		<el-dialog v-model="isShowDialog" title="导入" :width="800" @close="closeDialog(ruleFormRef)" draggable="" center>
 			<div class="import" v-if="isShowImport">
-				<p>1、下载导入模版，如已有下载模版可直接跳过第一步，在后续步骤选择月份及文件上传</p>
+				<p>1、下载导入模版，如已有下载模版可直接在第二步选择文件上传</p>
 				<div class="moban">
 					<div style="display: flex; align-items: center">
 						<svg t="1709867915105" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2468" width="64" height="64">
@@ -17,17 +17,13 @@
 								fill="#707070"
 							></path>
 						</svg>
-						<span>{{ props.excelName }}模板</span>
+						<span>{{ props.excelName }}模版</span>
 					</div>
 					<el-button><el-link type="success" :href="props.tableAddress">下载</el-link></el-button>
 				</div>
 			</div>
 			<div class="import" v-if="isShowImport">
-				<p>2、选择需要导入数据的月份</p>
-				<el-date-picker :clearable="false" v-model="time" type="month" style="width: 200px;margin-top:20px" placeholder="请选择月份" />
-			</div>
-			<div class="import" v-if="isShowImport">
-				<p>3、上传需要导入表格</p>
+				<p>2、上传需要导入表格</p>
 				<el-upload :on-change="Imports" :multiple="false" :show-file-list="false" :auto-upload="false" name="file">
 					<div class="moban1">
 						<svg t="1709867915105" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2468" width="128" height="128">
@@ -48,19 +44,45 @@
 				</el-upload>
 			</div>
 			<div v-if="!isShowImport">
-				<div v-if="result?.total && isMime">
+				<div v-if="result?.istrue && result?.total !== 0">
 					<Check class="success" style="border: 2px solid #62e48d; border-radius: 50%; width: 18px" />
 					导入成功，总<span class="success">{{ result?.total }}</span
 					>条，成功导入<span class="success"> {{ result?.total }}</span
 					>条数据，失败<span class="fail">0</span>条
 				</div>
-				<div v-else-if="!isMime">
-					<CloseBold class="fail" style="border: 2px solid #f44d4d; border-radius: 50%; width: 18px; margin-right: 5px" />
-					导入失败，导入的文件类型不符，请检查导入的文件类型是否正确，再次上传
+				<div v-else-if="result?.istrue && result?.total === 0">
+					<CloseBold class="fail" style="border: 2px solid #f44d4d; border-radius: 50%; width: 18px" />
+					导入失败，表格为空
 				</div>
 				<div v-else>
 					<CloseBold class="fail" style="border: 2px solid #f44d4d; border-radius: 50%; width: 18px; margin-right: 5px" />
-					导入失败，导入的文件不符，请检查文件内的数据是否正确，再次上传
+					<template v-if="result.isTemplate">{{ result?.error }}</template>
+					<template v-else>
+						导入失败，总<span class="success">{{ result?.total }}</span
+						>条，成功导入<span class="success">0</span> 条数据，失败<span class="fail">{{ result?.fail }}</span
+						>条，可下载错误报告，修改后再次上传
+						<el-table :data="result?.items" size="lagre" style="width: 100%; margin: 20px 0" v-loading="loading1" tooltip-effect="light" row-key="id" border="">
+							<el-table-column prop="rowNO" label="行数" width="80" sortable align="center" show-overflow-tooltip="" />
+							<el-table-column v-for="item in errorData" :prop="item.prop" :label="item.label" min-width="150" sortable align="center" show-overflow-tooltip="" />
+							<el-table-column prop="errorInfo" label="失败原因" min-width="150" sortable align="center" show-overflow-tooltip="">
+								<template #default="scope">
+									<span class="fail">{{ scope.row.errorInfo }}</span>
+								</template>
+							</el-table-column>
+						</el-table>
+						<el-pagination
+							v-model:currentPage="tableParams.page"
+							v-model:page-size="tableParams.pageSize"
+							:total="tableParams.total"
+							:page-sizes="[10, 20, 50, 100, 500, 1000]"
+							small=""
+							background=""
+							@size-change="handleSizeChange"
+							@current-change="handleCurrentChange"
+							layout="total, sizes, prev, pager, next, jumper"
+						/>
+						<el-button type="primary" :loading="Exportloading" @click="exportExcel" style="margin: 10px auto 0">下载报告</el-button>
+					</template>
 				</div>
 			</div>
 		</el-dialog>
@@ -73,6 +95,20 @@ import { ElMessage, ElNotification } from 'element-plus';
 import { Check, CloseBold } from '@element-plus/icons-vue';
 import { service } from '/@/utils/request';
 import other from '/@/utils/other';
+
+/**
+ * 和弹窗组件el-dialog配套使用，外部弹窗控制大小，本组件主要用于详情，带查询表格展示，不带弹窗
+ * importDialog 配套参数
+ * @props excelName 模板名称
+ * @props tableAddress 下载模板链接
+ * @props url 传入import接口
+ * @props area 传入中英文格式
+ * @props ifExcelBol 是否进行格式约束
+ * @props exportUrl 导出接口链接
+ * @props errorData 报错字段表格
+ * @emit close 关闭窗口
+ * @emit reloadTable 调用外部接口刷新数据列表
+ */
 
 //父级传递来的参数
 var props = defineProps({
@@ -92,6 +128,18 @@ var props = defineProps({
 		type: String,
 		default: '',
 	},
+	ifExcelBol: {
+		type: Boolean,
+		default: false,
+	},
+	exportUrl: {
+		type: String,
+		default: '',
+	},
+	errorData: {
+		type: Array,
+		default: [],
+	},
 });
 //父级传递来的函数，用于回调
 const emit = defineEmits(['reloadTable']);
@@ -99,9 +147,8 @@ const ruleFormRef = ref<FormInstance>();
 const loading = ref(false);
 const loading1 = ref(false);
 const isShowDialog = ref(false);
+const Exportloading = ref(false);
 const isShowImport = ref(true);
-const isMime = ref(true);
-const time = ref<any>(undefined)
 const result = ref<any>({});
 const tableParams = ref({
 	Page: 1,
@@ -109,9 +156,9 @@ const tableParams = ref({
 	total: 0,
 });
 const beforeUpload = (rawFile: any) => {
-	const isXLSX = rawFile.raw.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || rawFile.raw.type === 'application/vnd.ms-excel';
+	const isXLSX =  rawFile.raw.type ==='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || rawFile.raw.type === 'application/vnd.ms-excel'
 	if (!isXLSX) {
-		ElMessage.error('导入的文件类型不符，请选择.xlsx或.xls文件类型再次上传');
+		ElMessage.error('导入的文件类型不符，请选择.xls、.xlsx文件类型再次上传');
 		return false;
 	}
 	return true;
@@ -120,10 +167,13 @@ const beforeUpload = (rawFile: any) => {
 //导入
 const Imports = (file: any) => {
 	loading.value = true;
-	isMime.value = beforeUpload(file);
-	if (isMime.value) {
+	const ifupload = props.ifExcelBol ? beforeUpload(file) : true;
+	console.log(ifupload);
+	
+	if (ifupload) {
 		const formData = new FormData();
 		formData.append('file', file.raw);
+		formData.append('Site', props.area);
 		service({
 			url: props.url,
 			method: 'post',
@@ -134,7 +184,7 @@ const Imports = (file: any) => {
 		}).then((res: any) => {
 			loading.value = false;
 			isShowImport.value = false;
-			if (res.data.result.total) {
+			if (res.data.result.istrue && res.data.result.total !== 0) {
 				result.value = res.data.result;
 				tableParams.value.total = res.data.result.total;
 				ElMessage.success('导入成功');
@@ -147,7 +197,44 @@ const Imports = (file: any) => {
 		});
 	}
 };
-
+const exportExcel = () => {
+	Exportloading.value = true;
+	service({
+		url: (import.meta.env.VITE_API_URL as any) + props.exportUrl + result.value.bacthId,
+		method: 'post',
+		responseType: 'blob',
+		headers: {
+			'Content-Type': 'multipart/form-data; boundary=----WebKitFormBoundarynl6gT1BKdPWIejNq',
+		},
+	})
+		.then((data) => {
+			other.downloadfile(data);
+			if (data.statusText == 'OK') {
+				ElNotification({
+					title: '系统提示',
+					message: '导出成功',
+					type: 'success',
+				});
+				ElMessage({
+					type: 'success',
+					message: '导出成功',
+				});
+			}
+			Exportloading.value = false;
+		})
+		.catch((arr) => {
+			ElNotification({
+				title: '系统提示',
+				message: '下载错误：获取文件流错误',
+				type: 'error',
+			});
+			ElMessage({
+				type: 'error',
+				message: '导出失败',
+			});
+			Exportloading.value = false;
+		});
+};
 // 打开弹窗
 const openDialog = (row: any) => {
 	isShowDialog.value = true;

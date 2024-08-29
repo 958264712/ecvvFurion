@@ -3,7 +3,10 @@
 		<el-card shadow="hover" :body-style="{ paddingBottom: '0' }" v-show="props.formList?.length">
 			<el-form :model="queryParams" ref="queryForm" :inline="true">
 				<el-form-item :label="item.label" v-for="item in props.formList">
-					<el-input v-model="queryParams[item.prop]" :placeholder="'请输入' + `${item.label}`" />
+					<el-input v-model="queryParams[item.prop]" :placeholder="'请输入' + `${item.label}`"  v-if="!item?.select"/>
+					<el-select v-model="queryParams[item.prop]" :placeholder="'请选择' + `${item.label}`"  v-else-if="item?.select">
+						<el-option v-for="ite in item.options" :label="ite.label" :value="ite.value" />
+					</el-select>
 				</el-form-item>
 				<el-form-item>
 					<el-button-group>
@@ -54,8 +57,14 @@ import { ElMessageBox, ElMessage } from 'element-plus';
  * @props idName 传入表格名称
  * @props pointerface 传入表格相应接口
  * @props dataList 传入表格column列表
- * @props formList 传入筛选列表
+ * @props formList 传入筛选列表 
  */
+declare type formListType<T = any> = {
+	label:String,
+	porp:String,
+	select?:Boolean,
+	options?:[T]
+}[]
 const props = defineProps(['id','weeks', 'idName', 'pointerface', 'dataList', 'formList', 'ifClose']);
 const loading = ref(false);
 const tableData = ref<any>([]);

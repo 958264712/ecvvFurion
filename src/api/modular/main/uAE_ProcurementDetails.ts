@@ -7,9 +7,11 @@ enum Api {
 	PageSA_ProcurementDetails = '/api/procurementDetails/sAPage',
 	UAEgetInventorySKUBasicInfo = '/api/procurementDetails/uAEGetInventorySKUBasicInfo',
 	uSAGetInventorySKUBasicInfo = '/api/procurementDetails/uSAGetInventorySKUBasicInfo',
+	eGGetInventorySKUBasicInfo = '/api/procurementDetails/eGGetInventorySKUBasicInfo',
 	SAgetInventorySKUBasicInfo = '/api/procurementDetails/sAGetInventorySKUBasicInfo',
 	UAEExportInventorySKUBasicInfo = '/api/procurementDetails/uAEExportInventorySKUBasicInfo',
 	uSAExportInventorySKUBasicInfo = '/api/procurementDetails/uSAExportInventorySKUBasicInfo',
+	eGExportInventorySKUBasicInfo = '/api/procurementDetails/eGExportInventorySKUBasicInfo',
 	SAExportInventorySKUBasicInfo = '/api/procurementDetails/sAExportInventorySKUBasicInfo',
 	AddCN_OperationalProductAttributes = '/api/cN_OperationalProductAttributes/add',
 	DeleteCN_OperationalProductAttributes = '/api/cN_OperationalProductAttributes/delete',
@@ -77,6 +79,13 @@ export const uSAGetInventorySKUBasicInfo = (params?: any) =>
 		method: 'get',
 		params: params,
 	});
+// 库存sku基础信息 --EG
+export const eGGetInventorySKUBasicInfo = (params?: any) =>
+	request({
+		url: Api.eGGetInventorySKUBasicInfo,
+		method: 'get',
+		params: params,
+	});
 // 库存sku基础信息 --SA
 export const sAgetInventorySKUBasicInfo = (params?: any) =>
 	request({
@@ -97,6 +106,14 @@ export const uAEExportInventorySKUBasicInfo = (params?: any) =>
 export const uSAExportInventorySKUBasicInfo = (params?: any) =>
 	request({
 		url: Api.uSAExportInventorySKUBasicInfo,
+		method: 'post',
+		data: params,
+		responseType: 'blob',
+	});
+// 导出库存sku基础信息 -- EG
+export const eGExportInventorySKUBasicInfo = (params?: any) =>
+	request({
+		url: Api.eGExportInventorySKUBasicInfo,
 		method: 'post',
 		data: params,
 		responseType: 'blob',

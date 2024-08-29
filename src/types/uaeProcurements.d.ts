@@ -19,3 +19,9 @@ declare type operationalParamsType = {
     localDeliveryFee?: string;
     logisticsMethods?: string;
 }
+declare type formListType<T = any> = {
+    label: String,
+    porp: String,
+    select?: Boolean,
+    options?: [T]
+}[]

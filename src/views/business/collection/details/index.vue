@@ -32,8 +32,11 @@
 					<!-- <span v-if="!collectionOrderInfo.forwarderID" class="error-message">贷代名称不能为空！</span> -->
 				</el-form-item>
 				<el-form-item label="目的地">
-					<el-input v-model="collectionOrderInfo.destination" @input="showCurrency()" clearable=""
-						:disabled="!compile" placeholder="请输入目的地" />
+					<el-select v-model="collectionOrderInfo.destination" filterable @change="showCurrency()" clearable :disabled="!compile" placeholder="请输入目的地">
+						<el-option v-for="item in destinationList" :label="item.value" :value="item.value" />
+					</el-select>
+					<!-- <el-input v-model="collectionOrderInfo.destination" @input="showCurrency()" clearable=""
+						 /> -->
 				</el-form-item>
 				<el-form-item label="截仓日期">
 					<el-date-picker v-model="collectionOrderInfo.cutOffDate" clearable="" type="date" :disabled="!compile"
@@ -210,7 +213,7 @@ import { onMounted, reactive, ref, computed, onBeforeUnmount } from 'vue';
 import { ElMessage } from 'element-plus';
 import { useRoute } from 'vue-router';
 import { getAPI } from '/@/utils/axios-utils';
-import { SysMenuApi } from '/@/api-services/api';
+import { SysMenuApi,SysDictDataApi } from '/@/api-services/api';
 import { SysMenu } from '/@/api-services/models';
 import service from '/@/utils/request';
 import mittBus from '/@/utils/mitt';
@@ -235,8 +238,12 @@ let collectionOrderInfo = reactive<any>({state:'集货'});
 let compile = ref<boolean>(false);
 let allCompiles = ref(false);
 let selectedRows = ref<any>([]);
+const destinationList = ref<any>([]);
 let activeNames = ref('1');
 let selectBox = ref<any>();
+
+
+
 let shippingMethodOptions = ref(['海运', '空运', '快递', '小包']);
 let stateOptions = ref(['集货', '截仓', '在途中', '已入仓']);
 let payerOptions = ref(['国内支付', '迪拜支付']);
@@ -293,7 +300,7 @@ function handleRemovefun(file: any, rawFile: any) {
 					}
 				});
 				collectionOrderInfo.fileList = fileLists.value;
-				getAppPage();
+				handleQuery();
 			} else {
 				ElMessage({
 					type: 'info',
@@ -312,6 +319,8 @@ onMounted(async () => {
 	} else {
 		compile.value = true;
 	}
+	const res = await getAPI(SysDictDataApi).apiSysDictDataDataListCodeGet('destination');
+	destinationList.value = res.data.result
 	handleQuery();
 	service({
 		url: '/api/collectionGoodsInfo/returnSelectBox',
@@ -376,7 +385,7 @@ function commit() {
 					message: '更新成功',
 				});
 				activeNames.value = '2';
-				getAppPage();
+				handleQuery();
 			} else {
 				ElMessage({
 					type: 'info',

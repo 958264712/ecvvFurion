@@ -3,13 +3,14 @@ import { ref, watch, onMounted } from 'vue';
 import editDialog from './components/index.vue';
 import newDialog from './components/newPos.vue';
 import other from '/@/utils/other.ts';
+import moment from 'moment';
 import { ElMessage } from 'element-plus';
 import { useRouter } from 'vue-router';
 import { poFulfillingPage, Import, getPoFulfillingOrdersList, getConfirmedNewPOsPage, exportPoFulfillingOrders, exportConfirmedNewPOs } from '/@/api/modular/main/poFulfillingOrdersData';
 import InfoDataDialog from '/@/components/infoDataDialog/index.vue';
 
-const timevalue1 = ref('');
-const timevalue2 = ref('');
+const timevalue1 = ref(undefined);
+const timevalue2 = ref(undefined);
 const router = useRouter();
 const queryParams = ref<any>({ site: null });
 const tableParams = ref<any>({ page: 1, pageSize: 20 });
@@ -39,10 +40,6 @@ const sites = ref([
 	{
 		key: 'SA',
 		value: 'SA',
-	},
-	{
-		key: 3,
-		value: '...',
 	},
 ]);
 const exportStatus = ref([
@@ -85,18 +82,16 @@ const handleQuery = async (): void => {
 	queryParams.value.orderTimeEndtTime = null;
 	queryParams.value.exportStartTime = null;
 	queryParams.value.exportEndTime = null;
-	if (!timevalue1.value === '') {
-		(queryParams.value.orderTimeStartTime = timevalue1.value[0]), (queryParams.value.orderTimeEndtTime = timevalue1.value[1]);
+	if (timevalue1.value !== undefined) {
+		(queryParams.value.orderTimeStartTime = moment(timevalue1.value[0]).format('YYYY-MM-DD')), (queryParams.value.orderTimeEndtTime = moment(timevalue1.value[1]).format('YYYY-MM-DD'));
 	}
-	if (!timevalue2.value === '') {
-		(queryParams.value.exportStartTime = timevalue2.value[0]), (queryParams.value.exportEndTime = timevalue2.value[1]);
+	if (timevalue2.value !== undefined) {
+		(queryParams.value.exportStartTime = moment(timevalue2.value[0]).format('YYYY-MM-DD')), (queryParams.value.exportEndTime = moment(timevalue2.value[1]).format('YYYY-MM-DD'));
 	}
 
 	var res = await poFulfillingPage(Object.assign(queryParams.value, tableParams.value));
 	tableData.value = res.data.result?.items ?? [];
 	tableParams.value.total = res.data.result?.total;
-	tableParams.value.PageNo = res.data.result?.page;
-	tableParams.value.PageSize = res.data.result?.pageSize;
 	if (queryParams.value.site === null) {
 		queryParams.value.site = '全部';
 	}
@@ -196,13 +191,13 @@ const cancel = () => {
 
 // 改变页面容量
 const handleSizeChange = (val: number): void => {
-	tableParams.value.PageSize = val;
+	tableParams.value.pageSize = val;
 	handleQuery();
 };
 
 // 改变页码序号
 const handleCurrentChange = (val: number): void => {
-	tableParams.value.PageNo = val;
+	tableParams.value.page = val;
 	handleQuery();
 };
 
@@ -448,6 +443,8 @@ onMounted(() => {
 							@click="
 								() => {
 									queryParams = {};
+									timevalue1=undefined;
+									timevalue2=undefined;
 									handleQuery();
 								}
 							"
@@ -507,8 +504,8 @@ onMounted(() => {
 				<el-table-column prop="site" label="站点" align="center" />
 				<el-table-column prop="createTime" label="导入时间 " align="center" />
 				<el-table-column prop="orderTime" label="订单时间 " align="center" />
-				<el-table-column prop="contractedWarehouseTime" label="约仓时间 " align="center" />
-				<el-table-column prop="deliveryTime" label="送达时间 " align="center" />
+				<!-- <el-table-column prop="contractedWarehouseTime" label="约仓时间 " align="center" />
+				<el-table-column prop="deliveryTime" label="送达时间 " align="center" /> -->
 				<el-table-column prop="exportStatus" label="导出状态 " align="center">
 					<template #default="scope">
 						<el-text v-if="scope.row.exportStatus == 1" type="primary">未导出</el-text>
@@ -540,8 +537,8 @@ onMounted(() => {
 				</el-table-column>
 			</el-table>
 			<el-pagination
-				v-model:currentPage="tableParams.PageNo"
-				v-model:page-size="tableParams.PageSize"
+				v-model:currentPage="tableParams.page"
+				v-model:page-size="tableParams.pageSize"
 				:total="tableParams.total"
 				:page-sizes="[10, 20, 50, 100, 500, 1000]"
 				small=""

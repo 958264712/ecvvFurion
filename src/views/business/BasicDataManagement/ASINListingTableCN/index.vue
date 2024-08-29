@@ -594,7 +594,7 @@
 				@current-change="handleCurrentChange"
 				layout="total, sizes, prev, pager, next, jumper"
 			/>
-			<importDialog ref="importDialogRef" :excelName="excelName" :tableAddress="tableAddress" :area="area" :url="url" @reloadTable="handleQuery" />
+			<importDialog ref="importDialogRef" :errorData="errorData" :excelName="excelName" :ifExcelBol="true" :exportUrl="'/api/aSINListingTable/exportError/'" :tableAddress="tableAddress" :area="area" :url="url" @reloadTable="handleQuery" />
 		</el-card>
 	</div>
 </template>
@@ -610,7 +610,8 @@ import { ArrowDownBold, ArrowUpBold, QuestionFilled } from '@element-plus/icons-
 import router from '/@/router';
 import other from '/@/utils/other.ts';
 import tabDragColum from '/@/components/tabDragColum/index.vue';
-import importDialog from './component/importDialog.vue';
+// import importDialog from './component/importDialog.vue';
+import importDialog from '/@/components/newImportDialog/index.vue';
 import { clearEmptyDataByAny } from '/@/utils/constHelper';
 import regexhelper from '/@/utils/regexHelper';
 import { el } from 'element-plus/es/locale';
@@ -626,6 +627,20 @@ const importDialogRef = ref();
 const excelName = ref('');
 const url = ref('');
 const tableAddress = ref('');
+const errorData = ref<any>([
+	{
+		prop:'asin',
+		label:'ASIN'
+	},
+	{
+		prop:'erpSku',
+		label:'ERP-SKU'
+	},
+	{
+		prop:'addASINAccount',
+		label:'上架平台'
+	},
+])
 
 const isWatch = ref(true);
 

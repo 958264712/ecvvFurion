@@ -83,7 +83,11 @@ handleQuery();
           <el-input v-model="queryParams.requestUrl" clearable="" placeholder="请输入Url地址" />
         </el-form-item>
         <el-form-item label="请求方式">
-          <el-input-number v-model="queryParams.requestWay" clearable="" placeholder="请输入请求方式" />
+          <el-select v-model="queryParams.requestWay" clearable placeholder="请选择请求方式">
+            <el-option label="全部" value="0" />
+            <el-option label="GET" value="1" />
+            <el-option label="POST" value="2" />
+          </el-select>
         </el-form-item>
         <el-form-item>
           <el-button-group>

@@ -8,7 +8,7 @@
 				<el-form-item>
 					<el-button-group>
 						<el-button type="primary" icon="ele-Search" @click="handleQuery"
-							v-auth="'uAE_ProcurementDetails:page'"> 查询 </el-button>
+							> 查询 </el-button>
 						<el-button icon="ele-Refresh" @click="() => {
 			queryParams = {};
 			handleQuery();
@@ -385,6 +385,22 @@ const TableData = ref<any>([
 		desc: '',
 	},
 	{
+		titleCN: '近7天销量-UAE',
+		dataIndex: 'shippedUnits7dayUAE',
+		checked: true,
+		fixed: false,
+		remark: false,
+		desc: '',
+	},
+	{
+		titleCN: '近7天销量-SA',
+		dataIndex: 'shippedUnits7daySA',
+		checked: true,
+		fixed: false,
+		remark: false,
+		desc: '',
+	},
+	{
 		titleCN: 'UAE建议采购数量',
 		dataIndex: 'uaeSuggestedProcurementQuantity',
 		checked: true,
@@ -401,8 +417,40 @@ const TableData = ref<any>([
 		desc: '',
 	},
 	{
+		titleCN: 'UAE综合空运单价(AED)',
+		dataIndex: 'emptyComprehensiveInitialUnitPriceUAE',
+		checked: true,
+		fixed: false,
+		remark: false,
+		desc: '',
+	},
+	{
+		titleCN: 'SA综合空运单价(AED)',
+		dataIndex: 'emptyComprehensiveInitialUnitPriceSA',
+		checked: true,
+		fixed: false,
+		remark: false,
+		desc: '',
+	},
+	{
 		titleCN: '上架日期',
 		dataIndex: 'listingDateTime',
+		checked: true,
+		fixed: false,
+		remark: false,
+		desc: '',
+	},
+	{
+		titleCN: 'UAE缺货状态',
+		dataIndex: 'uaeOutOfStockStatus',
+		checked: true,
+		fixed: false,
+		remark: false,
+		desc: '',
+	},
+	{
+		titleCN: 'SA缺货状态',
+		dataIndex: 'saOutOfStockStatus',
 		checked: true,
 		fixed: false,
 		remark: false,

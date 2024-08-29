@@ -35,6 +35,7 @@
 				:props="{ children: 'children', label: 'name' }"
 				:filter-node-method="filterNode"
 				@node-click="nodeClick"
+				default-expand-all
 				:show-checkbox="state.isShowCheckbox"
 				:default-checked-keys="state.ownOrgData"
 				highlight-current

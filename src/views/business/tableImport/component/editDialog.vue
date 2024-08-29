@@ -151,7 +151,7 @@ const handleRemove: UploadProps['onRemove'] = (file, uploadFiles) => {
 };
 const DescriptionhandleRemove: UploadProps['onRemove'] = (file, uploadFiles) => {
 	ruleForm.value.tableDescriptionAddress = '';
-	console.log(ruleForm.value);
+	// console.log(ruleForm.value);
 };
 const handlePreview: UploadProps['onPreview'] = (uploadFile) => {
 	console.log(uploadFile);

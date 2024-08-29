@@ -1,9 +1,9 @@
 <template>
 	<el-dialog :width="800" v-model="dialogFormVisible" :title="props.title">
-		<el-form :model="ruleForm" label-position="left" label-width="110px">
+		<el-form :model="ruleForm" label-position="left" ref="ruleFormRef" label-width="110px">
 			<el-row>
 				<el-col :span="12">
-					<el-form-item label="上架平台" :rules="[{ required: true, message: `上架平台不能为空`, trigger: 'blur' }]">
+					<el-form-item label="上架平台" prop="addASINAccount" :rules="[{ required: true, message: `上架平台不能为空`, trigger: 'blur' }]">
 						<el-input v-model="ruleForm.addASINAccount" type="text" style="height: 30px; width: 250px" placeholder="请输入" />
 					</el-form-item>
 					<el-form-item label="备注">
@@ -11,12 +11,12 @@
 					</el-form-item>
 				</el-col>
 				<el-col :span="12">
-					<el-form-item label="关联站点" :rules="[{ required: true, message: `关联站点不能为空`, trigger: 'blur' }]">
+					<el-form-item label="关联站点" prop="relatedSite" :rules="[{ required: true, message: `关联站点不能为空`, trigger: 'blur' }]">
 						<el-select v-model="ruleForm.relatedSite" clearable="" placeholder="请选择">
 							<el-option v-for="(item, index) in siteItemList" :key="index" :value="item.value" :label="item.label" />
 						</el-select>
 					</el-form-item>
-					<el-form-item label="状态" :rules="[{ required: true, message: `状态不能为空`, trigger: 'blur' }]">
+					<el-form-item label="状态" prop="state" :rules="[{ required: true, message: `状态不能为空`, trigger: 'blur' }]">
 						<el-switch v-model="ruleForm.state" />
 					</el-form-item>
 				</el-col>
@@ -31,11 +31,10 @@
 <script lang="ts" setup>
 import { ref } from 'vue';
 import { ElMessage } from 'element-plus';
-import { listPlatformManagementAdd,listPlatformManagementUpdate } from '/@/api/modular/main/basicInfo.ts';
-
+import { listPlatformManagementAdd, listPlatformManagementUpdate } from '/@/api/modular/main/basicInfo.ts';
 
 let dialogFormVisible = ref(false);
-const props = defineProps(['title','siteItemList']);
+const props = defineProps(['title', 'siteItemList']);
 const emit = defineEmits(['reloadTable']);
 const ruleFormRef = ref<FormInstance>();
 const ruleForm = ref<any>({});
@@ -52,37 +51,40 @@ const closeDialog = () => {
 };
 
 const confirm = () => {
-	if (ruleForm.value.id != null) {
-		listPlatformManagementUpdate(ruleForm.value).then((data) => {
-			if (data.data.type == 'success') {
-				ElMessage({
-					type: 'success',
-					message: '操作成功',
-				});
-				closeDialog();
-			} else {
-				ElMessage({
-					type: 'info',
-					message: '操作失败',
-				});
-			}
-		});
-	} else {
-		listPlatformManagementAdd(ruleForm.value).then((data) => {
-			if (data.data.type == 'success') {
-				ElMessage({
-					type: 'success',
-					message: '添加成功',
-				});
-				closeDialog();
-			} else {
-				ElMessage({
-					type: 'info',
-					message: '添加失败',
-				});
-			}
-		});
-	}
+	ruleFormRef.value.validate(async (valid: boolean) => {
+		if (!valid) return;
+		if (ruleForm.value.id != null) {
+			listPlatformManagementUpdate(ruleForm.value).then((data) => {
+				if (data.data.type == 'success') {
+					ElMessage({
+						type: 'success',
+						message: '操作成功',
+					});
+					closeDialog();
+				} else {
+					ElMessage({
+						type: 'info',
+						message: '操作失败',
+					});
+				}
+			});
+		} else {
+			listPlatformManagementAdd(ruleForm.value).then((data) => {
+				if (data.data.type == 'success') {
+					ElMessage({
+						type: 'success',
+						message: '添加成功',
+					});
+					closeDialog();
+				} else {
+					ElMessage({
+						type: 'info',
+						message: '添加失败',
+					});
+				}
+			});
+		}
+	});
 };
 
 //将属性或者函数暴露给父组件

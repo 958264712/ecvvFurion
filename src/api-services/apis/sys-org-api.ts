@@ -191,6 +191,92 @@ export const SysOrgApiAxiosParamCreator = function (configuration?: Configuratio
             };
         },
         /**
+        * 
+        * @summary 获取在新增角色中的机构列表
+        * @param {*} [options] Override http request option.
+        * @throws {RequiredError}
+        */
+        getListByRoleDropDownBox: async (options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/sysOrg/getListByRoleDropDownBox`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, 'https://example.com');
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+            const localVarRequestOptions: AxiosRequestConfig = { method: 'GET', ...baseOptions, ...options };
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            // http bearer authentication required
+            if (configuration && configuration.accessToken) {
+                const accessToken = typeof configuration.accessToken === 'function'
+                    ? await configuration.accessToken()
+                    : await configuration.accessToken;
+                localVarHeaderParameter["Authorization"] = "Bearer " + accessToken;
+            }
+
+            const query = new URLSearchParams(localVarUrlObj.search);
+            for (const key in localVarQueryParameter) {
+                query.set(key, localVarQueryParameter[key]);
+            }
+            for (const key in options.params) {
+                query.set(key, options.params[key]);
+            }
+            localVarUrlObj.search = (new URLSearchParams(query)).toString();
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = { ...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers };
+
+            return {
+                url: localVarUrlObj.pathname + localVarUrlObj.search + localVarUrlObj.hash,
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+        * 
+        * @summary 获取在新增账号中的机构列表
+        * @param {*} [options] Override http request option.
+        * @throws {RequiredError}
+        */
+        getListByUserDropDownBox: async ( options: AxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/sysOrg/getListByUserDropDownBox`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, 'https://example.com');
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+            const localVarRequestOptions: AxiosRequestConfig = { method: 'GET', ...baseOptions, ...options };
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            // authentication Bearer required
+            // http bearer authentication required
+            if (configuration && configuration.accessToken) {
+                const accessToken = typeof configuration.accessToken === 'function'
+                    ? await configuration.accessToken()
+                    : await configuration.accessToken;
+                localVarHeaderParameter["Authorization"] = "Bearer " + accessToken;
+            }
+
+            const query = new URLSearchParams(localVarUrlObj.search);
+            for (const key in localVarQueryParameter) {
+                query.set(key, localVarQueryParameter[key]);
+            }
+            for (const key in options.params) {
+                query.set(key, options.params[key]);
+            }
+            localVarUrlObj.search = (new URLSearchParams(query)).toString();
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = { ...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers };
+
+            return {
+                url: localVarUrlObj.pathname + localVarUrlObj.search + localVarUrlObj.hash,
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * 
          * @summary 更新机构
          * @param {UpdateOrgInput} [body] 
@@ -292,6 +378,33 @@ export const SysOrgApiFp = function(configuration?: Configuration) {
                 return axios.request(axiosRequestArgs);
             };
         },
+        
+        /**
+         * 
+         * @summary 获取在新增角色中的机构列表
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getListByRoleDropDownBox(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => Promise<AxiosResponse<AdminResultListSysOrg>>> {
+            const localVarAxiosArgs = await SysOrgApiAxiosParamCreator(configuration).getListByRoleDropDownBox(options);
+            return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
+                const axiosRequestArgs: AxiosRequestConfig = { ...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url };
+                return axios.request(axiosRequestArgs);
+            };
+        },
+        /**
+        * 
+        * @summary 获取在新增账号中的机构列表
+        * @param {*} [options] Override http request option.
+        * @throws {RequiredError}
+        */
+        async getListByUserDropDownBox(options?: AxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => Promise<AxiosResponse<AdminResultListSysOrg>>> {
+            const localVarAxiosArgs = await SysOrgApiAxiosParamCreator(configuration).getListByUserDropDownBox(options);
+            return (axios: AxiosInstance = globalAxios, basePath: string = BASE_PATH) => {
+                const axiosRequestArgs: AxiosRequestConfig = { ...localVarAxiosArgs.options, url: basePath + localVarAxiosArgs.url };
+                return axios.request(axiosRequestArgs);
+            };
+        },
         /**
          * 
          * @summary 更新机构
@@ -348,6 +461,25 @@ export const SysOrgApiFactory = function (configuration?: Configuration, basePat
         async apiSysOrgListGet(id: number, name?: string, code?: string, orgType?: string, options?: AxiosRequestConfig): Promise<AxiosResponse<AdminResultListSysOrg>> {
             return SysOrgApiFp(configuration).apiSysOrgListGet(id, name, code, orgType, options).then((request) => request(axios, basePath));
         },
+        
+        /**
+         * 
+         * @summary 获取在新增角色中的机构列表
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getListByRoleDropDownBox(options?: AxiosRequestConfig): Promise<AxiosResponse<AdminResultListSysOrg>> {
+            return SysOrgApiFp(configuration).getListByRoleDropDownBox(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @summary 获取在新增账号中的机构列表
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getListByUserDropDownBox(options?: AxiosRequestConfig): Promise<AxiosResponse<AdminResultListSysOrg>> {
+            return SysOrgApiFp(configuration).getListByUserDropDownBox(options).then((request) => request(axios, basePath));
+        },
         /**
          * 
          * @summary 更新机构
@@ -403,6 +535,26 @@ export class SysOrgApi extends BaseAPI {
      */
     public async apiSysOrgListGet(id: number, name?: string, code?: string, orgType?: string, options?: AxiosRequestConfig) : Promise<AxiosResponse<AdminResultListSysOrg>> {
         return SysOrgApiFp(this.configuration).apiSysOrgListGet(id, name, code, orgType, options).then((request) => request(this.axios, this.basePath));
+    }
+    /**
+     * 
+     * @summary 获取在新增账号中的机构列表
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SysOrgApi
+     */
+    public async getListByUserDropDownBox(options?: AxiosRequestConfig): Promise<AxiosResponse<AdminResultListSysOrg>> {
+        return SysOrgApiFp(this.configuration).getListByUserDropDownBox(options).then((request) => request(this.axios, this.basePath));
+    }
+    /**
+    * 
+    * @summary 获取在新增角色中的机构列表
+    * @param {*} [options] Override http request option.
+    * @throws {RequiredError}
+    * @memberof SysOrgApi
+    */
+    public async getListByRoleDropDownBox(options?: AxiosRequestConfig): Promise<AxiosResponse<AdminResultListSysOrg>> {
+        return SysOrgApiFp(this.configuration).getListByRoleDropDownBox(options).then((request) => request(this.axios, this.basePath));
     }
     /**
      * 

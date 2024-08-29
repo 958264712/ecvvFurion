@@ -8,16 +8,8 @@
 			<el-col :span="20" :xs="24">
 				<el-card shadow="hover" :body-style="{ paddingBottom: '0' }">
 					<el-form :model="state.queryParams" ref="queryForm" :inline="true">
-						<el-form-item label="机构名称">
-							<el-input v-model="state.queryParams.name" placeholder="机构名称" clearable />
-						</el-form-item>
-						<el-form-item label="机构编码">
-							<el-input v-model="state.queryParams.code" placeholder="机构编码" clearable />
-						</el-form-item>
-						<el-form-item label="机构类型">
-							<el-select v-model="state.queryParams.orgType" filterable clearable class="w100">
-								<el-option v-for="item in state.orgTypeList" :key="item.value" :label="item.value" :value="item.code" />
-							</el-select>
+						<el-form-item label="名称">
+							<el-input v-model="state.queryParams.name" placeholder="请输入名称" clearable />
 						</el-form-item>
 						<el-form-item>
 							<el-button-group>
@@ -33,18 +25,16 @@
 
 				<el-card class="full-table" shadow="hover" style="margin-top: 8px">
 					<el-table :data="state.orgData" style="width: 100%" v-loading="state.loading" row-key="id" default-expand-all :tree-props="{ children: 'children', hasChildren: 'hasChildren' }" border>
-						<el-table-column prop="name" label="机构名称" header-align="center" show-overflow-tooltip />
-						<el-table-column prop="code" label="机构编码" align="center" show-overflow-tooltip />
-						<el-table-column prop="orgType" label="机构类型" align="center" :formatter="dictFormatter" show-overflow-tooltip />
-						<el-table-column prop="orderNo" label="排序" width="70" align="center" show-overflow-tooltip />
+						<el-table-column prop="name" label="名称" header-align="center" show-overflow-tooltip />
 						<el-table-column label="状态" width="70" align="center" show-overflow-tooltip>
 							<template #default="scope">
-								<el-tag type="success" v-if="scope.row.status === 1">启用</el-tag>
-								<el-tag type="danger" v-else>禁用</el-tag>
+								<el-switch v-model="scope.row.status" disabled :active-value="1" :inactive-value="2" size="small"  />
 							</template>
 						</el-table-column>
-						<el-table-column prop="createTime" label="修改时间" align="center" show-overflow-tooltip />
 						<el-table-column prop="remark" label="备注" header-align="center" show-overflow-tooltip />
+						<el-table-column prop="createTime" label="创建时间" align="center" show-overflow-tooltip />
+						<el-table-column prop="updateTime" label="更新时间" align="center" show-overflow-tooltip />
+						<el-table-column prop="operatorName" label="操作人" header-align="center" show-overflow-tooltip />
 						<el-table-column label="操作" width="140" fixed="right" align="center" show-overflow-tooltip>
 							<template #default="scope">
 								<el-button icon="ele-Edit" size="small" text type="primary" @click="openEditOrg(scope.row)" v-auth="'sysOrg:update'"> 编辑 </el-button>
@@ -88,7 +78,6 @@ const state = reactive({
 
 onMounted(async () => {
 	handleQuery();
-
 	let resDicData = await getAPI(SysDictDataApi).apiSysDictDataDataListCodeGet('org_type');
 	state.orgTypeList = resDicData.data.result;
 });
@@ -119,13 +108,13 @@ const resetQuery = () => {
 
 // 打开新增页面
 const openAddOrg = () => {
-	state.editOrgTitle = '添加机构';
+	state.editOrgTitle = '新增';
 	editOrgRef.value?.openDialog({ status: 1, orderNo: 100 });
 };
 
 // 打开编辑页面
 const openEditOrg = (row: any) => {
-	state.editOrgTitle = '编辑机构';
+	state.editOrgTitle = '编辑';
 	editOrgRef.value?.openDialog(row);
 };
 

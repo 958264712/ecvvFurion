@@ -7,6 +7,7 @@ import { auth } from '/@/utils/authFunction';
 import { getAPI } from '/@/utils/axios-utils';
 import { SysAuthApi } from '/@/api-services/api';
 import { ElMessage } from 'element-plus';
+import { getInterestRate } from '/@/api/modular/main/uAE_ProcurementDetails.ts';
 
 const props = defineProps(['data', 'name', 'area', 'handleData','handleRemarkData']);
 const emit = defineEmits(['handleData','handleRemarkData']);
@@ -113,12 +114,19 @@ const close = () => {
 	desc.value = ''
 }
 const handleAuth = async () => {
-	var res = await getAPI(SysAuthApi).apiSysAuthUserInfoGet();
-	if (res.data.type === 'success') {
-		if (res.data.result.account === 'superadmin') {
-			ifSuper.value = true;
-		} 
-	}
+	const param = {
+		code: 'tag_drag_colum_auth',
+		page: 1,
+		pageSize: 1,
+	};
+	var result = await getAPI(SysAuthApi).apiSysAuthUserInfoGet();
+	var res = await getInterestRate(param).then((res) => {
+		if (res.data.type === 'success') {
+			if (res.data.result.items[0].value === result.data.result.account) {
+				ifSuper.value = true;
+			} 
+		}
+	});
 };
 const handleQuery = () => {
 	handleAuth()

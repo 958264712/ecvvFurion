@@ -2,8 +2,9 @@
 import { ref } from 'vue';
 import { ElMessageBox, ElMessage } from 'element-plus';
 import { auth } from '/@/utils/authFunction';
-//import { formatDate } from '/@/utils/formatTime';
 import editDialog from './component/editDialog.vue';
+import tabDragColum from '/@/components/tabDragColum/index.vue';
+import { QuestionFilled } from '@element-plus/icons-vue';
 import { pageASINBasicData, Import, ExportASIN, deleteASINBasicData, addASINBasicData, updateASINBasicData, batchDeleteASINBasicData } from '/@/api/modular/main/aSINBasicData.ts';
 import other from '/@/utils/other.ts';
 const displayDel = ref(true);
@@ -22,11 +23,99 @@ const tableParams = ref({
 	total: 0,
 	Site: area.value,
 });
+const TableData = ref<any>([
+	{
+		titleCN: 'ASIN',
+		dataIndex: 'asin',
+		checked: true,
+		fixed: false,
+		remark: false,
+		desc: '',
+	},
+	{
+		titleCN: 'StoreSKU',
+		dataIndex: 'storeSKU',
+		checked: true,
+		fixed: false,
+		remark: false,
+		desc: '',
+	},
+	{
+		titleCN: 'ERP-SKU',
+		dataIndex: 'erpSku',
+		checked: true,
+		fixed: false,
+		remark: false,
+		desc: '',
+	},
+	{
+		titleCN: 'GoodsName',
+		dataIndex: 'goodsName',
+		checked: true,
+		fixed: false,
+		remark: false,
+		desc: '',
+	},
+	{
+		titleCN: 'Origin',
+		dataIndex: 'origin',
+		checked: true,
+		fixed: false,
+		remark: false,
+		desc: '',
+	},
+	{
+		titleCN: 'Single Order QTY',
+		dataIndex: 'unit',
+		checked: true,
+		fixed: false,
+		remark: false,
+		desc: '',
+	},
+	{
+		titleCN: 'Specs Unit',
+		dataIndex: 'specsUnit',
+		checked: true,
+		fixed: false,
+		remark: false,
+		desc: '',
+	},
+	{
+		titleCN: 'Creator',
+		dataIndex: 'creator',
+		checked: true,
+		fixed: false,
+		remark: false,
+		desc: '',
+	},
+]);
 const editASINBasicDataTitle = ref('');
 const switchLanguage = () => {
 	queryParams.value = {};
 	handleQuery();
 };
+
+const handleData = (list: any) => {
+	if (list?.length) {
+		list.map((item, index) => {
+			if (item.dataIndex === TableData.value[index].dataIndex) {
+				TableData.value[index].checked = item.checked;
+				TableData.value[index].fixed = item.fixed;
+			}
+		});
+	}
+};
+const handleRemarkData = (list: any) => {
+	if (list?.length) {
+		list.map((item, index) => {
+			if (item.dataIndex === TableData.value[index].dataIndex) {
+				TableData.value[index].desc = item.desc;
+				TableData.value[index].remark = item.remark;
+			}
+		});
+	}
+};
+
 // 查询操作
 const handleQuery = async () => {
 	loading.value = true;
@@ -291,15 +380,18 @@ handleQuery();
 			</el-form>
 		</el-card>
 		<el-card class="full-table" shadow="hover" style="margin-top: 8px">
-			<div class="importDiv">
-				<!-- <el-button type="primary" icon="ele-Plus" @click="openAddASINBasicData"> 新增 </el-button> -->
-				<!-- <el-button type="primary" icon="ele-Plus" @click="openaddASINBasicData()" v-auth="'sysMenu:add'"> 新增 </el-button> -->
-				<el-upload :on-change="Imports" :multiple="false" action="#" :show-file-list="false" :auto-upload="false" name="file">
-					<el-button :loading="loading3" type="primary">ASIN基础数据导入</el-button>
-				</el-upload>
-				<el-button @click="Export" :loading="loading1" type="primary">导出全部ASIN</el-button>
-				<el-button @click="BatchDelete" :disabled="displayDel" :loading="loading1" type="primary">批量删除</el-button>
-				<el-link href="https://sa1api.ecvv.com/ExcelTemplate/ASIN.xlsx"> 下载ASIN上传模板</el-link>
+			<div style="display: flex; justify-content: space-between">
+				<div class="importDiv">
+					<!-- <el-button type="primary" icon="ele-Plus" @click="openAddASINBasicData"> 新增 </el-button> -->
+					<!-- <el-button type="primary" icon="ele-Plus" @click="openaddASINBasicData()" v-auth="'sysMenu:add'"> 新增 </el-button> -->
+					<el-upload :on-change="Imports" :multiple="false" action="#" :show-file-list="false" :auto-upload="false" name="file">
+						<el-button :loading="loading3" type="primary">ASIN基础数据导入</el-button>
+					</el-upload>
+					<el-button @click="Export" :loading="loading1" type="primary">导出全部ASIN</el-button>
+					<el-button @click="BatchDelete" :disabled="displayDel" :loading="loading1" type="primary">批量删除</el-button>
+					<el-link href="https://sa1api.ecvv.com/ExcelTemplate/ASIN.xlsx"> 下载ASIN上传模板</el-link>
+				</div>
+				<tabDragColum :data="TableData" :name="`asinBasicData`" area="CN" @handleData="handleData" @handleRemarkData="handleRemarkData" />
 			</div>
 			<div style="margin-top: 5px; display: flex; justify-content: space-between">
 				<el-button-group>
@@ -344,44 +436,103 @@ handleQuery();
 					</template>
 				</el-table-column>
 				<el-table-column type="selection" width="40" />
-				<el-table-column prop="asin" label="ASIN" align="center" show-overflow-tooltip="">
-					<template #default="scope">
-						<div @dblclick="openEdit(scope.row)">
-							<el-input :class="{ 'sku-input': scope.row.IsASIN }" class="custom-input" v-if="scope.row.IsEdit" type="text" v-model="scope.row.asin" clearable="" />
-							<div v-else>{{ scope.row.asin }}</div>
-						</div>
-					</template>
-				</el-table-column>
-				<el-table-column prop="storeSKU" label="StoreSKU" align="center" show-overflow-tooltip="">
-					<template #default="scope">
-						<div @dblclick="openEdit(scope.row)">
-							<el-input :class="{ 'sku-input': scope.row.IsstoreSKU }" class="custom-input" v-if="scope.row.IsEdit" type="text" v-model="scope.row.storeSKU" clearable="" />
-							<div v-else>{{ scope.row.storeSKU }}</div>
-						</div>
-					</template>
-				</el-table-column>
-				<el-table-column prop="erpSku" label="ERP-SKU" align="center" show-overflow-tooltip="">
-					<template #default="scope">
-						<div @dblclick="openEdit(scope.row)">
-							<el-input :class="{ 'sku-input': scope.row.IserpSku }" class="custom-input" v-if="scope.row.IsEdit" type="text" v-model="scope.row.erpSku" clearable="" />
-							<div v-else>{{ scope.row.erpSku }}</div>
-						</div>
-					</template>
-				</el-table-column>
-				<el-table-column prop="goodsName" label="GoodsName" align="center" show-overflow-tooltip="" />
-
+				<template v-for="(item, index) in TableData" :key="index">
+					<el-table-column v-if="item.dataIndex == 'asin' && item.checked" :fixed="item.fixed" :prop="item.dataIndex" :label="item.titleCN" align="center"  show-overflow-tooltip>
+						<template #header>
+							<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
+								<div style="display: flex; align-items: center; justify-content: center">
+									{{ item.titleCN }}
+									<QuestionFilled width="14" style="color: #ccc" v-show="item.remark" />
+								</div>
+								<template #content>
+									<div v-html="item.desc"></div>
+								</template>
+							</el-tooltip>
+							<div v-else>{{ item.titleCN }}</div>
+						</template>
+						<template #default="scope">
+							<div @dblclick="openEdit(scope.row)">
+								<el-input :class="{ 'sku-input': scope.row.IsASIN }" class="custom-input" v-if="scope.row.IsEdit" type="text" v-model="scope.row.asin" clearable="" />
+								<div v-else>{{ scope.row.asin }}</div>
+							</div>
+						</template>
+					</el-table-column>
+					<el-table-column v-else-if="item.dataIndex == 'storeSKU' && item.checked" :fixed="item.fixed" :prop="item.dataIndex" :label="item.titleCN" align="center"  show-overflow-tooltip>
+						<template #header>
+							<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
+								<div style="display: flex; align-items: center; justify-content: center">
+									{{ item.titleCN }}
+									<QuestionFilled width="14" style="color: #ccc" v-show="item.remark" />
+								</div>
+								<template #content>
+									<div v-html="item.desc"></div>
+								</template>
+							</el-tooltip>
+							<div v-else>{{ item.titleCN }}</div>
+						</template>
+						<template #default="scope">
+							<div @dblclick="openEdit(scope.row)">
+								<el-input :class="{ 'sku-input': scope.row.IsstoreSKU }" class="custom-input" v-if="scope.row.IsEdit" type="text" v-model="scope.row.storeSKU" clearable="" />
+								<div v-else>{{ scope.row.storeSKU }}</div>
+							</div>
+						</template>
+					</el-table-column>
+					<el-table-column v-else-if="item.dataIndex == 'erpSku' && item.checked" :fixed="item.fixed" :prop="item.dataIndex" :label="item.titleCN" align="center"  show-overflow-tooltip>
+						<template #header>
+							<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
+								<div style="display: flex; align-items: center; justify-content: center">
+									{{ item.titleCN }}
+									<QuestionFilled width="14" style="color: #ccc" v-show="item.remark" />
+								</div>
+								<template #content>
+									<div v-html="item.desc"></div>
+								</template>
+							</el-tooltip>
+							<div v-else>{{ item.titleCN }}</div>
+						</template>
+						<template #default="scope">
+							<div @dblclick="openEdit(scope.row)">
+								<el-input :class="{ 'sku-input': scope.row.IserpSku }" class="custom-input" v-if="scope.row.IsEdit" type="text" v-model="scope.row.erpSku" clearable="" />
+								<div v-else>{{ scope.row.erpSku }}</div>
+							</div>
+						</template>
+					</el-table-column>
+					<el-table-column v-else-if="item.dataIndex == 'unit' && item.checked" :fixed="item.fixed" :prop="item.dataIndex" :label="item.titleCN" align="center"  show-overflow-tooltip>
+						<template #header>
+							<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
+								<div style="display: flex; align-items: center; justify-content: center">
+									{{ item.titleCN }}
+									<QuestionFilled width="14" style="color: #ccc" v-show="item.remark" />
+								</div>
+								<template #content>
+									<div v-html="item.desc"></div>
+								</template>
+							</el-tooltip>
+							<div v-else>{{ item.titleCN }}</div>
+						</template>
+						<template #default="scope">
+							<div @dblclick="openEdit(scope.row)">
+								<el-input :class="{ 'sku-input': scope.row.IsSingleOrderQTY }" class="custom-input" v-if="scope.row.IsEdit" type="text" v-model="scope.row.unit" clearable="" />
+								<div v-else>{{ scope.row.unit }}</div>
+							</div>
+						</template>
+					</el-table-column>
+					<el-table-column v-else-if="item.dataIndex  && item.checked" :fixed="item.fixed" :prop="item.dataIndex" :label="item.titleCN" align="center" width="150" show-overflow-tooltip>
+						<template #header>
+							<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
+								<div style="display: flex; align-items: center; justify-content: center">
+									{{ item.titleCN }}
+									<QuestionFilled width="14" style="color: #ccc" v-show="item.remark" />
+								</div>
+								<template #content>
+									<div v-html="item.desc"></div>
+								</template>
+							</el-tooltip>
+							<div v-else>{{ item.titleCN }}</div>
+						</template>
+					</el-table-column>
+				</template>
 				<!-- <el-table-column prop="costPrice" label="LowestPrice" align="center" show-overflow-tooltip="" /> -->
-				<el-table-column prop="origin" label="Origin" align="center" show-overflow-tooltip="" />
-				<el-table-column prop="unit" label="Single Order QTY" align="center" show-overflow-tooltip="">
-					<template #default="scope">
-						<div @dblclick="openEdit(scope.row)">
-							<el-input :class="{ 'sku-input': scope.row.IsSingleOrderQTY }" class="custom-input" v-if="scope.row.IsEdit" type="text" v-model="scope.row.unit" clearable="" />
-							<div v-else>{{ scope.row.unit }}</div>
-						</div>
-					</template>
-				</el-table-column>
-				<el-table-column prop="specsUnit" label="Specs Unit" align="center" show-overflow-tooltip="" />
-				<el-table-column prop="creator" label="Creator" align="center" show-overflow-tooltip="" />
 				<!-- <el-table-column prop="saudiBottomPrice_R96EP" align="center" label="SaudiBottomPrice_R96EP" width="190" show-overflow-tooltip="" />
 				<el-table-column prop="saudiBottomPrice_63FV3" align="center" label="SaudiBottomPrice_63FV3" width="190" show-overflow-tooltip="" />
 				<el-table-column prop="saudiBottomPrice_YZ6VH" align="center" label="SaudiBottomPrice_YZ6VH" width="190" show-overflow-tooltip="" /> -->
@@ -421,5 +572,11 @@ handleQuery();
 	background-color: #e76957;
 	box-shadow: 0 0 0 1px #e76957 inset;
 	color: white;
+}
+:deep(.el-textarea__inner) {
+	box-shadow: initial;
+	padding: 5px;
+	margin: 0;
+	height: 142px !important;
 }
 </style>

@@ -37,6 +37,34 @@
 						</template>
 					</el-popover>
 				</el-form-item>
+				<el-form-item label="ERP-SKU">
+					<el-popover :visible="visibleTextarea1" placement="bottom" :width="250">
+						<el-scrollbar height="150px" style="border: 1px solid var(--el-border-color)">
+							<el-input
+								v-model="queryParams.erpTextArea"
+								style="width: 215px"
+								:autosize="{ minRows: 1, maxRows: 200 }"
+								type="textarea"
+								placeholder="可输入多个ERP-SKU精确查询，每行一个，最多支持200个"
+							/>
+						</el-scrollbar>
+						<div style="text-align: right; margin-top: 20px">
+							<span style="float: left">{{ queryParams.erpSkuList?.length ?? 0 }}/200</span>
+							<el-button type="info" @click="resetQueryConditionsByErpSku()">重置</el-button>
+							<el-button type="primary" @click="handleConfirm1()">确定</el-button>
+						</div>
+						<template #reference>
+							<el-input v-model="erpAndGoodsName" clearable="" placeholder="请输入,点击展开可输多个" @clear="clearErp" >
+								<template #suffix>
+									<el-icon class="el-input__icon">
+										<ArrowDownBold @click="showTextarea1" v-if="!visibleTextarea1" />
+										<ArrowUpBold @click="showTextarea1" v-else />
+									</el-icon>
+								</template>
+							</el-input>
+						</template>
+					</el-popover>
+				</el-form-item>
 				<el-form-item label="Order Date">
 					<el-date-picker style="width: 250px" v-model="queryParams.startDate" type="daterange" range-separator="——" start-placeholder="年/月/日" end-placeholder="年/月/日" />
 				</el-form-item>
@@ -45,13 +73,14 @@
 				</el-form-item>
 				<el-form-item>
 					<el-button-group>
-						<el-button type="primary" icon="ele-Search" @click="handleQuery" v-auth="'uAE_ProcurementDetails:page'"> 查询 </el-button>
+						<el-button type="primary" icon="ele-Search" @click="handleQuery" > 查询 </el-button>
 						<el-button
 							icon="ele-Refresh"
 							@click="
 								() => {
 									queryParams = {};
 									aSIN = ''
+									erpAndGoodsName = ''
 									handleQuery();
 								}
 							"
@@ -105,11 +134,14 @@ const loading = ref(false);
 const isWatch = ref(true);
 const ImportsSalesloading = ref(false);
 const visibleTextarea = ref(false);
+const visibleTextarea1 = ref(false);
 const tableData = ref<any>([]);
 const queryParams = ref<any>({ site: '全部' });
 const dialogFormVisible = ref(false);
 const weeks = ref('周');
 const aSIN = ref('');
+const erpAndGoodsName = ref('');
+
 interface RuleForm {
 	site: string;
 	TimeQuantum: string;
@@ -190,6 +222,11 @@ const importFormList = ref<any>([
 		dateType: 'month',
 	},
 ]);
+const resetQueryConditionsByErpSku = () => {
+	queryParams.value.erpTextArea = '';
+	queryParams.value.erpSkuList = undefined;
+	erpAndGoodsName.value = '';
+};
 const importClose = (bol: boolean) => {
 	dialogFormVisible.value = bol;
 };
@@ -298,6 +335,11 @@ const clearAsin = () => {
 	queryParams.value.asinTextArea = '';
 	queryParams.value.asin = null;
 };
+const clearErp = () => {
+	erpAndGoodsName.value = '';
+	queryParams.value.erpTextArea = '';
+	queryParams.value.erpSkuList = undefined;
+};
 const handleConfirm = () => {
 	let str_array = [];
 	str_array = clearCharactersByRegex(queryParams.value.asinTextArea + '');
@@ -308,8 +350,21 @@ const handleConfirm = () => {
 	}
 	visibleTextarea.value = false;
 };
+const handleConfirm1 = () => {
+	let str_array = [];
+	str_array = clearCharactersByRegex(queryParams.value.erpTextArea + '');
+	//去除数组里面的空字符以及null
+	let arr = clearEmptyDataByAny(str_array);
+	if (arr?.length > 0) {
+		erpAndGoodsName.value = arr + '';
+	}
+	visibleTextarea1.value = false;
+};
 const showTextarea = () => {
 	visibleTextarea.value = !visibleTextarea.value;
+};
+const showTextarea1 = () => {
+	visibleTextarea1.value = !visibleTextarea1.value;
 };
 watch(
 	() => queryParams.value.asinTextArea,
@@ -349,6 +404,47 @@ watch(
 			}
 		}else
 		{
+			isWatch.value = true;
+		}
+	}
+);
+watch(
+	() => erpAndGoodsName.value,
+	() => {
+		//isWatch为true时才修改数据，防止死循环
+		if(isWatch.value){
+			isWatch.value = false;
+			let str_array = clearCharactersByRegex(erpAndGoodsName.value.trim());
+			let arr = clearEmptyDataByAny(str_array);
+			if (arr?.length > 0) {
+				queryParams.value.erpSkuList = arr;
+				queryParams.value.erpTextArea = arr;
+			} else {
+				queryParams.value.erpSkuList = undefined;
+				queryParams.value.erpTextArea = '';
+			}
+		}else{
+			isWatch.value = true;
+		}
+	}
+);
+
+watch(
+	() => queryParams.value.erpTextArea,
+	() => {
+		//isWatch为true时才修改数据，防止死循环
+		if(isWatch.value){
+			isWatch.value = false;
+			let str_array = clearCharactersByRegex(queryParams.value.erpTextArea.trim());
+			let arr = clearEmptyDataByAny(str_array);
+			if (arr?.length > 0) {
+				queryParams.value.erpSkuList = arr;
+				erpAndGoodsName.value = arr;
+			} else {
+				queryParams.value.erpSkuList = undefined;
+				erpAndGoodsName.value = '';
+			}
+		}else{
 			isWatch.value = true;
 		}
 	}
