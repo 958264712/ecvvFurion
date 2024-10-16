@@ -168,7 +168,7 @@ const AmazonExportFollow = () => {
 
 // 批量删除
 const AmazonBatchDelete = () => {
-	ElMessageBox.confirm(`您确定要删除这${selectedRowKeys.value.length + 1}条数据吗？`, 'Danger', {
+	ElMessageBox.confirm(`您确定要删除这${selectedRowKeys.value.length}条数据吗？`, 'Danger', {
 		confirmButtonText: 'OK',
 		cancelButtonText: 'Cancel',
 		type: 'warning',
@@ -203,19 +203,15 @@ handleQuery();
 				<el-form-item label="Sku">
 					<el-input v-model="queryParams.sku" clearable="" placeholder="请输入Sku" />
 				</el-form-item>
-				<template v-if="advanced">
-					<el-form-item label="Title">
+				<!-- <el-form-item label="Title">
 						<el-input v-model="queryParams.title" clearable="" placeholder="请输入Title" />
-					</el-form-item>
+					</el-form-item> -->
 					<el-form-item label="是否占有Buybox">
 						<el-select v-model="queryParams.isBuybox" placeholder="请选择">
 							<el-option :value="null">全部</el-option>
 							<el-option :value="true">True</el-option>
 							<el-option :value="false">False</el-option>
 						</el-select>
-					</el-form-item>
-					<el-form-item label="建议的售价">
-						<el-input v-model="queryParams.listPrice" allow-clear placeholder="大于建议的售价" />
 					</el-form-item>
 					<el-form-item label="Warning">
 						<el-select v-model="queryParams.warning" placeholder="请选择">
@@ -224,6 +220,11 @@ handleQuery();
 							<el-option :value="3">下架预警</el-option>
 						</el-select>
 					</el-form-item>
+				<!-- <template v-if="advanced">
+					<el-form-item label="建议的售价">
+						<el-input v-model="queryParams.listPrice" allow-clear placeholder="大于建议的售价" />
+					</el-form-item>
+					
 					<el-form-item label="Remark">
 						<el-input v-model="queryParams.remark" clearable="" placeholder="请输入Remark" />
 					</el-form-item>
@@ -311,7 +312,7 @@ handleQuery();
 					<el-form-item label="SellerCount">
 						<el-input v-model="queryParams.sellerCount" clearable="" placeholder="请输入SellerCount" />
 					</el-form-item>
-				</template>
+				</template> -->
 				<el-form-item>
 					<el-button-group>
 						<el-button type="primary" icon="ele-Search" @click="handleQuery"> 查询 </el-button>
@@ -322,8 +323,8 @@ handleQuery();
 			">
 							重置
 						</el-button>
-						<el-button :icon="advanced ? 'ele-ArrowUp' : 'ele-ArrowDown'"
-							@click="() => (advanced = !advanced)">{{ advanced ? '收起' : '展开' }} </el-button>
+						<!-- <el-button :icon="advanced ? 'ele-ArrowUp' : 'ele-ArrowDown'"
+							@click="() => (advanced = !advanced)">{{ advanced ? '收起' : '展开' }} </el-button> -->
 					</el-button-group>
 				</el-form-item>
 			</el-form>
@@ -341,7 +342,7 @@ handleQuery();
 				</el-upload>
 				<el-button @click="AmazonExport" :loading="loading1" type="primary">导出</el-button>
 				<el-button @click="AmazonExportFollow" :loading="loading2" type="primary">导出ECVV跟卖</el-button>
-				<el-button type="danger" @click="AmazonBatchDelete">批量删除</el-button>
+				<el-button type="danger" :disabled="selectedRowKeys?.length <= 0" @click="AmazonBatchDelete">批量删除</el-button>
 			</div>
 			<el-table :data="tableData" size="large" style="width: 100%" v-loading="loading" tooltip-effect="light"
 				row-key="id" border="" @selection-change="(selection: any) => selectChange(selection)">

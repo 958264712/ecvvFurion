@@ -38,32 +38,7 @@
 					</el-popover>
 				</el-form-item>
 				<el-form-item label="ERP-SKU">
-					<el-popover :visible="visibleTextarea1" placement="bottom" :width="250">
-						<el-scrollbar height="150px" style="border: 1px solid var(--el-border-color)">
-							<el-input
-								v-model="queryParams.erpTextArea"
-								style="width: 215px"
-								:autosize="{ minRows: 1, maxRows: 200 }"
-								type="textarea"
-								placeholder="可输入多个ERP-SKU精确查询，每行一个，最多支持200个"
-							/>
-						</el-scrollbar>
-						<div style="text-align: right; margin-top: 20px">
-							<span style="float: left">{{ queryParams.erpSkuList?.length ?? 0 }}/200</span>
-							<el-button type="info" @click="resetQueryConditionsByErpSku()">重置</el-button>
-							<el-button type="primary" @click="handleConfirm1()">确定</el-button>
-						</div>
-						<template #reference>
-							<el-input v-model="erpAndGoodsName" clearable="" placeholder="请输入,点击展开可输多个" @clear="clearErp" >
-								<template #suffix>
-									<el-icon class="el-input__icon">
-										<ArrowDownBold @click="showTextarea1" v-if="!visibleTextarea1" />
-										<ArrowUpBold @click="showTextarea1" v-else />
-									</el-icon>
-								</template>
-							</el-input>
-						</template>
-					</el-popover>
+					<el-input v-model="queryParams.erpSku" clearable="" placeholder="请输入" />
 				</el-form-item>
 				<el-form-item label="Order Date">
 					<el-date-picker style="width: 250px" v-model="queryParams.startDate" type="daterange" range-separator="——" start-placeholder="年/月/日" end-placeholder="年/月/日" />
@@ -73,14 +48,13 @@
 				</el-form-item>
 				<el-form-item>
 					<el-button-group>
-						<el-button type="primary" icon="ele-Search" @click="handleQuery" > 查询 </el-button>
+						<el-button type="primary" icon="ele-Search" @click="handleQuery"> 查询 </el-button>
 						<el-button
 							icon="ele-Refresh"
 							@click="
 								() => {
 									queryParams = {};
-									aSIN = ''
-									erpAndGoodsName = ''
+									aSIN = '';
 									handleQuery();
 								}
 							"
@@ -94,13 +68,19 @@
 		<el-card class="full-table" shadow="hover" style="margin-top: 8px">
 			<el-table :data="tableData" size="lagre" style="width: 100%" v-loading="loading" tooltip-effect="light" @sort-change="sortfun" :header-cell-style="customHeaderCellStyle" row-key="id" border="">
 				<el-table-column prop="site" label="站点" width="80" sortable align="center" show-overflow-tooltip="" />
-				<el-table-column prop="asin" label="ASIN" min-width="150" sortable align="center" show-overflow-tooltip="" />
-				<el-table-column prop="shippedRevenue" label="Shipped Revenue" min-width="170" sortable align="center" show-overflow-tooltip="" />
-				<el-table-column prop="shippedCOGS" label="Shipped COGS" min-width="150" sortable align="center" show-overflow-tooltip="" />
-				<el-table-column prop="shippedUnits" label="Shipped Units" min-width="150" sortable align="center" show-overflow-tooltip="" />
-				<el-table-column prop="customerReturns" label="Customer Returns" min-width="170" sortable align="center" show-overflow-tooltip="" />
-				<el-table-column prop="startDate" label="Order Date" min-width="150" sortable align="center" show-overflow-tooltip="" />
-				<el-table-column prop="createTime" label="Get Time" min-width="150" sortable align="center" show-overflow-tooltip="" />
+				<el-table-column prop="asin" label="ASIN" sortable align="center" show-overflow-tooltip="" />
+				<el-table-column prop="shippedRevenue" label="Shipped Revenue" sortable align="center" show-overflow-tooltip="" />
+				<el-table-column prop="shippedCOGS" label="Shipped COGS" sortable align="center" show-overflow-tooltip="" />
+				<el-table-column prop="shippedUnits" label="Shipped Units" sortable align="center" show-overflow-tooltip="" />
+				<el-table-column prop="customerReturns" label="Customer Returns" sortable align="center" show-overflow-tooltip="" />
+				<el-table-column prop="startDate" label="Order Date" sortable align="center" show-overflow-tooltip="" />
+				<el-table-column prop="createTime" label="Get Time" sortable align="center" show-overflow-tooltip="" />
+			</el-table>
+			<el-table :data="tableData1" style="height: 32px; width: 100%;flex:none; overflow: hidden;" v-loading="loading" :header-cell-style="customHeaderCellStyle1" tooltip-effect="light" row-key="id" border="">
+				<el-table-column label="总计" align="center" width="80" labelClassName="bold" />
+				<template v-for="(item, index) in TableData2" :key="index">
+					<el-table-column :label="getColumnLabel(item.dataIndex)" labelClassName="bold" :prop="item.dataIndex" show-overflow-tooltip align="center" />
+				</template>
 			</el-table>
 			<el-pagination
 				v-model:currentPage="tableParams.page"
@@ -122,7 +102,6 @@ import { service } from '/@/utils/request';
 import { ArrowDownBold, ArrowUpBold } from '@element-plus/icons-vue';
 import { ElMessageBox, ElMessage, ElNotification, FormInstance, FormRules } from 'element-plus';
 import axios from 'axios';
-//import { formatDate } from '/@/utils/formatTime';
 import { amazonOrdersPage, Import } from '/@/api/modular/main/OperationManagement.ts';
 import importDialog from '/@/components/importDialog/index.vue';
 import moment from 'moment';
@@ -134,14 +113,26 @@ const loading = ref(false);
 const isWatch = ref(true);
 const ImportsSalesloading = ref(false);
 const visibleTextarea = ref(false);
-const visibleTextarea1 = ref(false);
 const tableData = ref<any>([]);
+const tableData1 = ref<any>([]);
 const queryParams = ref<any>({ site: '全部' });
 const dialogFormVisible = ref(false);
 const weeks = ref('周');
 const aSIN = ref('');
-const erpAndGoodsName = ref('');
-
+const TableData2 = ref<any>([
+	{ label: '', dataIndex: '' },
+	{ label: '', dataIndex: 'shippedRevenue' },
+	{ label: '', dataIndex: 'shippedCOGS' },
+	{ label: '', dataIndex: 'shippedUnits' },
+	{ label: '', dataIndex: 'customerReturns' },
+	{ label: '', dataIndex: '' },
+	{ label: '', dataIndex: '' },
+]);
+const getColumnLabel = (column: any) => {
+	if (tableData1.value?.length) {
+		return tableData1.value[0][column];
+	}
+};
 interface RuleForm {
 	site: string;
 	TimeQuantum: string;
@@ -222,43 +213,13 @@ const importFormList = ref<any>([
 		dateType: 'month',
 	},
 ]);
-const resetQueryConditionsByErpSku = () => {
-	queryParams.value.erpTextArea = '';
-	queryParams.value.erpSkuList = undefined;
-	erpAndGoodsName.value = '';
-};
+
 const importClose = (bol: boolean) => {
 	dialogFormVisible.value = bol;
 };
 const importQuery = () => {
 	handleQuery();
 };
-// function Imports(file: any) {
-// 	ImportParams.value.TimeQuantum = weeks.value;
-// 	const dateObject = new Date(ImportParams.value.Time);
-// 	const options = { year: 'numeric', month: 'long' };
-// 	const formattedDate = new Intl.DateTimeFormat('en-US', options).format(dateObject);
-// 	// 格式化日期
-// 	ImportsSalesloading.value = true;
-// 	const formData = new FormData();
-// 	formData.append('file', file.raw);
-// 	formData.append('TimeQuantum', ImportParams.value.TimeQuantum);
-// 	formData.append('Site', ImportParams.value.Site);
-// 	formData.append('Time', formattedDate);
-// 	formData.append('Week', ImportParams.value.Week);
-// 	axios.post(import.meta.env.VITE_API_URL as any + `/api/amazonOrders/import`, formData)
-// 		//ImportInventorySummaryLedger(formData)
-// 		.then((res: any) => {
-// 			ImportsSalesloading.value = false;
-// 			if (res.data.code == 200) {
-// 				ElMessage.success('导入成功');
-// 				handleQuery();
-// 			} else {
-// 				ImportsSalesloading.value = false;
-// 				ElMessage.error('导入失败'); // + res.message
-// 			}
-// 		});
-// }
 
 // 改变页面容量
 const handleSizeChange = (val: number) => {
@@ -282,9 +243,9 @@ const handleQuery = async () => {
 	if (queryParams.value.site === '全部') {
 		queryParams.value.site = null;
 	}
-
 	var res = await amazonOrdersPage(Object.assign(queryParams.value, tableParams.value));
 	tableData.value = res.data.result?.items ?? [];
+	tableData1.value[0] = res.data.result?.myData.total;
 	tableParams.value.total = res.data.result?.total;
 	weeks.value === '周' ? '选择站点、日期、周，点击"确定"后，选择需要导入的文件，将导入该数据' : '选择站点、日期，点击"确定"后，选择需要导入的文件，将导入该数据';
 	if (weeks.value === '周') {
@@ -322,7 +283,13 @@ function sortfun(v: any) {
 function customHeaderCellStyle({ column, $index }) {
 	// 返回包含 CSS 样式的对象
 	return {
-		backgroundColor: '#e9e9e9	', // 设置表头背景颜色为蓝色
+		backgroundColor: '#e9e9e9', // 设置表头背景颜色为蓝色
+	};
+}
+const customHeaderCellStyle1 = ({ column, $index }) => {
+	// 返回包含 CSS 样式的对象
+	return {
+		backgroundColor: '#f2f2f2', // 设置表头背景颜色为蓝色
 	};
 }
 const resetQueryConditionsByASIN = () => {
@@ -335,11 +302,7 @@ const clearAsin = () => {
 	queryParams.value.asinTextArea = '';
 	queryParams.value.asin = null;
 };
-const clearErp = () => {
-	erpAndGoodsName.value = '';
-	queryParams.value.erpTextArea = '';
-	queryParams.value.erpSkuList = undefined;
-};
+
 const handleConfirm = () => {
 	let str_array = [];
 	str_array = clearCharactersByRegex(queryParams.value.asinTextArea + '');
@@ -350,27 +313,15 @@ const handleConfirm = () => {
 	}
 	visibleTextarea.value = false;
 };
-const handleConfirm1 = () => {
-	let str_array = [];
-	str_array = clearCharactersByRegex(queryParams.value.erpTextArea + '');
-	//去除数组里面的空字符以及null
-	let arr = clearEmptyDataByAny(str_array);
-	if (arr?.length > 0) {
-		erpAndGoodsName.value = arr + '';
-	}
-	visibleTextarea1.value = false;
-};
+
 const showTextarea = () => {
 	visibleTextarea.value = !visibleTextarea.value;
-};
-const showTextarea1 = () => {
-	visibleTextarea1.value = !visibleTextarea1.value;
 };
 watch(
 	() => queryParams.value.asinTextArea,
 	() => {
 		//isWatch为true时才修改数据，防止死循环
-		if(isWatch.value && queryParams.value.asinTextArea !== undefined){
+		if (isWatch.value && queryParams.value.asinTextArea !== undefined) {
 			isWatch.value = false;
 			let str_array = clearCharactersByRegex(queryParams.value.asinTextArea + ''.trim());
 			let arr = clearEmptyDataByAny(str_array);
@@ -381,7 +332,7 @@ watch(
 				queryParams.value.asin = null;
 				aSIN.value = '';
 			}
-		}else{
+		} else {
 			isWatch.value = true;
 		}
 	}
@@ -391,7 +342,7 @@ watch(
 	() => aSIN.value,
 	() => {
 		//isWatch为true时才修改数据，防止死循环
-		if(isWatch.value ){
+		if (isWatch.value) {
 			isWatch.value = false;
 			let str_array = clearCharactersByRegex(aSIN.value.trim());
 			let arr = clearEmptyDataByAny(str_array);
@@ -402,53 +353,12 @@ watch(
 				queryParams.value.asin = null;
 				queryParams.value.asinTextArea = '';
 			}
-		}else
-		{
-			isWatch.value = true;
-		}
-	}
-);
-watch(
-	() => erpAndGoodsName.value,
-	() => {
-		//isWatch为true时才修改数据，防止死循环
-		if(isWatch.value){
-			isWatch.value = false;
-			let str_array = clearCharactersByRegex(erpAndGoodsName.value.trim());
-			let arr = clearEmptyDataByAny(str_array);
-			if (arr?.length > 0) {
-				queryParams.value.erpSkuList = arr;
-				queryParams.value.erpTextArea = arr;
-			} else {
-				queryParams.value.erpSkuList = undefined;
-				queryParams.value.erpTextArea = '';
-			}
-		}else{
+		} else {
 			isWatch.value = true;
 		}
 	}
 );
 
-watch(
-	() => queryParams.value.erpTextArea,
-	() => {
-		//isWatch为true时才修改数据，防止死循环
-		if(isWatch.value){
-			isWatch.value = false;
-			let str_array = clearCharactersByRegex(queryParams.value.erpTextArea.trim());
-			let arr = clearEmptyDataByAny(str_array);
-			if (arr?.length > 0) {
-				queryParams.value.erpSkuList = arr;
-				erpAndGoodsName.value = arr;
-			} else {
-				queryParams.value.erpSkuList = undefined;
-				erpAndGoodsName.value = '';
-			}
-		}else{
-			isWatch.value = true;
-		}
-	}
-);
 handleQuery();
 </script>
 <style lang="less" scoped>
@@ -486,11 +396,10 @@ handleQuery();
 :deep(.el-dialog__title) {
 	color: white;
 }
-:deep( .el-textarea__inner) {
+:deep(.el-textarea__inner) {
 	box-shadow: initial;
-	margin:0;
-	padding:5px;
+	margin: 0;
+	padding: 5px;
 	height: 142px !important;
 }
-
 </style>

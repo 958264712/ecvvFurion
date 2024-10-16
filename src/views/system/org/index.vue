@@ -1,10 +1,9 @@
 <template>
 	<div class="sys-org-container">
-		<el-row :gutter="8" style="width: 100%">
+		<el-row :gutter="8" style="width: 100%;height:100%">
 			<el-col :span="4" :xs="24">
 				<OrgTree ref="orgTreeRef" @node-click="nodeClick" />
 			</el-col>
-
 			<el-col :span="20" :xs="24">
 				<el-card shadow="hover" :body-style="{ paddingBottom: '0' }">
 					<el-form :model="state.queryParams" ref="queryForm" :inline="true">
@@ -17,18 +16,18 @@
 								<el-button icon="ele-Refresh" @click="resetQuery"> 重置 </el-button>
 							</el-button-group>
 						</el-form-item>
-						<el-form-item>
-							<el-button type="primary" icon="ele-Plus" @click="openAddOrg" v-auth="'sysOrg:add'"> 新增 </el-button>
-						</el-form-item>
 					</el-form>
 				</el-card>
 
 				<el-card class="full-table" shadow="hover" style="margin-top: 8px">
-					<el-table :data="state.orgData" style="width: 100%" v-loading="state.loading" row-key="id" default-expand-all :tree-props="{ children: 'children', hasChildren: 'hasChildren' }" border>
+					<div style="margin-bottom:10px">
+						<el-button type="primary" icon="ele-Plus" @click="openAddOrg" v-auth="'sysOrg:add'"> 新增 </el-button>
+					</div>
+					<el-table :data="state.orgData" height="670" style="width: 100%;" v-loading="state.loading" row-key="id" default-expand-all :tree-props="{ children: 'children', hasChildren: 'hasChildren' }" border>
 						<el-table-column prop="name" label="名称" header-align="center" show-overflow-tooltip />
-						<el-table-column label="状态" width="70" align="center" show-overflow-tooltip>
+						<el-table-column label="状态" width="70" align="center"  show-overflow-tooltip>
 							<template #default="scope">
-								<el-switch v-model="scope.row.status" disabled :active-value="1" :inactive-value="2" size="small"  />
+								<el-switch v-model="scope.row.status"  @change="changeStatus(scope.row)"  :active-value="1" :inactive-value="2" size="small"  />
 							</template>
 						</el-table-column>
 						<el-table-column prop="remark" label="备注" header-align="center" show-overflow-tooltip />
@@ -81,20 +80,31 @@ onMounted(async () => {
 	let resDicData = await getAPI(SysDictDataApi).apiSysDictDataDataListCodeGet('org_type');
 	state.orgTypeList = resDicData.data.result;
 });
-
+// 修改状态
+const changeStatus = (row: any) => {
+	getAPI(SysOrgApi)
+		.apiSysOrgSetStatusPost({ id: row.id, status: row.status })
+		.then(() => {
+			handleQuery()
+			ElMessage.success('账号状态设置成功');
+			orgTreeRef.value?.initTreeData();
+		})
+		.catch(() => {
+			row.status = row.status == 1 ? 2 : 1;
+		});
+};
 // 查询操作
 const handleQuery = async (updateTree: boolean = false) => {
 	state.loading = true;
-	var res = await getAPI(SysOrgApi).apiSysOrgListGet(state.queryParams.id, state.queryParams.name, state.queryParams.code, state.queryParams.orgType);
+	var res = await getAPI(SysOrgApi).apiSysOrgListGet(state.queryParams.id, state.queryParams.name, state.queryParams.code, state.queryParams.orgType,true);
+	var result = await getAPI(SysOrgApi).apiSysOrgListGet(0);
 	state.orgData = res.data.result ?? [];
+	state.orgTreeData = result.data.result ?? []
 	state.loading = false;
 	// 是否更新左侧机构列表树
 	if (updateTree == true) {
 		orgTreeRef.value?.initTreeData();
 	}
-
-	// 若无选择节点并且查询条件为空时，更新编辑页面机构列表树
-	if (state.queryParams.id == -1 && state.queryParams.name == undefined && state.queryParams.code == undefined && state.queryParams.orgType == undefined) state.orgTreeData = state.orgData;
 };
 
 // 重置操作

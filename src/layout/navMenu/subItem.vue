@@ -53,13 +53,10 @@ const onALinkClick = (val: RouteItem) => {
 const handleClick = ()=>{
 	if(Session.get('tagsViewList')?.length < 15){
 		stores.setTagsViewListOver(false)
-		Session.set('tagsViewListOver',false)
 		tagsViewListOver.value=false
 	}else{
-		console.log(Session.get('tagsViewList')?.length);
 		stores.setTagsViewListOver(true)
 		tagsViewListOver.value=true
-		Session.set('tagsViewListOver',true)
 	}
 
 }
@@ -68,11 +65,9 @@ watch(()=>route.path,
 	if(Session.get('tagsViewList')?.length < 15){
 		stores.setTagsViewListOver(false)
 		tagsViewListOver.value=false
-		Session.set('tagsViewListOver',false)
 	}else{
 		stores.setTagsViewListOver(true)
 		tagsViewListOver.value=true
-		Session.set('tagsViewListOver',true)
 	}
 }
 )

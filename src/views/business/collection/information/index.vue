@@ -89,7 +89,6 @@
 					<el-table-column v-if="index === columns.length - 1 && item.sorter === true" label="操作" align="center">
 						<template #default="scope">
 							<el-button size="small" text type="primary" @click="examines(scope)"> 编辑 </el-button>
-
 							<el-popover placement="top" width="200" :disabled="visible" trigger="click">
 								<p>确定删除吗？</p>
 								<div style="text-align: right; margin: 0">
@@ -185,7 +184,7 @@ let columns = ref<any>([
 		title: '货代名称',
 		align: 'center',
 		sorter: true,
-		width: 100,
+		width: 120,
 		dataIndex: 'forwarderName'
 	},
 	{
@@ -198,7 +197,7 @@ let columns = ref<any>([
 		title: '收件联系电话',
 		align: 'center',
 		sorter: true,
-		width: 120,
+		width: 140,
 		dataIndex: 'recipientPhone'
 	},
 	{

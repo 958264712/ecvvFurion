@@ -7,7 +7,8 @@ enum Api {
 	ImportCN = '/api/aSINListingTable/importCN',
 	ImportUAE = '/api/aSINListingTable/importUAE',
 	Eexport = '/api/aSINListingTable/export',
-	GetUserRole = '/api/aSINListingTable/getUserRole'
+	GetUserRole = '/api/aSINListingTable/getUserRole',
+	ASINListBatchDelete = '/api/aSINListingTable/bacthDelete'
 }
 //获取角色信息
 export const GetUserRole = (params?: any) =>
@@ -43,6 +44,13 @@ export const Save = (params?: any) =>
 export const Update = (params?: any) =>
 	request({
 		url: Api.Update,
+		method: 'post',
+		data: params,
+	});
+//批量删除
+export const ASINListBatchDelete = (params?: any) =>
+	request({
+		url: Api.ASINListBatchDelete,
 		method: 'post',
 		data: params,
 	});

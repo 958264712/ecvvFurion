@@ -137,10 +137,12 @@ const onSignIn = async () => {
 			const [err, res] = await feature(getAPI(SysAuthApi).apiSysAuthLoginPost(state.ruleForm));
 			if (err) {
 				getCaptcha(); // 重新获取验证码
+				window.localStorage.removeItem('vue-next-admin:access-token');
 				return;
 			}
 			if (res.data.result?.accessToken == undefined) {
 				getCaptcha(); // 重新获取验证码
+				
 				ElMessage.error('登录失败，请检查账号！');
 				return;
 			}

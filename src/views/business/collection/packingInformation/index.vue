@@ -183,14 +183,14 @@ const AllExport = async (coltype) => {
 				</el-form-item>
 				<el-form-item>
 					<el-button-group>
-						<el-button v-auth="'shippingDetails:page'" type="primary" icon="ele-Search" @click="getAppPage()" style="width: 70px; margin-right: 2px"> 查询 </el-button>
+						<el-button type="primary" icon="ele-Search" @click="getAppPage()" style="width: 70px; margin-right: 2px"> 查询 </el-button>
 						<el-button icon="ele-Refresh" @click="resetfun()" style="width: 70px; margin-right: 2px"> 重置 </el-button>
 						<div class="flex flex-wrap items-center">
 							<el-dropdown>
 								<el-button type="primary" :loading="cardLoading"> 导出 </el-button>
 								<template #dropdown>
 									<el-dropdown-menu>
-										<el-dropdown-item style="height: 24px" @click="SelectedExport(1)">导出选中 </el-dropdown-item>
+										<el-dropdown-item style="height: 24px" :disabled="selectedRowKeys?.length <= 0" @click="SelectedExport(1)">导出选中 </el-dropdown-item>
 										<el-dropdown-item style="height: 24px" @click="AllExport(1)">导出全部 </el-dropdown-item>
 									</el-dropdown-menu>
 								</template>

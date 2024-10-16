@@ -41,7 +41,10 @@ function Imports(file: any) {
 			loading.value = false;
 			ElMessage.error('导入失败'); // + res.message
 		}
-	});
+	})
+		.catch(arr => {
+			loading1.value = false;
+		});
 }
 
 // 打开新增页面
@@ -104,8 +107,7 @@ handleQuery();
 
 				<el-form-item>
 					<el-button-group>
-						<el-button type="primary" icon="ele-Search" @click="handleQuery"
-							> 查询 </el-button>
+						<el-button type="primary" icon="ele-Search" @click="handleQuery"> 查询 </el-button>
 						<el-button icon="ele-Refresh" @click="() => {
 							queryParams = {};
 							handleQuery();
@@ -119,14 +121,15 @@ handleQuery();
 		</el-card>
 		<el-card class="full-table" shadow="hover" style="margin-top: 8px">
 			<div class="importDiv">
-				<el-upload :on-change="Imports" :multiple="false" action="#" :show-file-list="false" :auto-upload="false"
-					name="file">
+				<el-upload :on-change="Imports" :multiple="false" action="#" :show-file-list="false"
+					:auto-upload="false" name="file">
 					<el-button :loading="loading1" type="primary">采购明细导入</el-button>
 				</el-upload>
 			</div>
 			<el-table :data="tableData" size="lagre" style="width: 100%" v-loading="loading" tooltip-effect="light"
 				row-key="id" border="">
-				<el-table-column prop="inventorySKU" label="库存SKU" width="150" align="center" show-overflow-tooltip="" />
+				<el-table-column prop="inventorySKU" label="库存SKU" width="150" align="center"
+					show-overflow-tooltip="" />
 				<el-table-column prop="productName" label="商品名称" width="150" align="center" show-overflow-tooltip="" />
 				<el-table-column prop="supplierItemNumber" label="供应商货号" width="150" align="center" />
 				<el-table-column prop="preparationTime" label="制单时间" width="160" align="center" />
@@ -143,7 +146,8 @@ handleQuery();
 				<el-table-column prop="warehouseAuditTime" label="仓库审核时间" align="center" width="100"
 					show-overflow-tooltip="" />
 				<el-table-column prop="financialReviewer" label="财务审核人" align="center" width="100" />
-				<el-table-column prop="productRemarks" label="商品备注" align="center" width="150" show-overflow-tooltip="" />
+				<el-table-column prop="productRemarks" label="商品备注" align="center" width="150"
+					show-overflow-tooltip="" />
 				<el-table-column prop="supplier" label="供应商" align="center" width="150" />
 				<el-table-column prop="daysJudgmentValue" label="天数判定值" align="center" width="150" />
 				<el-table-column prop="year" label="年份" align="center" width="150" />
@@ -151,7 +155,8 @@ handleQuery();
 					v-if="auth('uAE_ProcurementDetails:edit') || auth('uAE_ProcurementDetails:delete')">
 					<template #default="scope">
 						<el-button icon="ele-Edit" size="small" text="" type="primary"
-							@click="openEditUAE_ProcurementDetails(scope.row)" v-auth="'uAE_ProcurementDetails:edit'"> 编辑
+							@click="openEditUAE_ProcurementDetails(scope.row)" v-auth="'uAE_ProcurementDetails:edit'">
+							编辑
 						</el-button>
 						<el-button icon="ele-Delete" size="small" text="" type="primary"
 							@click="delUAE_ProcurementDetails(scope.row)" v-auth="'uAE_ProcurementDetails:delete'"> 删除

@@ -380,6 +380,14 @@ const ifoutProduct = ref([
 		key: 2,
 		value: 'Normal',
 	},
+	{
+		key: 3,
+		value: 'New Arrival',
+	},
+	{
+		key: 4,
+		value: 'Clearance',
+	},
 ]);
 const stockStatus = ref([
 	{
@@ -392,6 +400,14 @@ const stockStatus = ref([
 	},
 	{
 		key: 3,
+		value: 'Hot Sale',
+	},
+	{
+		key: 4,
+		value: 'Sale Surge',
+	},
+	{
+		key: 5,
 		value: 'Normal',
 	},
 ]);
@@ -767,7 +783,7 @@ onMounted(() => {
 						<el-table-column type="selection" width="55" />
 						<el-table-column type="index" :label="area == 'CN' ? '序号' : 'NO.'" width="55" align="center" />
 						<template v-for="(item, index) in TableData" :key="index">
-							<el-table-column v-if="item.checked && item.dataIndex === 'site'" :prop="item.dataIndex"
+							<el-table-column v-if="item.checked && item.dataIndex === 'site'" :prop="item.dataIndex" show-overflow-tooltip
 								:fixed="item.fixed" :label="area == 'CN' ? item.titleCN : item.titleEN" align="center">
 								<template #header>
 									<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
@@ -787,7 +803,7 @@ onMounted(() => {
 								</template>
 							</el-table-column>
 							<el-table-column v-else-if="item.checked && item.dataIndex === 'inventorySKU'" width="110"
-								:fixed="item.fixed" :prop="item.dataIndex"
+								:fixed="item.fixed" :prop="item.dataIndex" show-overflow-tooltip
 								:label="area == 'CN' ? item.titleCN : item.titleEN" align="center">
 								<template #header>
 									<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
@@ -808,7 +824,7 @@ onMounted(() => {
 								</template>
 							</el-table-column>
 							<el-table-column v-else-if="item.checked && item.dataIndex === 'itemStatus'"
-								:fixed="item.fixed" :prop="item.dataIndex"
+								:fixed="item.fixed" :prop="item.dataIndex" show-overflow-tooltip
 								:label="area == 'CN' ? item.titleCN : item.titleEN" width="100" align="center">
 								<template #header>
 									<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
@@ -823,15 +839,14 @@ onMounted(() => {
 									<div v-else>{{ area == 'CN' ? item.titleCN : item.titleEN }}</div>
 								</template>
 								<template #default="scope">
-									<el-select clearable="" v-model="scope.row.itemStatus" placeholder="请选择"
-										:disabled="disabledAuto(scope)">
+									<el-select v-model="scope.row.itemStatus" :disabled="disabledAuto(scope)">
 										<el-option v-for="(item, index) in ifoutProduct" :key="index"
 											:value="item.value" :label="item.label" />
 									</el-select>
 								</template>
 							</el-table-column>
 							<el-table-column v-else-if="item.checked && item.dataIndex === 'listCount'"
-								:fixed="item.fixed" :prop="item.dataIndex"
+								:fixed="item.fixed" :prop="item.dataIndex" show-overflow-tooltip
 								:label="area == 'CN' ? item.titleCN : item.titleEN" align="center">
 								<template #header>
 									<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
@@ -852,7 +867,7 @@ onMounted(() => {
 								</template>
 							</el-table-column>
 							<el-table-column v-else-if="item.checked" :fixed="item.fixed" :prop="item.dataIndex"
-								:label="area == 'CN' ? item.titleCN : item.titleEN" width="120" align="center" >
+								:label="area == 'CN' ? item.titleCN : item.titleEN" width="120" align="center" show-overflow-tooltip>
 								<template #header>
 									<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
 										<div style="display: flex; align-items: center; justify-content: center">

@@ -1,6 +1,6 @@
 <script lang="ts" setup name="inventory_data">
 import { ref, onMounted, watch } from 'vue';
-import { initialInventoryDataPage } from '/@/api/modular/main/financial.ts';
+import { initialInventoryDataPage,getInitialInventoryData } from '/@/api/modular/main/financial.ts';
 import { ElMessageBox, ElMessage, ElNotification } from 'element-plus';
 import importDialog from './component/importDialog.vue';
 import infoDataDialog from '/@/components/infoDataDialog/index.vue';
@@ -27,31 +27,31 @@ const yearList = ref<any>([]);
 const date = new Date();
 const year = date.getFullYear();
 
-for (let i = year + 5; i >= 2005; i--) {
+for (let i = year ; i >= 2005; i--) {
 	yearList.value.push({ label: `${i}`, value: `${i}` });
 }
 const TableData = ref<any>([
 	{
 		titleCN: '文件名',
-		dataIndex: 'warehouseName',
+		dataIndex: 'fileName',
 		checked: true,
 		fixed: false,
 	},
 	{
 		titleCN: '批次',
-		dataIndex: 'warehouseName',
+		dataIndex: 'batchId',
 		checked: true,
 		fixed: false,
 	},
 	{
 		titleCN: '月份',
-		dataIndex: 'erpSku',
+		dataIndex: 'time',
 		checked: true,
 		fixed: false,
 	},
 	{
 		titleCN: '操作人',
-		dataIndex: 'createor',
+		dataIndex: 'creator',
 		checked: true,
 		fixed: false,
 	},
@@ -71,8 +71,8 @@ const formList = ref<formListType>([
 			{value:'阿曼仓',lable:'阿曼仓'},
 			{value:'UAE Store Warehouse',lable:'UAE Store Warehouse'},
 			{value:'阿联酋不良品仓6Z2',lable:'阿联酋不良品仓6Z2'},
-			{value:'UAE Warehouse No.2',lable:'UAE Warehouse No.2'},
-			{value:'UAE Warehouse No.6',lable:'UAE Warehouse No.6'},
+			{value:'UAE Warehouse No. 2',lable:'UAE Warehouse No. 2'},
+			{value:'UAE Warehouse No. 6',lable:'UAE Warehouse No. 6'},
 			{value:'深圳仓库',lable:'深圳仓库'},
 			{value:'迪拜虚拟仓库',lable:'迪拜虚拟仓库'},
 			{value:'默认仓库',lable:'默认仓库'},
@@ -157,11 +157,8 @@ const openimportDialog = () => {
 	loading1.value = false;
 };
 // 查询
-const getAppPage = async (): void => {
+const handleQuery = async (): void => {
 	loading.value = true;
-	if (queryParams.value.WarehouseName === '全部') {
-		queryParams.value.WarehouseName = null;
-	}
 	await initialInventoryDataPage(Object.assign(queryParams.value, tableParams.value)).then((res) => {
 		//tableData.value = res.data.result.items;
 		tableData.value.splice(0, tableData.value.length);
@@ -170,26 +167,28 @@ const getAppPage = async (): void => {
 			tableData.value.push(element);
 		});
 	});
-	if (queryParams.value.WarehouseName === null) {
-		queryParams.value.WarehouseName = '全部';
-	}
 	loading.value = false;
 };
 const openEditUser = (row: any) => {
 	visible.value = true
+	puyuanyunId.value = row.batchId
 };
 const close = () => {
 	ifClose.value = false
 	visible.value = false
 }
 onMounted(() => {
-	getAppPage();
+	handleQuery();
 });
-
+// 改变页面容量
+const handleSizeChange = (val: number): void => {
+	tableParams.value.pageSize = val;
+	handleQuery();
+};
 // 改变页码序号
 const handleCurrentChange = (val: number): void => {
 	tableParams.value.page = val;
-	getAppPage();
+	handleQuery();
 };
 </script>
 <template>
@@ -197,23 +196,22 @@ const handleCurrentChange = (val: number): void => {
 		<el-card shadow="hover" :body-style="{ paddingBottom: '0' }">
 			<el-form :model="queryParams" :inline="true">
 				<el-form-item label="文件名">
-					<el-input placeholder="请输入" v-model="queryParams.erpSku" clearable />
+					<el-input placeholder="请输入" v-model="queryParams.fileName" clearable />
 				</el-form-item>
 				<el-form-item label="年份">
-					<el-select v-model="queryParams.WarehouseName" clearable>
-						<el-option value="全部" label="全部"></el-option>
+					<el-select v-model="queryParams.time" clearable>
 						<el-option v-for="(item, index) in yearList" :key="index" :value="item.value" :label="item.label" />
 					</el-select>
 				</el-form-item>
 				<el-form-item>
 					<el-button-group>
-						<el-button v-auth="'shippingDetails:page'" type="primary" icon="ele-Search" @click="getAppPage()" style="width: 70px; margin-right: 2px"> 查询 </el-button>
+						<el-button  type="primary" icon="ele-Search" @click="handleQuery()" style="width: 70px; margin-right: 2px"> 查询 </el-button>
 						<el-button
 							icon="ele-Refresh"
 							@click="
 								() => {
 									queryParams = { WarehouseName: '全部' };
-									getAppPage();
+									handleQuery();
 								}
 							"
 							style="width: 70px; margin-right: 2px"
@@ -248,13 +246,14 @@ const handleCurrentChange = (val: number): void => {
 				:page-sizes="[50, 100, 500, 1000]"
 				small=""
 				background=""
+				@size-change="handleSizeChange"
 				@current-change="handleCurrentChange"
 				layout="total, sizes, prev, pager, next, jumper"
 			/>
-			<importDialog ref="importDialogRef" :excelName="excelName" :tableAddress="tableAddress" :area="area" :url="url" @reloadTable="getAppPage" />
+			<importDialog ref="importDialogRef" :excelName="excelName" :tableAddress="tableAddress" :area="area" :url="url" @reloadTable="handleQuery" />
 			<el-dialog v-model="visible" title="详情" @close="close" width="1000px">
-				<infoDataDialog :id="puyuanyunId" idName="Id"  :dataList="dataList"
-					:ifClose="ifClose" :pointerface="initialInventoryDataPage" :formList="formList" />
+				<infoDataDialog :id="puyuanyunId" idName="batchId"  :dataList="dataList"
+					:ifClose="ifClose" :pointerface="getInitialInventoryData" :formList="formList" />
 			</el-dialog>
 		</el-card>
 	</div>

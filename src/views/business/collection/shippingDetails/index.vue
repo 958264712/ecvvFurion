@@ -196,12 +196,12 @@ const TableData = ref<any>([
 		checked: true,
 		fixed: false,
 	},
-	{
-		titleCN: '入货代仓时间',
-		dataIndex: 'shippingTime',
-		checked: true,
-		fixed: false,
-	},
+	// {
+	// 	titleCN: '入货代仓时间',
+	// 	dataIndex: 'shippingTime',
+	// 	checked: true,
+	// 	fixed: false,
+	// },
 	{
 		titleCN: '运输方式',
 		dataIndex: 'shippingMethod',
@@ -221,8 +221,14 @@ const TableData = ref<any>([
 		fixed: false,
 	},
 	{
-		titleCN: '采购价含税(RMB)',
+		titleCN: '集货采购价含税(RMB)',
 		dataIndex: 'includingTaxPurchasePrice',
+		checked: true,
+		fixed: false,
+	},
+	{
+		titleCN: '报关采购价含税(RMB)',
+		dataIndex: 'cusPurchasePrice',
 		checked: true,
 		fixed: false,
 	},
@@ -269,7 +275,7 @@ const TableData = ref<any>([
 		fixed: false,
 	},
 	{
-		titleCN: '出发日期',
+		titleCN: '验货完成日期',
 		dataIndex: 'departureDate',
 		checked: true,
 		fixed: false,
@@ -402,7 +408,7 @@ function customCellStyle({ row, column, rowIndex, columnIndex }) {
 						<el-option v-for="item in destinationList" :label="item.value" :value="item.value" />
 					</el-select>
 				</el-form-item>
-				<el-form-item label="出发日期">
+				<el-form-item label="验货完成日期">
 					<el-date-picker start-placeholder=" 开始时间" end-placeholder="结束时间" type="daterange"
 						v-model="queryParams.time" />
 				</el-form-item>
@@ -434,7 +440,7 @@ function customCellStyle({ row, column, rowIndex, columnIndex }) {
 								<el-button type="primary" :loading="cardLoading"> 导出 </el-button>
 								<template #dropdown>
 									<el-dropdown-menu>
-										<el-dropdown-item style="height:24px" @click="SelectedExport(0)">导出选中
+										<el-dropdown-item :disabled="selectedRowKeys?.length<=0" style="height:24px" @click="SelectedExport(0)">导出选中
 											<!-- <el-dropdown placement='right-start'>
 												<span style="font-size: 12px;" class="el-dropdown-link">
 													导出选中

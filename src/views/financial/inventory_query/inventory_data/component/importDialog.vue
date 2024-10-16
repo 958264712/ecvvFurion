@@ -5,7 +5,7 @@
 				<p>1、下载导入模版，如已有下载模版可直接跳过第一步，在后续步骤选择月份及文件上传</p>
 				<div class="moban">
 					<div style="display: flex; align-items: center">
-						<svg t="1709867915105" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2468" width="64" height="64">
+						<svg t="1709867915105" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2468" width="52" height="52">
 							<path
 								d="M854.6 288.6L639.4 73.4c-6-6-14.1-9.4-22.6-9.4H192c-17.7 0-32 14.3-32 32v832c0 17.7 14.3 32 32 32h640c17.7 0 32-14.3 32-32V311.3c0-8.5-3.4-16.7-9.4-22.7zM790.2 326H602V137.8L790.2 326z m1.8 562H232V136h302v216c0 23.2 18.8 42 42 42h216v494z"
 								p-id="2469"
@@ -24,13 +24,13 @@
 			</div>
 			<div class="import" v-if="isShowImport">
 				<p>2、选择需要导入数据的月份</p>
-				<el-date-picker :clearable="false" v-model="time" type="month" style="width: 200px;margin-top:20px" placeholder="请选择月份" />
+				<el-date-picker :clearable="false" v-model="time" type="month" style="width: 200px; margin-top: 10px" placeholder="请选择月份" />
 			</div>
 			<div class="import" v-if="isShowImport">
 				<p>3、上传需要导入表格</p>
 				<el-upload :on-change="Imports" :multiple="false" :show-file-list="false" :auto-upload="false" name="file">
 					<div class="moban1">
-						<svg t="1709867915105" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2468" width="128" height="128">
+						<svg t="1709867915105" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2468" width="104" height="104">
 							<path
 								d="M854.6 288.6L639.4 73.4c-6-6-14.1-9.4-22.6-9.4H192c-17.7 0-32 14.3-32 32v832c0 17.7 14.3 32 32 32h640c17.7 0 32-14.3 32-32V311.3c0-8.5-3.4-16.7-9.4-22.7zM790.2 326H602V137.8L790.2 326z m1.8 562H232V136h302v216c0 23.2 18.8 42 42 42h216v494z"
 								p-id="2469"
@@ -73,6 +73,7 @@ import { ElMessage, ElNotification } from 'element-plus';
 import { Check, CloseBold } from '@element-plus/icons-vue';
 import { service } from '/@/utils/request';
 import other from '/@/utils/other';
+import moment from 'moment';
 
 //父级传递来的参数
 var props = defineProps({
@@ -101,7 +102,7 @@ const loading1 = ref(false);
 const isShowDialog = ref(false);
 const isShowImport = ref(true);
 const isMime = ref(true);
-const time = ref<any>(undefined)
+const time = ref<any>(undefined);
 const result = ref<any>({});
 const tableParams = ref({
 	Page: 1,
@@ -121,30 +122,35 @@ const beforeUpload = (rawFile: any) => {
 const Imports = (file: any) => {
 	loading.value = true;
 	isMime.value = beforeUpload(file);
-	if (isMime.value) {
-		const formData = new FormData();
-		formData.append('file', file.raw);
-		service({
-			url: props.url,
-			method: 'post',
-			data: formData,
-			headers: {
-				'Content-Type': 'multipart/form-data; boundary=----WebKitFormBoundarynl6gT1BKdPWIejNq',
-			},
-		}).then((res: any) => {
-			loading.value = false;
-			isShowImport.value = false;
-			if (res.data.result.total) {
-				result.value = res.data.result;
-				tableParams.value.total = res.data.result.total;
-				ElMessage.success('导入成功');
-				emit('reloadTable');
-			} else {
-				result.value = res.data.result;
-				tableParams.value.total = res.data.result?.total;
-				ElMessage.error('导入失败'); // + res.message
-			}
-		});
+	if (time.value !== undefined) {
+		if (isMime.value) {
+			const formData = new FormData();
+			formData.append('file', file.raw);
+			formData.append('time', moment(time.value).format('YYYY-MM'));
+			service({
+				url: props.url,
+				method: 'post',
+				data: formData,
+				headers: {
+					'Content-Type': 'multipart/form-data; boundary=----WebKitFormBoundarynl6gT1BKdPWIejNq',
+				},
+			}).then((res: any) => {
+				loading.value = false;
+				isShowImport.value = false;
+				if (res.data.result.total) {
+					result.value = res.data.result;
+					tableParams.value.total = res.data.result.total;
+					ElMessage.success('导入成功');
+					emit('reloadTable');
+				} else {
+					result.value = res.data.result;
+					tableParams.value.total = res.data.result?.total;
+					ElMessage.error('导入失败'); // + res.message
+				}
+			});
+		}
+	} else {
+		ElMessage.error('请选择导入的数据月份');
 	}
 };
 
@@ -181,9 +187,9 @@ defineExpose({ openDialog });
 
 	.moban {
 		margin: 20px 0;
-		border: 1px solid #000;
+		border: 1px solid #ccc;
 		border-radius: 3px;
-		height: 80px;
+		height: 66px;
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
@@ -193,15 +199,15 @@ defineExpose({ openDialog });
 
 	.moban1 {
 		margin: 20px 0;
-		border: 1px solid #000;
+		border: 1px solid #ccc;
 		border-radius: 3px;
-		height: 300px;
+		height: 220px;
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
 		flex-direction: column;
 		width: 720px;
-		padding: 50px;
+		padding: 20px;
 	}
 }
 

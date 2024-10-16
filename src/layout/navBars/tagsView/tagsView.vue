@@ -627,10 +627,8 @@ watch(
 	() => {
 		if (state.tagsViewList?.length < 15) {
 			stores.setTagsViewListOver(false);
-			Session.set('tagsViewListOver', false);
 		} else {
 			stores.setTagsViewListOver(true);
-			Session.set('tagsViewListOver', true);
 		}
 	}
 );
@@ -638,7 +636,7 @@ watch(
 watch(
 	() => stores.tagsViewListOver,
 	() => {
-		if (!Session.get('tagsViewListOver')) {
+		if (!Session.get('tagsViewListOver') || state.tagsViewList?.length < 15) {
 			stores.setTagsViewListOver(false);
 		} else {
 			stores.setTagsViewListOver(true);

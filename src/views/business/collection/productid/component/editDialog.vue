@@ -35,8 +35,8 @@
 					<el-form-item label="报关数量">
 						<el-input v-model="ruleForm.plannedShipmentQuantity" placeholder="请输入报关数量" />
 					</el-form-item>
-					<el-form-item label="迪拜仓库收货数量">
-						<el-input v-model="ruleForm.dubaiWarehouseReceiptQuantity" placeholder="请输入迪拜仓库收货数量" />
+					<el-form-item label="实际出货数量">
+						<el-input v-model="ruleForm.actualShipmentQuantity" placeholder="请输入实际出货数量" />
 					</el-form-item>
 					<el-form-item label="补充说明">
 						<el-input v-model="ruleForm.unitInfo" placeholder="请输入补充说明" />
@@ -94,11 +94,11 @@
 					<el-form-item label="用途">
 						<el-input v-model="ruleForm.use" placeholder="请输入用途" />
 					</el-form-item>
-					<el-form-item label="实际出货数量">
-						<el-input v-model="ruleForm.actualShipmentQuantity" placeholder="请输入实际出货数量" />
+					<el-form-item label="报关单位">
+						<el-input v-model="ruleForm.cusUnit" placeholder="请输入报关单位" />
 					</el-form-item>
-					<el-form-item label="单位">
-						<el-input v-model="ruleForm.unit" placeholder="请输入单位" />
+					<el-form-item label="集货单位">
+						<el-input v-model="ruleForm.unit" placeholder="请输入集货单位" />
 					</el-form-item>
 					<el-form-item label="装箱个数">
 						<el-input v-model="ruleForm.quantityInBoxes" placeholder="请输入装箱个数" />
@@ -121,8 +121,11 @@
 					<el-form-item label="总方数（立方米）">
 						<el-input v-model="ruleForm.totalSquaresM3" placeholder="请输入总方数（立方米）" />
 					</el-form-item>
-					<el-form-item label="采购价含税">
+					<el-form-item label="集货采购价含税">
 						<el-input v-model="ruleForm.includingTaxPurchasePrice" placeholder="请输入采购价含税" />
+					</el-form-item>
+					<el-form-item label="报关采购价含税">
+						<el-input v-model="ruleForm.cusPurchasePrice" placeholder="请输入采购价含税" />
 					</el-form-item>
 					<el-form-item label="出口单价（USD）">
 						<el-input v-model="ruleForm.exportUnitPrice" placeholder="请输入出口单价（USD）" />

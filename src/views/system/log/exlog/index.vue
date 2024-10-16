@@ -16,7 +16,7 @@
 				</el-form-item>
 				<el-form-item>
 					<el-button icon="ele-DeleteFilled" type="danger" @click="clearLog" v-auth="'sysExlog:clear'"> 清空 </el-button>
-					<el-button icon="ele-FolderOpened" @click="exportLog" v-auth="'sysOplog:export'"> 导出 </el-button>
+					<el-button icon="ele-FolderOpened" @click="exportLog" v-auth="'sysExlog:export'"> 导出 </el-button>
 				</el-form-item>
 			</el-form>
 		</el-card>
@@ -61,7 +61,7 @@
 				<el-table-column prop="logDateTime" label="日志时间" width="160" align="center" fixed="right" show-overflow-tooltip />
 				<el-table-column label="操作" width="80" align="center" fixed="right" show-overflow-tooltip>
 					<template #default="scope">
-						<el-button icon="ele-InfoFilled" size="small" text type="primary" @click="viewDetail(scope.row)" v-auth="'sysOplog:page'">详情 </el-button>
+						<el-button icon="ele-InfoFilled" size="small" text type="primary" @click="viewDetail(scope.row)" v-auth="'sysExlog:page'">详情 </el-button>
 					</template>
 				</el-table-column>
 			</el-table>

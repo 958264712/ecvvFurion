@@ -1,4 +1,4 @@
-﻿<template>
+﻿ <template>
 	<div class="collectionOrderInfo-container">
 		<el-dialog v-model="isShowDialog" :title="props.title" :width="700" draggable="">
 			<el-form :model="ruleForm" ref="ruleFormRef" size="default" label-width="100px" :rules="rules">
@@ -102,8 +102,8 @@
 						
 					</el-col>
 					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
-						<el-form-item label="出发日期" prop="departureDate">
-							<el-date-picker v-model="ruleForm.departureDate" type="date" placeholder="出发日期" />
+						<el-form-item label="验货完成日期" prop="departureDate">
+							<el-date-picker v-model="ruleForm.departureDate" type="date" placeholder="验货完成日期" />
 							
 						</el-form-item>
 						
@@ -304,7 +304,3 @@ onMounted(async () => {
 //将属性或者函数暴露给父组件
 defineExpose({ openDialog });
 </script>
-
-
-
-

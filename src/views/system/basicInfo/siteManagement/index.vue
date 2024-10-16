@@ -85,7 +85,7 @@ const handleQuery = async () => {
 
 const openAddManagement = () => {
 	editCollectionOrderInfoTitle.value = '新增';
-	editDialogRef.value.openDialog({});
+	editDialogRef.value.openDialog({state:true});
 };
 const openEdit = (row: any) => {
 	editCollectionOrderInfoTitle.value = '编辑';

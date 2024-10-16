@@ -86,11 +86,9 @@ const handleClick = ()=>{
 	if(Session.get('tagsViewList')?.length < 15){
 		stores.setTagsViewListOver(false)
 		tagsViewListOver.value=false
-		Session.set('tagsViewListOver',false)
 	}else{
 		stores.setTagsViewListOver(true)
 		tagsViewListOver.value=true
-		Session.set('tagsViewListOver',true)
 	}
 }
 // 页面加载时
@@ -121,11 +119,9 @@ watch(()=>route.path,
 	if(Session.get('tagsViewList')?.length > 14){
 		tagsViewListOver.value = true
 		stores.setTagsViewListOver(true)
-		Session.set('tagsViewListOver',true)
 	}else{
 		tagsViewListOver.value = false
 		stores.setTagsViewListOver(false)
-		Session.set('tagsViewListOver',false)
 	}
 }
 )

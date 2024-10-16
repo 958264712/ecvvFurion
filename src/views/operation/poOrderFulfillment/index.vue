@@ -6,7 +6,15 @@ import other from '/@/utils/other.ts';
 import moment from 'moment';
 import { ElMessage } from 'element-plus';
 import { useRouter } from 'vue-router';
-import { poFulfillingPage, Import, getPoFulfillingOrdersList, getConfirmedNewPOsPage, exportPoFulfillingOrders, exportConfirmedNewPOs } from '/@/api/modular/main/poFulfillingOrdersData';
+import {
+	poFulfillingPage,
+	Import,
+	ImportFolfillingOrdersNoId,
+	getPoFulfillingOrdersList,
+	getConfirmedNewPOsPage,
+	exportPoFulfillingOrders,
+	exportConfirmedNewPOs,
+} from '/@/api/modular/main/poFulfillingOrdersData';
 import InfoDataDialog from '/@/components/infoDataDialog/index.vue';
 
 const timevalue1 = ref(undefined);
@@ -16,12 +24,12 @@ const queryParams = ref<any>({ site: null });
 const tableParams = ref<any>({ page: 1, pageSize: 20 });
 const ruleForm = ref<any>({ site: null });
 const tableData = ref<any>([]);
+const dataList = ref<any>([]);
 const defaultTime = ref<[Date, Date]>([new Date(2000, 1, 1, 0, 0, 0), new Date(2000, 2, 1, 23, 59, 59)]);
 const visible = ref(false); //列表弹窗
 const visible1 = ref(false); //列表弹窗
 const loading = ref(false);
 const importloading = ref(false);
-const Exportloading = ref(false);
 const dialogFormVisible = ref(false);
 const dialogFormVisible1 = ref(false);
 const ifClose = ref(false);
@@ -129,14 +137,15 @@ const Imports = (file: any) => {
 	formData.append('file', file.raw);
 	Import(formData, ruleForm.value.site)
 		.then((res: any) => {
-			importloading.value = false;
 			if (res.data.code == 200) {
+				importloading.value = false;
 				ElMessage.success('导入成功');
 				dialogFormVisible1.value = false;
 				handleQuery();
 			} else {
-				importloading.value = false;
 				ElMessage.error(res.message); // + res.message
+				importloading.value = false;
+				dialogFormVisible1.value = false;
 			}
 		})
 		.catch(() => {
@@ -146,34 +155,71 @@ const Imports = (file: any) => {
 };
 // 导出
 const exportPo = async (id: any, type: any) => {
-	Exportloading.value = true;
-	if (type === 1) {
-		await exportPoFulfillingOrders({ id }, id).then((res) => {
+	loading.value = true;
+	if (type === 2) {
+		await exportConfirmedNewPOs({ id }, id).then((res) => {
 			other.downloadfile(res);
 			ElMessage.success('导出成功');
 		});
-	} else {
-		await exportConfirmedNewPOs({ id }, id).then((res) => {
+	} else if (type === 3) {
+		await exportPoFulfillingOrders({ id }, id, false).then((res) => {
+			other.downloadfile(res);
+			ElMessage.success('导出成功');
+		});
+	} else if (type === 4) {
+		await exportPoFulfillingOrders({ id }, id, true).then((res) => {
 			other.downloadfile(res);
 			ElMessage.success('导出成功');
 		});
 	}
 	handleQuery();
-	Exportloading.value = false;
+	loading.value = false;
+};
+// 导入pos
+const importPo = (file: any) => {
+	const formData = new FormData();
+	formData.append('file', file.raw);
+	const ifImprot = other.beforeUpload(file)
+	if (ifImprot) {
+		ImportFolfillingOrdersNoId(formData).then((res: any) => {
+			if (res.data.code == 200) {
+				ElMessage.success('导入成功');
+				handleQuery();
+			} else {
+				ElMessage.error(res.message); // + res.message
+			}
+		});
+	}
 };
 //打开详情弹窗
-const showModal = (id: any) => {
+const showModal = (id: any, isImport: number) => {
 	orderFulfillmentId.value = id;
+	dataList.value = dataListPos.value;
+	if (isImport === 0) {
+		let list = [];
+		dataListPos.value.map((item) => {
+			list.push(item);
+			if (item.prop === 'swaQuantityConfirmed') {
+				list.push({ label: '实际可发货数量', prop: 'confirmQuantity' });
+			}
+			if (item.prop === 'swaDate') {
+				list.push({ label: '实际约仓时间', prop: 'bookingTime' });
+			}
+		});
+		dataList.value = list;
+	}
 	pointerface.value = getPoFulfillingOrdersList;
 	visible.value = true;
 	ifClose.value = true;
 };
 const showModal1 = (id: any) => {
 	orderFulfillmentId.value = id;
+	dataList.value = dataListNewPos.value;
 	pointerface.value = getConfirmedNewPOsPage;
 	visible1.value = true;
 	ifClose.value = true;
 };
+
 //关闭弹窗
 const close = () => {
 	ifClose.value = false;
@@ -204,11 +250,21 @@ const handleCurrentChange = (val: number): void => {
 // infoDataDialog 配套参数
 const formList = ref<any>([
 	{
+		label: 'PO',
+		prop: 'po',
+	},
+	{
 		label: 'ASIN',
 		prop: 'asin',
 	},
 ]);
-const dataList = ref<any>([
+const formList1 = ref<any>([
+	{
+		label: 'ASIN',
+		prop: 'asin',
+	},
+]);
+const dataListPos = ref<any>([
 	{
 		label: 'PO',
 		prop: 'po',
@@ -224,6 +280,10 @@ const dataList = ref<any>([
 	{
 		label: 'ERP-SKU',
 		prop: 'erpSku',
+	},
+	{
+		label: 'GoodsName',
+		prop: 'goodsName',
 	},
 	{
 		label: '采购国',
@@ -254,15 +314,19 @@ const dataList = ref<any>([
 		prop: 'latestDate',
 	},
 	{
-		label: '可履单数量',
-		prop: 'confirmQuantity',
+		label: '建议可发货数量',
+		prop: 'swaQuantityConfirmed',
 	},
 	{
-		label: '提示约仓时间',
-		prop: 'bookingTime',
+		label: 'Quantity Confirmed',
+		prop: 'unitQuantityConfirmed',
+	},
+	{
+		label: '建议约仓时间',
+		prop: 'swaDate',
 	},
 ]);
-const dataList1 = ref<any>([
+const dataListNewPos = ref<any>([
 	{
 		label: 'Order/PO Number',
 		prop: 'po',
@@ -404,10 +468,11 @@ const dataList1 = ref<any>([
 		prop: 'merchantSkuratio',
 	},
 ]);
-function changeSite() {
+
+const changeSite = () => {
 	ifdisabled.value = false;
 }
-function closed() {
+const closed = () => {
 	ifdisabled.value = true;
 }
 onMounted(() => {
@@ -424,10 +489,13 @@ onMounted(() => {
 						<el-option v-for="(item, index) in sites" :key="index" :value="item.value" :label="item.label" />
 					</el-select>
 				</el-form-item>
-				<el-form-item label="订单时间">
-					<el-date-picker v-model="timevalue1" type="daterange" start-placeholder="Start date" end-placeholder="End date" :default-time="defaultTime" />
+				<el-form-item label="PO">
+					<el-input v-model="queryParams.po" clearable="" placeholder="请输入PO" />
 				</el-form-item>
-				<el-form-item label="导入时间">
+				<!-- <el-form-item label="订单时间">
+					<el-date-picker v-model="timevalue1" type="daterange" start-placeholder="Start date" end-placeholder="End date" :default-time="defaultTime" />
+				</el-form-item> -->
+				<el-form-item label="Creation Date">
 					<el-date-picker v-model="timevalue2" type="daterange" start-placeholder="Start date" end-placeholder="End date" :default-time="defaultTime" />
 				</el-form-item>
 				<el-form-item label="导出状态">
@@ -443,8 +511,8 @@ onMounted(() => {
 							@click="
 								() => {
 									queryParams = {};
-									timevalue1=undefined;
-									timevalue2=undefined;
+									timevalue1 = undefined;
+									timevalue2 = undefined;
 									handleQuery();
 								}
 							"
@@ -457,7 +525,10 @@ onMounted(() => {
 		</el-card>
 		<el-card class="full-table" shadow="hover" style="margin-top: 8px">
 			<div class="settingf">
-				<el-button type="primary" :loading="importloading" @click="opendialog"> 导入 </el-button>
+				<el-button type="primary" :loading="importloading" @click="opendialog" style="margin-right: 10px"> 导入PO订单 </el-button>
+				<el-upload :on-change="importPo" :multiple="false" action="#" :show-file-list="false" :auto-upload="false" name="file">
+					<el-button type="primary">import POs PANEL</el-button>
+				</el-upload>
 				<el-dialog v-model="dialogFormVisible" title="提示" :width="600">
 					<el-icon><ele-WarningFilled /></el-icon>业务集成系统内的今日库存数据是否已全部更新？
 					<template #footer>
@@ -491,7 +562,7 @@ onMounted(() => {
 					<template #footer>
 						<span class="dialog-footer">
 							<el-button @click="cancel" size="default" type="info">取消</el-button>
-							<el-upload ref="uploadRef" v-bind:disabled="ifdisabled" :on-change="Imports" :multiple="false" action="#" :show-file-list="false" :auto-upload="false" name="file">
+							<el-upload :disabled="ifdisabled"  :on-change="Imports" :multiple="false" action="#" :show-file-list="false" :auto-upload="false" name="file">
 								<el-button :loading="importloading" type="primary" size="default">确定</el-button>
 							</el-upload>
 						</span>
@@ -502,8 +573,8 @@ onMounted(() => {
 				<el-table-column prop="fileName" label="文件名" align="center" show-overflow-tooltip="" />
 				<el-table-column prop="batchId" label="批次号" align="center" />
 				<el-table-column prop="site" label="站点" align="center" />
-				<el-table-column prop="createTime" label="导入时间 " align="center" />
-				<el-table-column prop="orderTime" label="订单时间 " align="center" />
+				<el-table-column prop="createTime" label="Creation Date" align="center" />
+				<!-- <el-table-column prop="orderTime" label="订单时间 " align="center" /> -->
 				<!-- <el-table-column prop="contractedWarehouseTime" label="约仓时间 " align="center" />
 				<el-table-column prop="deliveryTime" label="送达时间 " align="center" /> -->
 				<el-table-column prop="exportStatus" label="导出状态 " align="center">
@@ -516,20 +587,28 @@ onMounted(() => {
 				<el-table-column label="操作" width="140" align="center" fixed="right">
 					<template #default="scope">
 						<el-dropdown style="margin-right: 20px">
-							<el-button size="small" text type="primary">详情</el-button>
+							<el-button size="small" type="primary">详情</el-button>
 							<template #dropdown>
 								<el-dropdown-menu>
-									<el-dropdown-item @click="showModal(scope.row.id)">POs PANEL</el-dropdown-item>
-									<el-dropdown-item @click="showModal1(scope.row.id)">Confirmed New POs</el-dropdown-item>
+									<el-dropdown-item @click="showModal(scope.row.id, scope.row.isImport)">POs PANEL</el-dropdown-item>
+									<!-- <el-dropdown-item @click="showModal1(scope.row.id)">Confirmed New POs</el-dropdown-item> -->
 								</el-dropdown-menu>
 							</template>
 						</el-dropdown>
-						<el-dropdown style="margin-right: 20px">
-							<el-button size="small" text type="primary">导出</el-button>
+						<el-dropdown>
+							<el-button size="small" type="primary">...</el-button>
 							<template #dropdown>
 								<el-dropdown-menu>
-									<el-dropdown-item @click="exportPo(scope.row.id, 1)">POs PANEL</el-dropdown-item>
-									<el-dropdown-item @click="exportPo(scope.row.id, 2)">Confirmed New POs</el-dropdown-item>
+									<el-dropdown-item>
+										<el-popover popper-style="padding:0;min-width:130px;width:130px" placement="right-start" trigger="hover">
+											<template #reference> Export POs PANEL </template>
+											<div class="contentDiv">
+												<el-button text @click="exportPo(scope.row.id, 3)">Export(no images)</el-button>
+												<el-button text @click="exportPo(scope.row.id, 4)">Export(with images)</el-button>
+											</div>
+										</el-popover>
+									</el-dropdown-item>
+									<el-dropdown-item :disabled="scope.row.isImport === 1" @click="exportPo(scope.row.id, 2)">Export Confirmed New POs</el-dropdown-item>
 								</el-dropdown-menu>
 							</template>
 						</el-dropdown>
@@ -552,7 +631,7 @@ onMounted(() => {
 				<InfoDataDialog :id="orderFulfillmentId" idName="poFulfillingOrderBatchId" :dataList="dataList" :pointerface="pointerface" :formList="formList" :ifClose="ifClose" />
 			</el-dialog>
 			<el-dialog v-model="visible1" title="Confirmed New POs详情" @close="close1" width="1000px">
-				<InfoDataDialog :id="orderFulfillmentId" idName="poFulfillingOrderBatchId" :dataList="dataList1" :pointerface="pointerface" :formList="formList" :ifClose="ifClose" />
+				<InfoDataDialog :id="orderFulfillmentId" idName="poFulfillingOrderBatchId" :dataList="dataList" :pointerface="pointerface" :formList="formList1" :ifClose="ifClose" />
 			</el-dialog>
 		</el-card>
 	</div>
@@ -560,9 +639,10 @@ onMounted(() => {
 <style lang="less" scoped>
 .settingf {
 	margin-bottom: 10px;
+	display: flex;
 }
 
-:deep( .el-card) {
+:deep(.el-card) {
 	.el-dialog__footer .dialog-footer {
 		display: flex;
 		justify-content: end;
@@ -570,6 +650,16 @@ onMounted(() => {
 		button {
 			margin-right: 20px;
 		}
+	}
+}
+.contentDiv {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: center;
+	:deep(.el-button--small) {
+		padding: 0;
+		margin-left: 0;
 	}
 }
 </style>

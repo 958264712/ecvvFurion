@@ -275,7 +275,7 @@
 	}
 }
 .el-dialog__body {
-	max-height: calc(100vh - 85px) !important;
+	max-height: calc(100vh - 240px) !important;
 	overflow-y: auto;
 	overflow-x: auto;
 }
@@ -319,7 +319,7 @@
 		padding: 0;
 	}
 	// 表头背景色
-	--el-table-header-bg-color: var(--next-bg-main-color);
+	// --el-table-header-bg-color: var(--next-bg-main-color);
 	// 表头字体颜色
 	thead {
 		color: var(--el-text-color-regular);	

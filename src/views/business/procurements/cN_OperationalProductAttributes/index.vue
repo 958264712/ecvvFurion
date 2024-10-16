@@ -214,7 +214,10 @@ function Imports(file: any) {
 			loading.value = false;
 			ElMessage.error('导入失败'); // + res.message
 		}
-	});
+	})
+		.catch(arr => {
+			loading.value = false;
+		});
 }
 //选中的数据
 function handleSelectionChange(val: any) {
@@ -347,10 +350,10 @@ handleQuery();
 					<el-button-group>
 						<el-button type="primary" icon="ele-Search" @click="handleQuery"> 查询 </el-button>
 						<el-button icon="ele-Refresh" @click="() => {
-				queryParams = {};
-				handleQuery();
-			}
-			">
+							queryParams = {};
+							handleQuery();
+						}
+							">
 							重置
 						</el-button>
 					</el-button-group>
@@ -368,7 +371,8 @@ handleQuery();
 						<el-button type="primary" :loading="Exportloading"> 导出 </el-button>
 						<template #dropdown>
 							<el-dropdown-menu>
-								<el-dropdown-item @click="SelectedExport">导出选中</el-dropdown-item>
+								<el-dropdown-item :disabled="selectedRows?.length <= 0"
+									@click="SelectedExport">导出选中</el-dropdown-item>
 								<el-dropdown-item @click="AllExport">导出所有</el-dropdown-item>
 							</el-dropdown-menu>
 						</template>
@@ -462,8 +466,9 @@ handleQuery();
 				<el-table-column prop="listingDateTime" label="上架日期" align="center" sortable show-overflow-tooltip="">
 					<template #default="scope">
 						<div @dblclick="openEdit(scope.row)">
-							<el-date-picker  type="datetime" :class="{ 'sku-input': scope.row.IslistingDateTime }" class="custom-input"
-								v-if="scope.row.IsEdit"  v-model="scope.row.listingDateTime" clearable="" />
+							<el-date-picker type="datetime" :class="{ 'sku-input': scope.row.IslistingDateTime }"
+								class="custom-input" v-if="scope.row.IsEdit" v-model="scope.row.listingDateTime"
+								clearable="" />
 							<div v-else>{{ scope.row.listingDateTime }}</div>
 						</div>
 					</template>

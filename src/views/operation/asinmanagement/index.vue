@@ -140,6 +140,7 @@
 								:prop="item.dataIndex"
 								:label="area == 'CN' ? item.titleCN : item.titleEN"
 								align="center"
+								show-overflow-tooltip
 							>
 								<template #header>
 									<el-tooltip effect="dark" placement="bottom" v-if="item.remark">

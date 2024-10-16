@@ -7,13 +7,16 @@
 				</el-form-item>
 				<el-form-item>
 					<el-button-group>
-						<el-button type="primary" icon="ele-Search" @click="handleQuery"
-							> 查询 </el-button>
-						<el-button icon="ele-Refresh" @click="() => {
-			queryParams = {};
-			handleQuery();
-		}
-			">
+						<el-button type="primary" icon="ele-Search" @click="handleQuery"> 查询 </el-button>
+						<el-button
+							icon="ele-Refresh"
+							@click="
+								() => {
+									queryParams = {};
+									handleQuery();
+								}
+							"
+						>
 							重置
 						</el-button>
 					</el-button-group>
@@ -25,9 +28,7 @@
 				<div class="importDiv" style="width: 17%">
 					<el-button @click="dialogFormVisible = true" type="primary"> 导入 </el-button>
 					<el-dialog v-model="dialogFormVisible" title="导入" width="600px" center>
-						<importDialog :type="importType" :text="importText" :formList="importFormList"
-							:importsInterface="ImportInventoryManagement" @close="importClose"
-							@importQuery="importQuery" />
+						<importDialog :type="importType" :text="importText" :formList="importFormList" :importsInterface="ImportInventoryManagement" @close="importClose" @importQuery="importQuery" />
 					</el-dialog>
 
 					<div class="flex flex-wrap items-center">
@@ -36,28 +37,40 @@
 							<el-button type="primary" :loading="Exportloading"> 导出 </el-button>
 							<template #dropdown>
 								<el-dropdown-menu>
-									<el-dropdown-item @click="SelectedExport">导出选中</el-dropdown-item>
+									<el-dropdown-item :disabled="disabledSelected" @click="SelectedExport">导出选中</el-dropdown-item>
 									<el-dropdown-item @click="AllExport">导出所有</el-dropdown-item>
-									<el-dropdown-item
-										@click="ExportPurchaseQuantity('UAE')">导出UAE采购数量</el-dropdown-item>
-									<el-dropdown-item @click="ExportPurchaseQuantity('SA')">导出 SA
-										采购数量</el-dropdown-item>
+									<el-dropdown-item @click="ExportPurchaseQuantity('UAE')">导出UAE采购数量</el-dropdown-item>
+									<el-dropdown-item @click="ExportPurchaseQuantity('SA')">导出 SA 采购数量</el-dropdown-item>
 								</el-dropdown-menu>
 							</template>
 						</el-dropdown>
 					</div>
 				</div>
-				<tabDragColum :data="TableData" :name="`InventoryManagementData`" :area="area"
-					@handleData="handleData" @handleRemarkData="handleRemarkData"/>
+				<tabDragColum :data="TableData" :name="`InventoryManagementData`" :area="area" @handleData="handleData" @handleRemarkData="handleRemarkData" />
 			</div>
-			<el-table :data="tableData" size="lagre" style="width: 100%" v-loading="loading" tooltip-effect="light"
-				@sort-change="sortfun" @selection-change="handleSelectionChange"
-				:header-cell-style="customHeaderCellStyle" row-key="id" border="">
+			<el-table
+				:data="tableData"
+				size="lagre"
+				style="width: 100%"
+				v-loading="loading"
+				tooltip-effect="light"
+				@sort-change="sortfun"
+				@selection-change="handleSelectionChange"
+				:header-cell-style="customHeaderCellStyle"
+				row-key="id"
+				border=""
+			>
 				<el-table-column type="selection" width="55" class-name="custom-header" />
 				<template v-for="(item, index) in TableData" :key="index">
-					<el-table-column v-if="item.checked && item.dataIndex === 'images'" :prop="item.dataIndex"
-						:fixed="item.fixed" width="80" :label="area == 'CN' ? item.titleCN : item.titleEN"
-						align="center">
+					<el-table-column
+						v-if="item.checked && item.dataIndex === 'images'"
+						:prop="item.dataIndex"
+						:fixed="item.fixed"
+						width="80"
+						:label="area == 'CN' ? item.titleCN : item.titleEN"
+						align="center"
+						show-overflow-tooltip
+					>
 						<template #header>
 							<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
 								<div style="display: flex; align-items: center; justify-content: center">
@@ -72,19 +85,31 @@
 						</template>
 						<template #default="scope">
 							<div class="demo-image__preview">
-								<el-image style="width: 60px; height: 60px"
+								<el-image
+									style="width: 60px; height: 60px"
 									:src="'https://raw.githubusercontent.com/okbuynow/OKPIC/main/50x50/' + scope.row.erpSKU + '.jpg'"
-									:zoom-rate="1.2" :max-scale="7" :min-scale="0.2"
+									:zoom-rate="1.2"
+									:max-scale="7"
+									:min-scale="0.2"
 									:preview-src-list="'https://raw.githubusercontent.com/okbuynow/OKPIC/main/50x50/' + scope.row.erpSKU + '.jpg'"
-									:initial-index="1" fit="cover" />
+									:initial-index="1"
+									fit="cover"
+								/>
 							</div>
 						</template>
 					</el-table-column>
 
 					<!-- <el-table-column prop="suggestedProcurementQuantity" label="建议采购数量" sortable align="center" width="135" /> -->
-					<el-table-column v-else-if="item.checked && item.dataIndex === 'uaeSuggestedProcurementQuantity'"
-						:fixed="item.fixed" :prop="item.dataIndex" :label="area == 'CN' ? item.titleCN : item.titleEN"
-						sortable align="center" width="175">
+					<el-table-column
+						v-else-if="item.checked && item.dataIndex === 'uaeSuggestedProcurementQuantity'"
+						:fixed="item.fixed"
+						:prop="item.dataIndex"
+						:label="area == 'CN' ? item.titleCN : item.titleEN"
+						sortable
+						align="center"
+						width="175"
+						show-overflow-tooltip
+					>
 						<template #header>
 							<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
 								<div style="display: flex; align-items: center; justify-content: center">
@@ -104,9 +129,16 @@
 							<div v-else></div>
 						</template>
 					</el-table-column>
-					<el-table-column v-else-if="item.checked && item.dataIndex === 'saSuggestedProcurementQuantity'"
-						:fixed="item.fixed" :prop="item.dataIndex" :label="area == 'CN' ? item.titleCN : item.titleEN"
-						sortable align="center" width="170">
+					<el-table-column
+						v-else-if="item.checked && item.dataIndex === 'saSuggestedProcurementQuantity'"
+						:fixed="item.fixed"
+						:prop="item.dataIndex"
+						:label="area == 'CN' ? item.titleCN : item.titleEN"
+						sortable
+						align="center"
+						width="170"
+						show-overflow-tooltip
+					>
 						<template #header>
 							<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
 								<div style="display: flex; align-items: center; justify-content: center">
@@ -126,28 +158,42 @@
 							<div v-else></div>
 						</template>
 					</el-table-column>
-					<el-table-column v-else-if="item.checked" :fixed="item.fixed" :prop="item.dataIndex"
-						:label="area == 'CN' ? item.titleCN : item.titleEN" sortable width="185" align="center"
-						sortableshow-overflow-tooltip="" >
-								<template #header>
-									<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
-										<div style="display: flex; align-items: center; justify-content: center">
-											{{ area == 'CN' ? item.titleCN : item.titleEN }}
-											<QuestionFilled width="14" style="color: #ccc" v-show="item.remark" />
-										</div>
-										<template #content>
-											<div v-html="item.desc"></div>
-										</template>
-									</el-tooltip>
-									<div v-else>{{ area == 'CN' ? item.titleCN : item.titleEN }}</div>
+					<el-table-column
+						v-else-if="item.checked"
+						:fixed="item.fixed"
+						:prop="item.dataIndex"
+						:label="area == 'CN' ? item.titleCN : item.titleEN"
+						sortable
+						width="185"
+						align="center"
+						show-overflow-tooltip=""
+					>
+						<template #header>
+							<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
+								<div style="display: flex; align-items: center; justify-content: center">
+									{{ area == 'CN' ? item.titleCN : item.titleEN }}
+									<QuestionFilled width="14" style="color: #ccc" v-show="item.remark" />
+								</div>
+								<template #content>
+									<div v-html="item.desc"></div>
 								</template>
-							</el-table-column>
+							</el-tooltip>
+							<div v-else>{{ area == 'CN' ? item.titleCN : item.titleEN }}</div>
+						</template>
+					</el-table-column>
 				</template>
 			</el-table>
-			<el-pagination v-model:currentPage="tableParams.page" v-model:page-size="tableParams.pageSize"
-				:total="tableParams.total" :page-sizes="[10, 20, 50, 100, 500, 1000]" small="" background=""
-				@size-change="handleSizeChange" @current-change="handleCurrentChange"
-				layout="total, sizes, prev, pager, next, jumper" />
+			<el-pagination
+				v-model:currentPage="tableParams.page"
+				v-model:page-size="tableParams.pageSize"
+				:total="tableParams.total"
+				:page-sizes="[10, 20, 50, 100, 500, 1000]"
+				small=""
+				background=""
+				@size-change="handleSizeChange"
+				@current-change="handleCurrentChange"
+				layout="total, sizes, prev, pager, next, jumper"
+			/>
 			<errorDialog ref="errorDialogRef" :title="errorDTitle" />
 		</el-card>
 	</div>
@@ -176,6 +222,7 @@ const IsImage = ref(false);
 const tableData = ref<any>([]);
 const queryParams = ref<inventoryParamsType>({});
 const area = ref('CN');
+const disabledSelected = ref(true);
 const TableData = ref<any>([
 	{
 		titleCN: '图片',
@@ -218,7 +265,7 @@ const TableData = ref<any>([
 	},
 	{
 		titleCN: 'UAE NEW PO',
-		dataIndex: 'poDataSourceUAE',
+		dataIndex: 'newuaepoqty',
 		checked: true,
 		fixed: false,
 		remark: false,
@@ -242,7 +289,7 @@ const TableData = ref<any>([
 	},
 	{
 		titleCN: 'SA NEW PO',
-		dataIndex: 'poDataSourceSA',
+		dataIndex: 'newsapoqty',
 		checked: true,
 		fixed: false,
 		remark: false,
@@ -504,41 +551,41 @@ const tableParams = ref({
 	order: null,
 	prop: null,
 });
-const importType = ref('inventoryManagement')
-const importText = ref('选择站点、表格名，点击"确定"后，选择需要导入的文件，将导入该数据')
-const importsOptionsItem = ref('')
-const importsOptionsItem1 = ref('')
+const importType = ref('inventoryManagement');
+const importText = ref('选择站点、表格名，点击"确定"后，选择需要导入的文件，将导入该数据');
+const importsOptionsItem = ref('');
+const importsOptionsItem1 = ref('');
 const importChange = (val) => {
-	importsOptionsItem.value = val
+	importsOptionsItem.value = val;
 	if (val === '全部(UAE、SA)') {
-		options2.value.map(item => {
+		options2.value.map((item) => {
 			if (item.label !== '金蝶云采购申请单') {
 				item.disabled = true;
 			} else {
 				item.disabled = false;
 			}
-		})
+		});
 	} else if (val === 'UAE') {
-		options2.value.map(item => {
+		options2.value.map((item) => {
 			if (item.label === 'Sales' || item.label === '金蝶云采购申请单') {
 				item.disabled = true;
 			} else {
 				item.disabled = false;
 			}
-		})
+		});
 	} else {
-		options2.value.map(item => {
+		options2.value.map((item) => {
 			if (item.label === '金蝶云采购申请单') {
 				item.disabled = true;
 			} else {
 				item.disabled = false;
 			}
-		})
+		});
 	}
-}
+};
 const importChange1 = (val) => {
-	importsOptionsItem1.value = val
-}
+	importsOptionsItem1.value = val;
+};
 const importFormList = ref<any>([
 	{
 		label: '站点',
@@ -556,15 +603,15 @@ const importFormList = ref<any>([
 		selectList: options2.value,
 		change: importChange1,
 	},
-])
+]);
 let selectedRows = ref<any>([]);
 
 const importClose = (bol: boolean) => {
-	dialogFormVisible.value = bol
-}
+	dialogFormVisible.value = bol;
+};
 const importQuery = () => {
-	handleQuery()
-}
+	handleQuery();
+};
 const handleData = (list: any) => {
 	if (list?.length) {
 		list.map((item, index) => {
@@ -611,6 +658,11 @@ function handleSelectionChange(val: any) {
 	val.forEach((element: any) => {
 		selectedRows.value.push(element.erpSKU);
 	});
+	if (selectedRows.value.length > 0) {
+		disabledSelected.value = false;
+	} else {
+		disabledSelected.value = true;
+	}
 }
 function AllExport() {
 	Exportloading.value = true;
@@ -707,7 +759,7 @@ function ExportPurchaseQuantity(site) {
 	const formData = {
 		type: 1,
 		IsImage: IsImage.value,
-		Site: site
+		Site: site,
 	};
 	axios
 		.post((import.meta.env.VITE_API_URL as any) + `/api/inventoryManagement/exportPurchaseQuantity`, Object.assign(queryParams.value, tableParams.value, formData), {
@@ -785,7 +837,7 @@ handleQuery();
 	width: 500px;
 }
 
-.example-showcase .el-dropdown+.el-dropdown {
+.example-showcase .el-dropdown + .el-dropdown {
 	margin-left: 15px;
 }
 
@@ -801,16 +853,18 @@ handleQuery();
 	width: 20%;
 	text-align: right;
 }
+
 :deep(.cell) {
-	display:flex;
-	align-items:center;
-	justify-content:center;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 	white-space: nowrap;
 }
+
 :deep(.el-textarea__inner) {
 	box-shadow: initial;
-	margin:0;
-	padding:5px;
+	margin: 0;
+	padding: 5px;
 	height: 142px !important;
 }
 </style>

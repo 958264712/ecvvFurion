@@ -10,35 +10,23 @@
 			<el-form :model="state.ruleForm" ref="ruleFormRef" label-width="auto">
 				<el-row :gutter="35">
 					<el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
-						<el-form-item label="上级" prop="pid" :rules="[{ required: true, message: '上级机构不能为空', trigger: 'blur' }]">
-							<el-cascader
-								:options="props.orgData"
-								:props="{ checkStrictly: true, emitPath: false, value: 'id', label: 'name' }"
-								placeholder="请选择上级机构"
-								clearable
-								class="w100"
-								v-model="state.ruleForm.pid"
-							>
-								<template #default="{ node, data }">
-									<span>{{ data.name }}</span>
-									<span v-if="!node.isLeaf"> ({{ data.children.length }}) </span>
-								</template>
-							</el-cascader>
+						<el-form-item label="名称" prop="name" :rules="[{ required: true, message: '名称不能为空', trigger: 'blur' }]">
+							<el-input v-model="state.ruleForm.name" placeholder="请输入" clearable />
 						</el-form-item>
 					</el-col>
 					<el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
-						<el-form-item label="名称" prop="name" :rules="[{ required: true, message: '机构名称不能为空', trigger: 'blur' }]">
-							<el-input v-model="state.ruleForm.name" placeholder="机构名称" clearable />
+						<el-form-item label="状态" prop="state" :rules="[{ required: true, message: '状态不能为空', trigger: 'blur' }]">
+							<el-switch v-model="state.ruleForm.state" :active-value="true" :inactive-value="false" size="small" />
 						</el-form-item>
 					</el-col>
 					<el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
-						<el-form-item label="状态">
-							<el-switch v-model="state.ruleForm.status" :active-value="1" :inactive-value="2" size="small" />
+						<el-form-item label="排序" prop="sort" :rules="[{ required: true, message: '排序不能为空', trigger: 'blur' }]">
+							<el-input v-model="state.ruleForm.sort" placeholder="请输入" clearable />
 						</el-form-item>
 					</el-col>
 					<el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
-						<el-form-item label="备注">
-							<el-input v-model="state.ruleForm.remark" placeholder="请输入备注内容" clearable type="textarea" />
+						<el-form-item label="备注" prop="remarks">
+							<el-input v-model="state.ruleForm.remarks" placeholder="请输入(20个字)" clearable type="textarea" :max="20" :maxlength="20"/>
 						</el-form-item>
 					</el-col>
 				</el-row>
@@ -53,29 +41,21 @@
 	</div>
 </template>
 
-<script lang="ts" setup name="sysEditOrg">
+<script lang="ts" setup >
 import { onMounted, reactive, ref } from 'vue';
 import { ElMessage } from 'element-plus';
-import { getAPI } from '/@/utils/axios-utils';
-import { SysOrgApi, SysDictDataApi } from '/@/api-services/api';
-import { SysOrg, UpdateOrgInput } from '/@/api-services/models';
+import { platformStoreAdd, platformStoreUpdate } from '/@/api/modular/main/platformStoreInfo.ts';
 
 const props = defineProps({
 	title: String,
-	orgData: Array<SysOrg>,
 });
 const emits = defineEmits(['handleQuery']);
 const ruleFormRef = ref();
 const state = reactive({
 	isShowDialog: false,
 	ruleForm: {} as UpdateOrgInput,
-	orgTypeList: [] as any,
 });
 
-onMounted(async () => {
-	let resDicData = await getAPI(SysDictDataApi).apiSysDictDataDataListCodeGet('org_type');
-	state.orgTypeList = resDicData.data.result;
-});
 
 // 打开弹窗
 const openDialog = (row: any) => {
@@ -99,10 +79,10 @@ const submit = () => {
 	ruleFormRef.value.validate(async (valid: boolean) => {
 		if (!valid) return;
 		if (state.ruleForm.id != undefined && state.ruleForm.id > 0) {
-			await getAPI(SysOrgApi).apiSysOrgUpdatePost(state.ruleForm);
+			await platformStoreUpdate(state.ruleForm);
 			ElMessage.success('更新成功')
 		} else {
-			await getAPI(SysOrgApi).apiSysOrgAddPost(state.ruleForm);
+			await platformStoreAdd(state.ruleForm);
 			ElMessage.success('新增成功')
 		}
 		closeDialog();

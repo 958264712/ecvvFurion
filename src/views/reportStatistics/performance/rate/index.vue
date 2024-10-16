@@ -158,6 +158,7 @@ handleQuery();
 						<el-button type="primary" icon="ele-Search" @click="handleQuery"> 查询 </el-button>
 						<el-button icon="ele-Refresh" @click="() => {
 				queryParams = {};
+				tableParams = {page: 1,pageSize: 20,};
 				handleQuery();
 			}
 			">

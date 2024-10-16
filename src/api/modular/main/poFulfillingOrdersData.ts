@@ -2,12 +2,33 @@ import request from '/@/utils/request';
 enum Api {
     poFulfillingPage = '/api/poFulfillingOrders_Batch/page',
     Import = '/api/poFulfillingOrders_Batch/import',
+    ImportPos = '/api/poFulfillingOrders_Batch/importPolfillingOrders',
+    ImportFolfillingOrdersNoId = '/api/poFulfillingOrders_Batch/ImportFolfillingOrdersNoId',
     getPoFulfillingOrdersList = '/api/poFulfillingOrders_Batch/getPoFulfillingOrdersList',
     getConfirmedNewPOsPage = '/api/poFulfillingOrders_Batch/getConfirmedNewPOsPage',
     exportPoFulfillingOrders = '/api/poFulfillingOrders_Batch/exportPoFulfillingOrders',
     exportConfirmedNewPOs = '/api/poFulfillingOrders_Batch/exportConfirmedNewPOs',
 }
-
+// 导入ImportFolfillingOrdersNoId
+export const ImportFolfillingOrdersNoId = (params?: any) =>
+    request({
+        url: Api.ImportFolfillingOrdersNoId,
+        method: 'post',
+        data: params,
+        headers: {
+            'Content-Type': 'multipart/form-data; boundary=----WebKitFormBoundarynl6gT1BKdPWIejNq',
+        },
+    });
+// 导入Pos
+export const ImportPos = (params?: any, poFulfillingOrderBatchId?: string) =>
+    request({
+        url: Api.ImportPos + '/' + poFulfillingOrderBatchId,
+        method: 'post',
+        data: params,
+        headers: {
+            'Content-Type': 'multipart/form-data; boundary=----WebKitFormBoundarynl6gT1BKdPWIejNq',
+        },
+    });
 // 导入
 export const Import = (params?: any,site?:string) =>
     request({
@@ -40,9 +61,9 @@ export const getConfirmedNewPOsPage = (params?: any) =>
         data: params,
     });
 //导出pos
-export const exportPoFulfillingOrders = (params?: any,id?:string) =>
+export const exportPoFulfillingOrders = (params?: any, id?: string, isHasImg?: string) =>
     request({
-        url: Api.exportPoFulfillingOrders + '/' + id,
+        url: Api.exportPoFulfillingOrders + '/' + id + ('/' + isHasImg),
         method: 'post',
         responseType: 'blob',
         data: params,

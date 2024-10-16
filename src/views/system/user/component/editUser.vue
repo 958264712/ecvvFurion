@@ -12,16 +12,16 @@
 					<el-form :model="state.ruleForm" ref="ruleFormRef" label-width="auto">
 						<el-row :gutter="35">
 							<el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
-								<el-form-item label="姓名" prop="realName" :rules="[{ required: true, message: '真实不能为空', trigger: 'blur' }]">
+								<el-form-item label="姓名" prop="realName" :rules="[{ required: true, message: '姓名不能为空', trigger: 'blur' }]">
 									<el-input v-model="state.ruleForm.realName" placeholder="请输入姓名" clearable />
 								</el-form-item>
 							</el-col>
 							<el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
 								<el-form-item label="性别">
-									<el-radio-group v-model="state.ruleForm.sex">
-										<el-radio :label="1">男</el-radio>
-										<el-radio :label="2">女</el-radio>
-									</el-radio-group>
+									<el-select v-model="state.ruleForm.sex" placeholder="请选择性别" class="w100">
+										<el-option label="男" :value="1" />
+										<el-option label="女" :value="2" />
+									</el-select>
 								</el-form-item>
 							</el-col>
 							<el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
@@ -31,17 +31,17 @@
 							</el-col>
 							<el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
 								<el-form-item label="手机号码" prop="phone" :rules="[{ required: true, message: '手机号码不能为空', trigger: 'blur' }]">
-									<el-select v-model="state.ruleForm.phoneCRCode" placeholder="国家" style="width:25%">
+									<el-select v-model="state.ruleForm.phoneCRCode" placeholder="国家" style="width: 25%">
 										<el-option label="+86   中国" value="+86" />
 										<el-option label="+971  阿联酋" value="+971" />
 										<el-option label="+20   埃及" value="+20" />
 										<el-option label="+1    美国" value="+1" />
 									</el-select>
-									<el-input v-model="state.ruleForm.phone" placeholder="请输入手机号码" clearable style="width:75%" />
+									<el-input v-model="state.ruleForm.phone" placeholder="请输入手机号码" clearable style="width: 75%" />
 								</el-form-item>
 							</el-col>
 							<el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
-								<el-form-item label="所属组织" prop="orgId" :rules="[{ required: true, message: '所属组织不能为空', trigger: 'blur' }]">
+								<el-form-item label="所属组织" prop="orgId" :rules="[{ required: true, message: '所属组织不能为空' }]">
 									<el-cascader
 										:options="props.orgData"
 										:props="{ checkStrictly: true, emitPath: false, value: 'id', label: 'name', expandTrigger: 'hover' }"
@@ -58,8 +58,19 @@
 								</el-form-item>
 							</el-col>
 							<el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
-								<el-form-item label="角色" prop="roleIdList" :rules="[{ required: true, message: '角色集合不能为空', trigger: 'blur' }]">
-									<el-select v-model="state.ruleForm.roleIdList" multiple value-key="id" clearable placeholder="请输入角色集合" collapse-tags collapse-tags-tooltip class="w100" filterable>
+								<el-form-item label="角色" prop="roleIdList" :rules="[{ required: true, message: '角色不能为空', trigger: 'blur' }]">
+									<el-select
+										v-model="state.ruleForm.roleIdList"
+										multiple
+										value-key="id"
+										clearable
+										placeholder="请输入角色"
+										@change="validRole"
+										collapse-tags
+										collapse-tags-tooltip
+										class="w100"
+										filterable
+									>
 										<el-option v-for="item in state.roleData" :key="item.id" :label="item.name" :value="item.id" />
 									</el-select>
 								</el-form-item>
@@ -73,7 +84,7 @@
 							</el-col>
 							<el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
 								<el-form-item label="出生日期" prop="birthday">
-									<el-date-picker v-model="state.ruleForm.birthday" type="date" placeholder="请输入出生日期" format="YYYY-MM-DD" value-format="YYYY-MM-DD" class="w100" />
+									<el-date-picker v-model="state.ruleForm.birthday" type="date" placeholder="请输入出生日期" class="w100" />
 								</el-form-item>
 							</el-col>
 							<el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
@@ -154,13 +165,13 @@
 							</el-col>
 							<el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
 								<el-form-item label="工作状态">
-									<el-select v-model="state.ruleForm.cultureLevel" placeholder="请选择工作状态" class="w100">
-										<el-option label="在职(在岗)" :value="0" />
-										<el-option label="已退休" :value="1" />
-										<el-option label="免职未退休" :value="2" />
-										<el-option label="已离职" :value="3" />
-										<el-option label="离职(离司)" :value="4" />
-										<el-option label="其他" :value="5" />
+									<el-select v-model="state.ruleForm.onDutyStatus" placeholder="请选择工作状态" class="w100">
+										<el-option label="在职(在岗)" :value="1" />
+										<el-option label="已退休" :value="6" />
+										<el-option label="免职未退休" :value="4" />
+										<el-option label="已离职" :value="4" />
+										<el-option label="离职(离司)" :value="2" />
+										<el-option label="其他" :value="3" />
 									</el-select>
 								</el-form-item>
 							</el-col>
@@ -176,7 +187,7 @@
 			<template #footer>
 				<span class="dialog-footer">
 					<el-button @click="cancel">取 消</el-button>
-					<el-button type="primary" @click="submit">确 定</el-button>
+					<el-button :loading="state.submitLoading" type="primary" @click="submit">{{state.ruleForm.id != undefined && state.ruleForm.id > 0 ?'保存':'确 定'}}</el-button>
 				</span>
 			</template>
 		</el-dialog>
@@ -198,6 +209,7 @@ const emits = defineEmits(['handleQuery']);
 const ruleFormRef = ref();
 const state = reactive({
 	loading: false,
+	submitLoading:false,
 	isShowDialog: false,
 	selectedTabName: '0', // 选中的 tab 页
 	ruleForm: {} as UpdateUserInput,
@@ -227,6 +239,10 @@ const openDialog = async (row: any) => {
 	} else state.isShowDialog = true;
 };
 
+// 验证角色是否非空
+const validRole = () => {
+	ruleFormRef.value.validateField('roleIdList');
+};
 // 关闭弹窗
 const closeDialog = () => {
 	emits('handleQuery');
@@ -242,14 +258,24 @@ const cancel = () => {
 const submit = () => {
 	ruleFormRef.value.validate(async (valid: boolean) => {
 		if (!valid) return;
+		state.submitLoading = true
 		if (state.ruleForm.id != undefined && state.ruleForm.id > 0) {
-			await getAPI(SysUserApi).apiSysUserUpdatePost(state.ruleForm);
+			await getAPI(SysUserApi).apiSysUserUpdatePost(state.ruleForm).then(res=>{
+				ElMessage.success('更新成功');
+				closeDialog();
+			}).catch(err=>{
+				state.submitLoading = false
+			})
 			ElMessage.success('更新成功')
 		} else {
-			await getAPI(SysUserApi).apiSysUserAddPost(state.ruleForm);
+			await getAPI(SysUserApi).apiSysUserAddPost(state.ruleForm).then(res=>{
+				ElMessage.success('新增成功');
+				closeDialog();
+			}).catch(err=>{
+				state.submitLoading = false
+			})
 			ElMessage.success('新增成功')
 		}
-		closeDialog();
 	});
 };
 

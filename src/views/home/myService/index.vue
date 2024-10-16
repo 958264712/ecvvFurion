@@ -87,11 +87,11 @@ const TableList = ref<any>([
 		title_EN: 'Remark',
 		dataIndex: 'remark',
 	},
-	{
-		title_CN: '状态',
-		title_EN: 'Store',
-		dataIndex: 'store',
-	},
+	// {
+	// 	title_CN: '状态',
+	// 	title_EN: 'Store',
+	// 	dataIndex: 'store',
+	// },
 ]);
 const routerHref = (href: String) => {
 	router.push(href);

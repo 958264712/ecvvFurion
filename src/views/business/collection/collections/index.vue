@@ -79,12 +79,12 @@
 						</el-dropdown-menu>
 					</template>
 				</el-dropdown>
-				<div class="block" style="margin-right: 20px">
+				<!-- <div class="block" style="margin-right: 20px">
 					<span class="demonstration">计算此[送仓日期]后的价格 </span>
 					<el-date-picker v-model="datevalue" type="date" placeholder="日期" />
 				</div>
 				<el-button type="primary" icon="ele-Plus" @click="recalculate()" style="margin-right: 20px"> 重新计算价格
-				</el-button>
+				</el-button> -->
 				<div class="custom">
 					<el-button type="primary" icon="ele-Plus" @click="SettingColumnShow = !SettingColumnShow"> 自定义报关件表头
 					</el-button>
@@ -265,7 +265,7 @@ const queryParams = ref<any>({});
 let isExProtAll = ref<any>(false);
 let activeNames = ref('1');
 let selectBox = ref<any>();
-let datevalue = ref<any>(moment().format('YYYY-MM-DD'));
+// let datevalue = ref<any>(moment().format('YYYY-MM-DD'));
 let SettingColumnShow = ref<any>(false);
 let BaoguanShows = ref<any>(false);
 let checkAll = ref<any>(true);
@@ -408,12 +408,6 @@ let Baoguancolumns = ref<any>([
 		checked: true,
 	},
 	{
-		title: '迪拜仓库收货数量',
-		dataIndex: 'DubaiWarehouseReceiptQuantity',
-		checked: false,
-	},
-
-	{
 		title: '补充说明',
 		dataIndex: 'UnitInfo',
 		checked: true,
@@ -488,11 +482,11 @@ let Baoguancolumns = ref<any>([
 		dataIndex: 'VolumeWeight',
 		checked: false,
 	},
-	{
-		title: '入货代仓时间',
-		dataIndex: 'ShippingTime',
-		checked: false,
-	},
+	// {
+	// 	title: '入货代仓时间',
+	// 	dataIndex: 'ShippingTime',
+	// 	checked: false,
+	// },
 	{
 		title: '物流报价',
 		dataIndex: 'LogisticsPrice',
@@ -504,8 +498,13 @@ let Baoguancolumns = ref<any>([
 		checked: true,
 	},
 	{
-		title: '采购价含税(RMB)',
+		title: '集货采购价含税(RMB)',
 		dataIndex: 'IncludingTaxPurchasePrice',
+		checked: false,
+	},
+	{
+		title: '报关采购价含税(RMB)',
+		dataIndex: 'CusPurchasePrice',
 		checked: false,
 	},
 	{
@@ -569,7 +568,13 @@ let Baoguancolumns = ref<any>([
 		checked: false,
 	},
 	{
-		title: '出发日期',
+		title: '开船/起飞日期',
+		dataIndex: 'ActualArrivalDate',
+		checked: false,
+	},
+	
+	{
+		title: '验货完成日期',
 		dataIndex: 'DepartureDate',
 		checked: false,
 	},
@@ -852,33 +857,33 @@ function sortfun(v: any) {
 	getAppPage();
 }
 //重新计算价格
-function recalculate() {
-	if (datevalue.value) {
-		service({
-			url: `/api/collectionGoodsInfo/priceCheck/${moment(datevalue.value).format('YYYY-MM-DD')}`,
-			method: 'get',
-			data: { actualDeliveryDate: `${moment(datevalue.value).format('YYYY-MM-DD')}` },
-		}).then((data) => {
-			if (data.data.type == 'success') {
-				ElMessage({
-					type: 'success',
-					message: '计价成功',
-				});
-				getAppPage();
-			} else {
-				ElMessage({
-					type: 'error',
-					message: '计价失败',
-				});
-			}
-		});
-	} else {
-		ElMessage({
-			type: 'error',
-			message: '请选择数据',
-		});
-	}
-}
+// function recalculate() {
+// 	if (datevalue.value) {
+// 		service({
+// 			url: `/api/collectionGoodsInfo/priceCheck/${moment(datevalue.value).format('YYYY-MM-DD')}`,
+// 			method: 'get',
+// 			data: { actualDeliveryDate: `${moment(datevalue.value).format('YYYY-MM-DD')}` },
+// 		}).then((data) => {
+// 			if (data.data.type == 'success') {
+// 				ElMessage({
+// 					type: 'success',
+// 					message: '计价成功',
+// 				});
+// 				getAppPage();
+// 			} else {
+// 				ElMessage({
+// 					type: 'error',
+// 					message: '计价失败',
+// 				});
+// 			}
+// 		});
+// 	} else {
+// 		ElMessage({
+// 			type: 'error',
+// 			message: '请选择数据',
+// 		});
+// 	}
+// }
 //选中的数据
 function handleSelectionChange(val: any) {
 	selectedRows.value.splice(0, selectedRows.value.length);

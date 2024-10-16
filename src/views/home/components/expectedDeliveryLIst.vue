@@ -39,7 +39,7 @@ handleQuery()
         <el-table-column prop="Destination" label="目的地" align="center" sortable show-overflow-tooltip="" />
 
         <el-table-column prop="ShippingMethod" label="运输方式" align="center" sortable show-overflow-tooltip="" />
-        <el-table-column prop="DepartureDate" label="出发日期" align="center" sortable show-overflow-tooltip="" />
+        <el-table-column prop="DepartureDate" label="验货完成日期" align="center" sortable show-overflow-tooltip="" />
         <el-table-column prop="EstimatedDeliveryDate" label="预计到仓" align="center" sortable show-overflow-tooltip="" />
     </el-table>
 </template>

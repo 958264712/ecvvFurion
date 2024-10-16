@@ -1,6 +1,6 @@
 <template>
 	<div class="sys-role-container">
-		<el-dialog v-model="state.isShowDialog" draggable :close-on-click-modal="false" width="700px" style="maxHeight:800px;overflow:hidden">
+		<el-dialog v-model="state.isShowDialog" draggable :close-on-click-modal="false" width="700px" style="maxheight: 800px; overflow: hidden">
 			<template #header>
 				<div style="color: #fff">
 					<el-icon size="16" style="margin-right: 3px; display: inline; vertical-align: middle"> <ele-Edit /> </el-icon>
@@ -17,7 +17,7 @@
 								</el-form-item>
 							</el-col>
 							<el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
-								<el-form-item label="所属组织" prop="orgId" :rules="[{ required: true, message: '所属组织不能为空', trigger: 'blur' }]">
+								<el-form-item label="所属组织" prop="orgId" :rules="[{ required: true, message: '所属组织不能为空' }]">
 									<el-cascader
 										:options="props.orgData"
 										:props="{ checkStrictly: true, emitPath: false, value: 'id', label: 'name', expandTrigger: 'hover' }"
@@ -65,14 +65,14 @@
 					<el-tab-pane label="数据权限" name="third">
 						<el-row :gutter="35">
 							<el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
-								<el-form-item label="组织范围" prop="frontEndDataScope" :rules="[{ required: true, message: '组织范围不能为空', trigger: 'blur' }]">
+								<el-form-item label="组织范围" prop="frontEndDataScope" :rules="[{ required: true, message: '组织范围不能为空' }]">
 									<el-select v-model="state.ruleForm.frontEndDataScope" placeholder="请选择组织范围" style="width: 100%">
 										<el-option v-for="d in state.dataScopeType" :key="d.value" :label="d.label" :value="d.value" />
 									</el-select>
 								</el-form-item>
 							</el-col>
 							<el-col :xs="12" :sm="12" :md="12" :lg="12" :xl="12" class="mb20" v-show="state.ruleForm.frontEndDataScope === 5">
-								<el-form-item label="组织" prop="orgIdList" :rules="[{ required:state.ruleForm.frontEndDataScope === 5 ? true:false, message: '组织不能为空', trigger: 'blur' }]">
+								<el-form-item label="组织" prop="orgIdList" :rules="[{ required: state.ruleForm.frontEndDataScope === 5 ? true : false, message: '组织不能为空', trigger: 'blur' }]">
 									<el-cascader :options="props.orgListData" ref="orgTreeRef" :props="orgProps" placeholder="请选择组织" clearable class="w100" v-model="state.ruleForm.orgIdList">
 										<template #default="{ node, data }">
 											<span>{{ data.name }}</span>
@@ -83,27 +83,12 @@
 							</el-col>
 						</el-row>
 					</el-tab-pane>
-					<el-tab-pane label="授权人员" name="fourth">
-						<el-table :data="state.roleData" style="width: 100%" v-loading="state.loading" border>
-							<el-table-column type="index" label="序号" width="55" align="center" fixed />
-							<el-table-column prop="name" label="名称" align="center" show-overflow-tooltip />
-							<el-table-column prop="orgName" label="所属组织" align="center" show-overflow-tooltip />
-							<el-table-column prop="departmentName" label="部门" align="center" show-overflow-tooltip />
-							<el-table-column prop="sex" label="性别"  header-align="center" show-overflow-tooltip >
-								<template #default="scope">
-									{{scope.row.sex === 1 ? '男' : '女'}}
-								</template>
-							</el-table-column>
-							<el-table-column prop="authorizationDate" label="授权时间" align="center" show-overflow-tooltip />
-							<el-table-column prop="operatorName" label="操作人" header-align="center" show-overflow-tooltip />
-						</el-table>
-					</el-tab-pane>
 				</el-tabs>
 			</el-form>
 			<template #footer>
 				<span class="dialog-footer">
 					<el-button @click="cancel">取 消</el-button>
-					<el-button type="primary" @click="submit">确 定</el-button>
+					<el-button type="primary" @click="submit">{{ state.ruleForm.id != undefined && state.ruleForm.id > 0 ? '保存' : '确 定' }}</el-button>
 				</span>
 			</template>
 		</el-dialog>
@@ -115,7 +100,7 @@ import { onMounted, reactive, ref } from 'vue';
 import type { ElTree } from 'element-plus';
 import { ElMessage } from 'element-plus';
 import { getAPI } from '/@/utils/axios-utils';
-import { SysMenuApi, SysRoleApi,SysOrgApi } from '/@/api-services/api';
+import { SysMenuApi, SysRoleApi, SysOrgApi } from '/@/api-services/api';
 import { SysMenu, UpdateRoleInput, SysOrg } from '/@/api-services/models';
 import OrgTree from '/@/views/system/org/component/orgTree.vue';
 
@@ -124,7 +109,7 @@ const props = defineProps({
 	orgData: Array<SysOrg>,
 	orgListData: Array<SysOrg>,
 });
-const orgProps = { checkStrictly: true, emitPath: false, multiple: true, value: 'id', label: 'name', expandTrigger: 'hover' };
+const orgProps = {  emitPath: false, multiple: true, value: 'id', label: 'name', expandTrigger: 'hover' };
 const emits = defineEmits(['handleQuery']);
 const orgTreeRef = ref();
 const ruleFormRef = ref();
@@ -155,15 +140,14 @@ onMounted(async () => {
 // 打开弹窗
 const openDialog = async (row: any) => {
 	treeRef.value?.setCheckedKeys([]); // 清空选中值
-	state.activeName = 'first'
+	state.activeName = 'first';
 	state.ruleForm = JSON.parse(JSON.stringify(row));
 	if (row.id != undefined) {
-		state.roleData = JSON.parse(JSON.stringify(row.authorizationInfoList));
 		var res = await getAPI(SysRoleApi).apiSysRoleOwnMenuListGet(row.id);
 		var result = await getAPI(SysRoleApi).apiSysRoleOwnOrgListGet(row.id);
 		setTimeout(() => {
 			treeRef.value?.setCheckedKeys(res.data.result ?? []);
-			state.ruleForm.orgIdList = result.data.result ?? []
+			state.ruleForm.orgIdList = result.data.result ?? [];
 		}, 100);
 	}
 	state.isShowDialog = true;
@@ -213,20 +197,21 @@ const cancel = () => {
 // 提交
 const submit = () => {
 	ruleFormRef.value.validate(async (valid: boolean) => {
-		console.log(valid);
 		if (!valid) return;
 		state.ruleForm.menuIdList = treeRef.value?.getCheckedKeys() as Array<number>; //.concat(treeRef.value?.getHalfCheckedKeys());
 		if (state.ruleForm.frontEndDataScope === 5) {
-			state.ruleForm.orgIdList = orgTreeRef.value?.getCheckedNodes()?.map(item=>{
-				return item.value
-			})
+			state.ruleForm.orgIdList = orgTreeRef.value?.getCheckedNodes()?.map((item) => {
+				return item.value;
+			});
 		}
 		if (state.ruleForm.id != undefined && state.ruleForm.id > 0) {
 			await getAPI(SysRoleApi).apiSysRoleNewUpdatePost(state.ruleForm);
-			ElMessage.success('更新成功')
+			// await getAPI(SysRoleApi).apiSysRoleUpdatePost(state.ruleForm);
+			ElMessage.success('更新成功');
 		} else {
 			await getAPI(SysRoleApi).apiSysRoleNewAddPost(state.ruleForm);
-			ElMessage.success('新增成功')
+			// await getAPI(SysRoleApi).apiSysRoleAddPost(state.ruleForm);
+			ElMessage.success('新增成功');
 		}
 		closeDialog();
 	});
@@ -277,5 +262,4 @@ defineExpose({ openDialog });
 		}
 	}
 }
-
 </style>

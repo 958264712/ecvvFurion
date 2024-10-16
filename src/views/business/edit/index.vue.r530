@@ -71,7 +71,7 @@
 							</el-form-item>
 							<el-form-item label="美元汇率" style="width: 90%" prop="exchangeRateUSD" required="true">
 								<el-input
-									type="number"
+									:type="'number'"
 									:formatter="formatInput"
 									@change="repricefun"
 									:class="!collectionOrderInfo.exchangeRateUSD && buttonmask ? 'avt' : ''"
@@ -110,7 +110,7 @@
 								<el-row style="width: 100%">
 									<el-col :xs="16" :sm="16" :md="16" :xl="16">
 										<el-input
-											type="number"
+											:type="'number'"
 											:formatter="formatInput"
 											@change="repricefun"
 											:class="!collectionOrderInfo.logisticsPrice && buttonmask ? 'avt' : ''"
@@ -190,7 +190,7 @@
 						<el-col :span="8">
 							<el-form-item label="汇率" style="width: 90%"  prop="exchangeRate" required="true">
 								<el-input
-									type="number"
+									:type="'number'"
 									:formatter="formatInput"
 									:class="!collectionOrderInfo.exchangeRate && buttonmask ? 'avt' : ''"
 									:disabled="!compile"
@@ -202,7 +202,7 @@
 							</el-form-item>
 							<el-form-item label="报关费" style="width: 90%"  prop="totalCustomsDeclarationFee" required="true">
 								<el-input
-									type="number"
+									:type="'number'"
 									:formatter="formatInput"
 									:class="!collectionOrderInfo.totalCustomsDeclarationFee && buttonmask ? 'avt' : ''"
 									:disabled="!compile"
@@ -216,7 +216,7 @@
 								<el-input :disabled="!compile" v-model="collectionOrderInfo.inWareHouseNo" clearable="" placeholder="请输入货代入仓号" />
 							</el-form-item>
 							<el-form-item label="收件联系电话" style="width: 90%">
-								<el-input type="number" :disabled="!compile" v-model="collectionOrderInfo.recipientPhone" clearable="" placeholder="请输入收件联系电话" />
+								<el-input :type="'number'" :disabled="!compile" v-model="collectionOrderInfo.recipientPhone" clearable="" placeholder="请输入收件联系电话" />
 							</el-form-item>
 							<el-form-item label="预计送仓日期" style="width: 90%">
 								<el-date-picker :disabled="!compile" v-model="collectionOrderInfo.estimatedArrivalDate" type="date" placeholder="请选择日期" />
@@ -417,7 +417,7 @@
 				</el-table-column>
 				<el-table-column prop="plannedShipmentQuantity" label="报关数量" width="70">
 					<template #default="scope">
-						<el-input type="number" @input="pricefun(scope.row)" v-if="scope.row.rowCompile || allCompiles" @focus="focuefun(scope)" v-model="scope.row.plannedShipmentQuantity"></el-input>
+						<el-input :type="'number'" @input="pricefun(scope.row)" v-if="scope.row.rowCompile || allCompiles" @focus="focuefun(scope)" v-model="scope.row.plannedShipmentQuantity"></el-input>
 					</template>
 				</el-table-column>
 
@@ -428,7 +428,7 @@
 				</el-table-column>
 				<el-table-column prop="actualShipmentQuantity" label="集货数量" width="70">
 					<template #default="scope">
-						<el-input type="number" @input="pricefun(scope.row)" v-if="scope.row.rowCompile || allCompiles" @focus="focuefun(scope)" v-model="scope.row.actualShipmentQuantity"></el-input>
+						<el-input :type="'number'" @input="pricefun(scope.row)" v-if="scope.row.rowCompile || allCompiles" @focus="focuefun(scope)" v-model="scope.row.actualShipmentQuantity"></el-input>
 					</template>
 				</el-table-column>
 				<el-table-column prop="unit" label="集货单位" width="70">
@@ -443,7 +443,7 @@
 				</el-table-column>
 				<el-table-column prop="quantityInBoxes" label="装箱个数" width="70">
 					<template #default="scope">
-						<el-input type="number" @input="pricefun(scope.row)" v-if="scope.row.rowCompile || allCompiles" @focus="focuefun(scope)" v-model="scope.row.quantityInBoxes"></el-input>
+						<el-input :type="'number'" @input="pricefun(scope.row)" v-if="scope.row.rowCompile || allCompiles" @focus="focuefun(scope)" v-model="scope.row.quantityInBoxes"></el-input>
 					</template>
 				</el-table-column>
 				<el-table-column prop="packBoxesQuantity" label="装箱数" width="60">
@@ -454,7 +454,7 @@
 								<el-button size="small" type="text" @click="visibleediit = true">确定</el-button>
 							</div>
 							<template #reference>
-								<el-input type="number" @input="pricefun(scope.row)" v-if="scope.row.rowCompile || allCompiles" v-model="scope.row.packBoxesQuantity" @click="visibleediit = false"></el-input>
+								<el-input :type="'number'" @input="pricefun(scope.row)" v-if="scope.row.rowCompile || allCompiles" v-model="scope.row.packBoxesQuantity" @click="visibleediit = false"></el-input>
 							</template>
 						</el-popover>
 						<!-- <el-input @input="pricefun(scope.row)" v-if="scope.row.rowCompile || allCompiles" v-model="scope.row.packBoxesQuantity" @click="visibleediit = false"></el-input> -->
@@ -462,42 +462,42 @@
 				</el-table-column>
 				<el-table-column prop="singleProductNetWeightKG" label="单个产品净重KG" width="110">
 					<template #default="scope">
-						<el-input type="number" @input="pricefun(scope.row)" v-if="scope.row.rowCompile || allCompiles" @focus="focuefun(scope)" v-model="scope.row.singleProductNetWeightKG"></el-input>
+						<el-input :type="'number'" @input="pricefun(scope.row)" v-if="scope.row.rowCompile || allCompiles" @focus="focuefun(scope)" v-model="scope.row.singleProductNetWeightKG"></el-input>
 					</template>
 				</el-table-column>
 				<el-table-column prop="singleProductLength" label="产品长(cm)" width="80">
 					<template #default="scope">
-						<el-input type="number" @input="pricefun(scope.row)" v-if="scope.row.rowCompile || allCompiles" @focus="focuefun(scope)" v-model="scope.row.singleProductLength"></el-input>
+						<el-input :type="'number'" @input="pricefun(scope.row)" v-if="scope.row.rowCompile || allCompiles" @focus="focuefun(scope)" v-model="scope.row.singleProductLength"></el-input>
 					</template>
 				</el-table-column>
 				<el-table-column prop="singleProductWidth" label="产品宽(cm)" width="80">
 					<template #default="scope">
-						<el-input type="number" @input="pricefun(scope.row)" v-if="scope.row.rowCompile || allCompiles" @focus="focuefun(scope)" v-model="scope.row.singleProductWidth"></el-input>
+						<el-input :type="'number'" @input="pricefun(scope.row)" v-if="scope.row.rowCompile || allCompiles" @focus="focuefun(scope)" v-model="scope.row.singleProductWidth"></el-input>
 					</template>
 				</el-table-column>
 				<el-table-column prop="singleProductHeight" label="产品高(cm)" width="80">
 					<template #default="scope">
-						<el-input type="number" @input="pricefun(scope.row)" v-if="scope.row.rowCompile || allCompiles" @focus="focuefun(scope)" v-model="scope.row.singleProductHeight"></el-input>
+						<el-input :type="'number'" @input="pricefun(scope.row)" v-if="scope.row.rowCompile || allCompiles" @focus="focuefun(scope)" v-model="scope.row.singleProductHeight"></el-input>
 					</template>
 				</el-table-column>
 				<el-table-column prop="fclGrossWeightKG" label="整箱毛重KG" width="90">
 					<template #default="scope">
-						<el-input type="number" @input="pricefun(scope.row)" v-if="scope.row.rowCompile || allCompiles" @focus="focuefun(scope)" v-model="scope.row.fclGrossWeightKG"></el-input>
+						<el-input :type="'number'" @input="pricefun(scope.row)" v-if="scope.row.rowCompile || allCompiles" @focus="focuefun(scope)" v-model="scope.row.fclGrossWeightKG"></el-input>
 					</template>
 				</el-table-column>
 				<el-table-column prop="boxLength" label="箱长(cm)" width="70">
 					<template #default="scope">
-						<el-input type="number" @input="pricefun(scope.row)" v-if="scope.row.rowCompile || allCompiles" @focus="focuefun(scope)" v-model="scope.row.boxLength"></el-input>
+						<el-input :type="'number'" @input="pricefun(scope.row)" v-if="scope.row.rowCompile || allCompiles" @focus="focuefun(scope)" v-model="scope.row.boxLength"></el-input>
 					</template>
 				</el-table-column>
 				<el-table-column prop="boxWidth" label="箱宽(cm)" width="70">
 					<template #default="scope">
-						<el-input type="number" @input="pricefun(scope.row)" v-if="scope.row.rowCompile || allCompiles" @focus="focuefun(scope)" v-model="scope.row.boxWidth"></el-input>
+						<el-input :type="'number'" @input="pricefun(scope.row)" v-if="scope.row.rowCompile || allCompiles" @focus="focuefun(scope)" v-model="scope.row.boxWidth"></el-input>
 					</template>
 				</el-table-column>
 				<el-table-column prop="boxHeight" label="箱高(cm)" width="70">
 					<template #default="scope">
-						<el-input type="number" @input="pricefun(scope.row)" v-if="scope.row.rowCompile || allCompiles" @focus="focuefun(scope)" v-model="scope.row.boxHeight"></el-input>
+						<el-input :type="'number'" @input="pricefun(scope.row)" v-if="scope.row.rowCompile || allCompiles" @focus="focuefun(scope)" v-model="scope.row.boxHeight"></el-input>
 					</template>
 				</el-table-column>
 
@@ -509,7 +509,7 @@
 								<el-button size="small" type="text" @click="visibleediit = true">确定</el-button>
 							</div>
 							<template #reference>
-								<el-input type="number" v-if="scope.row.rowCompile || allCompiles" v-model="scope.row.totalNetWeightKG" @click="visibleediit = false"></el-input>
+								<el-input :type="'number'" v-if="scope.row.rowCompile || allCompiles" v-model="scope.row.totalNetWeightKG" @click="visibleediit = false"></el-input>
 							</template>
 						</el-popover>
 						<!-- <el-input @input="pricefun(scope.row)" v-if="scope.row.rowCompile || allCompiles" v-model="scope.row.totalNetWeightKG" @click="visibleediit = false"></el-input> -->
@@ -517,7 +517,7 @@
 				</el-table-column>
 				<el-table-column prop="totalGrossWeightKG" label="总毛重KG" width="80">
 					<template #default="scope">
-						<el-input type="number" @input="pricefun(scope.row)" v-if="scope.row.rowCompile" v-model="scope.row.totalGrossWeightKG"></el-input>
+						<el-input :type="'number'" @input="pricefun(scope.row)" v-if="scope.row.rowCompile" v-model="scope.row.totalGrossWeightKG"></el-input>
 					</template>
 				</el-table-column>
 				<el-table-column prop="totalSquaresM3" label="总方数m³" width="80">
@@ -528,7 +528,7 @@
 								<el-button size="small" type="text" @click="visibleediit = true">确定</el-button>
 							</div>
 							<template #reference>
-								<el-input type="number" v-if="scope.row.rowCompile" v-model="scope.row.totalSquaresM3" @click="visibleediit = false"></el-input>
+								<el-input :type="'number'" v-if="scope.row.rowCompile" v-model="scope.row.totalSquaresM3" @click="visibleediit = false"></el-input>
 							</template>
 						</el-popover>
 						<!-- <el-input @input="pricefun(scope.row)" v-if="scope.row.rowCompile" v-model="scope.row.totalSquaresM3" @click="visibleediit = false"></el-input> -->
@@ -542,7 +542,7 @@
 								<el-button size="small" type="text" @click="visibleediit = true">确定</el-button>
 							</div>
 							<template #reference>
-								<el-input type="number" @input="pricefun(scope.row)" v-if="scope.row.rowCompile" v-model="scope.row.volumeWeight" @click="visibleediit = false"></el-input>
+								<el-input :type="'number'" @input="pricefun(scope.row)" v-if="scope.row.rowCompile" v-model="scope.row.volumeWeight" @click="visibleediit = false"></el-input>
 							</template>
 						</el-popover>
 						<!-- <el-input @input="pricefun(scope.row)" v-if="scope.row.rowCompile" v-model="scope.row.volumeWeight" @click="visibleediit = false"></el-input> -->
@@ -555,17 +555,17 @@
 				</el-table-column> -->
 				<el-table-column prop="includingTaxPurchasePrice" label="集货采购价含税(RMB)" width="130">
 					<template #default="scope">
-						<el-input type="number" @input="pricefun(scope.row)" v-if="scope.row.rowCompile || allCompiles" @focus="focuefun(scope)" v-model="scope.row.includingTaxPurchasePrice"></el-input>
+						<el-input :type="'number'" @input="pricefun(scope.row)" v-if="scope.row.rowCompile || allCompiles" @focus="focuefun(scope)" v-model="scope.row.includingTaxPurchasePrice"></el-input>
 					</template>
 				</el-table-column>
 				<el-table-column prop="cusPurchasePrice" label="报关采购价含税(RMB)" width="130">
 					<template #default="scope">
-						<el-input type="number" @input="pricefun(scope.row)" v-if="scope.row.rowCompile || allCompiles" @focus="focuefun(scope)" v-model="scope.row.cusPurchasePrice"></el-input>
+						<el-input :type="'number'" @input="pricefun(scope.row)" v-if="scope.row.rowCompile || allCompiles" @focus="focuefun(scope)" v-model="scope.row.cusPurchasePrice"></el-input>
 					</template>
 				</el-table-column>
 				<el-table-column prop="domesticLogisticsCost" label="国内物流费用(RMB/个)" width="140">
 					<template #default="scope">
-						<el-input type="number" @input="pricefun(scope.row)" v-if="scope.row.rowCompile || allCompiles" @focus="focuefun(scope)" v-model="scope.row.domesticLogisticsCost"></el-input>
+						<el-input :type="'number'" @input="pricefun(scope.row)" v-if="scope.row.rowCompile || allCompiles" @focus="focuefun(scope)" v-model="scope.row.domesticLogisticsCost"></el-input>
 					</template>
 				</el-table-column>
 				<el-table-column prop="exportUnitPrice" label="出口单价(USD)" width="100">
@@ -576,7 +576,7 @@
 								<el-button size="small" type="text" @click="visibleediit = true">确定</el-button>
 							</div>
 							<template #reference>
-								<el-input type="number" v-if="scope.row.rowCompile" v-model="scope.row.exportUnitPrice" @input="pricefun(scope.row)" @click="visibleediit = false"></el-input>
+								<el-input :type="'number'" v-if="scope.row.rowCompile" v-model="scope.row.exportUnitPrice" @input="pricefun(scope.row)" @click="visibleediit = false"></el-input>
 							</template>
 						</el-popover>
 						<!-- <el-input v-if="scope.row.rowCompile" v-model="scope.row.exportUnitPrice" @input="pricefun(scope.row)" @click="visibleediit = false"></el-input> -->
@@ -590,7 +590,7 @@
 								<el-button size="small" type="text" @click="visibleediit = true">确定</el-button>
 							</div>
 							<template #reference>
-								<el-input type="number" v-if="scope.row.rowCompile || allCompiles" v-model="scope.row.totalExportPrice" @click="visibleediit = false"></el-input>
+								<el-input :type="'number'" v-if="scope.row.rowCompile || allCompiles" v-model="scope.row.totalExportPrice" @click="visibleediit = false"></el-input>
 							</template>
 						</el-popover>
 						<!-- <el-input @input="pricefun(scope.row)" v-if="scope.row.rowCompile || allCompiles" v-model="scope.row.totalExportPrice" @click="visibleediit = false"></el-input> -->
@@ -598,7 +598,7 @@
 				</el-table-column>
 				<el-table-column prop="commodityInspectionFee" label="商检费(RMB)个" width="100">
 					<template #default="scope">
-						<el-input type="number" @input="pricefun(scope.row)" v-if="scope.row.rowCompile || allCompiles" @focus="focuefun(scope)" v-model="scope.row.commodityInspectionFee"></el-input>
+						<el-input :type="'number'" @input="pricefun(scope.row)" v-if="scope.row.rowCompile || allCompiles" @focus="focuefun(scope)" v-model="scope.row.commodityInspectionFee"></el-input>
 					</template>
 				</el-table-column>
 				<el-table-column prop="customsDeclarationFee" label="报关费个" width="80">
@@ -609,7 +609,7 @@
 								<el-button size="small" type="text" @click="visibleediit = true">确定</el-button>
 							</div>
 							<template #reference>
-								<el-input type="number" v-if="scope.row.rowCompile || allCompiles" @focus="focuefun(scope)" v-model="scope.row.customsDeclarationFee" @click="visibleediit = false"></el-input>
+								<el-input :type="'number'" v-if="scope.row.rowCompile || allCompiles" @focus="focuefun(scope)" v-model="scope.row.customsDeclarationFee" @click="visibleediit = false"></el-input>
 							</template>
 						</el-popover>
 						<!-- <el-input v-if="scope.row.rowCompile || allCompiles" @focus="focuefun(scope)" v-model="scope.row.customsDeclarationFee" @click="visibleediit = false"></el-input> -->
@@ -623,7 +623,7 @@
 								<el-button size="small" type="text" @click="visibleediit = true">确定</el-button>
 							</div>
 							<template #reference>
-								<el-input type="number" v-if="scope.row.rowCompile || allCompiles" v-model="scope.row.singleCusInternationalLogisticsFee" @click="visibleediit = false"></el-input>
+								<el-input :type="'number'" v-if="scope.row.rowCompile || allCompiles" v-model="scope.row.singleCusInternationalLogisticsFee" @click="visibleediit = false"></el-input>
 							</template>
 						</el-popover>
 						<!-- <el-input v-if="scope.row.rowCompile || allCompiles" v-model="scope.row.singleCusInternationalLogisticsFee" @click="visibleediit = false"></el-input> -->
@@ -637,7 +637,7 @@
 								<el-button size="small" type="text" @click="visibleediit = true">确定</el-button>
 							</div>
 							<template #reference>
-								<el-input type="number" v-if="scope.row.rowCompile || allCompiles" v-model="scope.row.singleInternationalLogisticsFee" @click="visibleediit = false"></el-input>
+								<el-input :type="'number'" v-if="scope.row.rowCompile || allCompiles" v-model="scope.row.singleInternationalLogisticsFee" @click="visibleediit = false"></el-input>
 							</template>
 						</el-popover>
 						<!-- <el-input v-if="scope.row.rowCompile || allCompiles" v-model="scope.row.singleInternationalLogisticsFee" @click="visibleediit = false"></el-input> -->
@@ -651,7 +651,7 @@
 								<el-button size="small" type="text" @click="visibleediit = true">确定</el-button>
 							</div>
 							<template #reference>
-								<el-input type="number" v-if="scope.row.rowCompile" @input="pricefun(scope.row)" v-model="scope.row.totalInternationalLogisticsFee" @click="visibleediit = false"></el-input>
+								<el-input :type="'number'" v-if="scope.row.rowCompile" @input="pricefun(scope.row)" v-model="scope.row.totalInternationalLogisticsFee" @click="visibleediit = false"></el-input>
 							</template>
 						</el-popover>
 
@@ -660,13 +660,13 @@
 				</el-table-column>
 				<el-table-column prop="incidentalPrice" label="杂费" width="60">
 					<template #default="scope">
-						<el-input type="number" @input="pricefun(scope.row)" v-if="scope.row.rowCompile" @focus="focuefun(scope)" v-model="scope.row.incidentalPrice"></el-input>
+						<el-input :type="'number'" @input="pricefun(scope.row)" v-if="scope.row.rowCompile" @focus="focuefun(scope)" v-model="scope.row.incidentalPrice"></el-input>
 					</template>
 				</el-table-column>
 
 				<el-table-column prop="fobSupplyPrice" :label="'FOB供货价' + '(' + fobCurrency + ')'" width="110">
 					<template #default="scope">
-						<el-input type="number" @input="pricefun(scope.row)" v-if="scope.row.rowCompile" v-model="scope.row.fobSupplyPrice" @click="visibleediit = false"></el-input>
+						<el-input :type="'number'" @input="pricefun(scope.row)" v-if="scope.row.rowCompile" v-model="scope.row.fobSupplyPrice" @click="visibleediit = false"></el-input>
 					</template>
 				</el-table-column>
 			</el-table>
@@ -689,7 +689,7 @@
 				v-model:currentPage="tableParams.page"
 				v-model:page-size="tableParams.pageSize"
 				:total="tableParams.total"
-				:page-sizes="[10, 20, 50, 100,200, 500, 1000]"
+				:page-sizes="[10, 20, 50, 100, 500, 1000]"
 				small=""
 				background=""
 				@size-change="handleSizeChange"
@@ -742,7 +742,7 @@ const state = reactive({
 });
 let tableParams = ref<any>({
 	page: 1,
-	pageSize: 200,
+	pageSize: 100,
 	total: '',
 });
 let id = ref<any>();
@@ -1471,7 +1471,6 @@ const resetPriceFun = (row: any, index: number) => {
 };
 //计算价格
 let pricefun = (row: any, index: number) => {
-
 	//装箱数=实际出货数量/装箱个数
 	if (row.actualShipmentQuantity && row.quantityInBoxes) {
 		row.packBoxesQuantity = Math.ceil(Number(row.actualShipmentQuantity / row.quantityInBoxes));
@@ -1509,12 +1508,19 @@ let pricefun = (row: any, index: number) => {
 	}
 	//报关采购单价(RMB)=（集货采购单价*集货数量/报关数量）+（国内物流费用RMB/个*集货数量/报关数量）
 	if(row.plannedShipmentQuantity){//集货数量和报关数量一样时，集货采购单价就是（报关采购单价+国内物流费用(RMB/个)）
-		row.cusPurchasePrice=Number(row.includingTaxPurchasePrice)+Number(row.domesticLogisticsCost);
+		
+		row.cusPurchasePrice=row.includingTaxPurchasePrice+Number(row.domesticLogisticsCost);
 		if(row.actualShipmentQuantity != row.plannedShipmentQuantity)
 		{
-			row.cusPurchasePrice=(row.actualShipmentQuantity*row.includingTaxPurchasePrice/row.plannedShipmentQuantity)+(Number(row.domesticLogisticsCost)*row.actualShipmentQuantity/row.plannedShipmentQuantity );
+				row.cusPurchasePrice=(row.actualShipmentQuantity*row.includingTaxPurchasePrice/row.plannedShipmentQuantity)+(Number(row.domesticLogisticsCost)*row.actualShipmentQuantity/row.plannedShipmentQuantity );
 		}
+		
+		
+	
+
 	}
+	
+
 	//空运
 	//总毛重和体积重 谁大用谁
 	//国际物流费用总额= 物流报价*(总毛重KG||体积重KG)
@@ -1550,6 +1556,10 @@ let pricefun = (row: any, index: number) => {
 				row['exportUnitPrice']=Number(((row['cusPurchasePrice']  + Number(row['domesticLogisticsCost']) + singlecusfee) / collectionOrderInfo.exchangeRateUSD).toFixed(2));
 	} 
 	
+	
+	
+	
+
 	//出口总价(USD)=出口单价*报关数量
 	row.totalExportPrice = row.exportUnitPrice * row.plannedShipmentQuantity;
 	notResetPrice.value = false;

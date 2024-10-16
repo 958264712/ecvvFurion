@@ -9,14 +9,14 @@
 				<el-card shadow="hover" :body-style="{ paddingBottom: '0' }">
 					<el-form :model="state.queryParams" ref="queryForm" :inline="true">
 						<el-form-item label="账号">
-							<el-input v-model="state.queryParams.account" placeholder="账号" clearable />
+							<el-input v-model="state.queryParams.account" placeholder="请输入账号" clearable />
 						</el-form-item>
-						<!-- <el-form-item label="姓名">
-							<el-input v-model="state.queryParams.realName" placeholder="姓名" clearable  />
-						</el-form-item> -->
-						<el-form-item label="手机号码">
+						<el-form-item label="姓名">
+							<el-input v-model="state.queryParams.realName" placeholder="请输入姓名" clearable  />
+						</el-form-item>
+						<!-- <el-form-item label="手机号码">
 							<el-input v-model="state.queryParams.phone" placeholder="手机号码" clearable />
-						</el-form-item>
+						</el-form-item> -->
 						<el-form-item label="创建时间">
 							<el-date-picker start-placeholder="开始时间" end-placeholder="结束时间" type="daterange" v-model="state.queryParams.createTime" />
 						</el-form-item>
@@ -33,14 +33,14 @@
 								<el-button icon="ele-Refresh" @click="resetQuery"> 重置 </el-button>
 							</el-button-group>
 						</el-form-item>
-						<el-form-item>
-							<el-button type="primary" icon="ele-Plus" @click="openAddUser" v-auth="'sysUser:add'"> 新增 </el-button>
-						</el-form-item>
 					</el-form>
 				</el-card>
 
 				<el-card class="full-table" shadow="hover" style="margin-top: 8px">
-					<el-table :data="state.userData" style="width: 100%" v-loading="state.loading" border>
+					<div style="margin-bottom:10px">
+						<el-button type="primary" icon="ele-Plus" @click="openAddUser" v-auth="'sysUser:add'"> 新增 </el-button>
+					</div>
+					<el-table :data="state.userData" height="600" style="width: 100%" v-loading="state.loading" border>
 						<el-table-column type="index" label="序号" width="55" align="center" fixed />
 						<el-table-column prop="realName" label="姓名" width="120" align="center" show-overflow-tooltip />
 						<el-table-column prop="orgName" label="所属组织" width="120" align="center" show-overflow-tooltip />
@@ -128,8 +128,9 @@ onMounted(async () => {
 
 // 查询机构数据
 const loadOrgData = async () => {
-	state.loading = true;
-	var res = await getAPI(SysOrgApi).getListByUserDropDownBox();
+	state.loading = true; 
+	var res = await getAPI(SysOrgApi).getListByUserDropDownBox(); //接口未提交暂时使用
+	// var res = await getAPI(SysOrgApi).apiSysOrgListGet(0);
 	state.orgTreeData = res.data.result ?? [];
 	state.loading = false;
 };
@@ -159,13 +160,14 @@ const resetQuery = () => {
 	state.queryParams.status = undefined;
 	state.queryParams.createTime = undefined;
 	state.queryParams.phone = undefined;
+	state.queryParams.realName = undefined;
 	handleQuery();
 };
 
 // 打开新增页面
 const openAddUser = () => {
 	state.editUserTitle = '新增';
-	editUserRef.value?.openDialog({ id: undefined, birthday: '2000-01-01', sex: 1, orderNo: 100, cardType: 0, cultureLevel: 5 });
+	editUserRef.value?.openDialog({ id: undefined,  });
 };
 
 // 打开编辑页面

@@ -88,7 +88,7 @@ onMounted(async () => {
 			online: data.online,
 			realName: data.realName,
 		};
-		notificationThrottle();
+		// notificationThrottle();
 	});
 	// 强制下线
 	signalR.off('ForceOffline');

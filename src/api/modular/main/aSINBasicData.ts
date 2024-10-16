@@ -21,9 +21,14 @@ enum Api {
 	newPage = '/api/newPoData/page',
 	newSaudiPage = '/api/newPoData/saudiPage',
 	getConfirmedNewPOsPage = '/api/newPoData/getConfirmedNewPOsPage',
+	getBarCode = '/api/newPoData/getBarCode',
+	exportNewPoData = '/api/newPoData/exportNewPoData',
+	upLoadNewPoData = '/api/newPoData/upLoadNewPoData',
 	newUpdate = '/api/newPoData/update',
 	newMultipleExportByTemplate = '/api/newPoData/multipleExportByTemplate',
+	newMultipleExportByTemplateListBin = '/api/newPoData/multipleExportByTemplate2',
 	newDownLoadPOZip = '/api/newPoData/downLoadPOZip',
+	downLoadPODataTemplate = '/api/newPoData/downLoadPODataTemplate',
 	getNewPoDataExportHistory = '/api/newPoData/getNewPoDataExportHistory',
 }
 // 获取导出历史记录
@@ -57,7 +62,33 @@ export const getConfirmedNewPOsPage = (params?: any) =>
 		method: 'post',
 		data: params,
 	});
-
+// 导入newpodata修改数据的状态
+export const upLoadNewPoData = (params?: any) =>
+	request({
+		url: Api.upLoadNewPoData,
+		method: 'post',
+		data: params,
+		headers: {
+			'Content-Type': 'multipart/form-data; boundary=----WebKitFormBoundarynl6gT1BKdPWIejNq',
+		},
+	});
+// 导出选中的NewPoData列表
+export const exportNewPoData = (params?: any) =>
+	request({
+		url: Api.exportNewPoData,
+		method: 'post',
+		data: params,
+		responseType: 'blob',
+	});
+// 导出getBarCode
+export const getBarCode = (params?: any) =>
+	request({
+		url: Api.getBarCode,
+		method: 'post',
+		data: params,
+		responseType: 'blob',
+		timeout:120000
+	});
 // 编辑newUpdate单表
 export const newUpdate = (params?: any) =>
 	request({
@@ -72,7 +103,21 @@ export const newMultipleExportByTemplate = (params?: any) =>
 		method: 'post',
 		data: params,
 	});
-
+// 更新PO订单 newMultipleExportByTemplateListBin
+export const newMultipleExportByTemplateListBin = (params?: any) =>
+	request({
+		url: Api.newMultipleExportByTemplateListBin,
+		method: 'post',
+		data: params,
+	});
+// 下载拣货单模板 downLoadPODataTemplate
+export const downLoadPODataTemplate = (params?: any) =>
+	request({
+		url: Api.downLoadPODataTemplate,
+		method: 'post',
+		data: params,
+		responseType:'blob'
+	});
 // 更新PO订单 newDownLoadPOZip
 export const newDownLoadPOZip = (params?: any) =>
 	request({

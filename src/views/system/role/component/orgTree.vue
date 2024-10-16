@@ -73,7 +73,7 @@ watch(filterText, (val) => {
 
 const initTreeData = async () => {
 	state.loading = true;
-	var res = await getAPI(SysOrgApi).apiSysOrgListGet(0);
+	var res = await getAPI(SysOrgApi).getListByRoleDropDownBox();
 	state.orgData = res.data.result ?? [];
 	state.loading = false;
 };
@@ -137,9 +137,9 @@ defineExpose({ initTreeData, setCheckedKeys, getCheckedKeys });
 }
 .filter-tree{
 	width:100%;
-	max-height:735px;
+	height:735px;
 	overflow-x:scroll;
-	overflow-y:scroll;
+	overflow-y:auto;
 }
 :deep(.el-tree-node>.el-tree-node__children){
 	overflow:visible

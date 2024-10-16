@@ -97,7 +97,7 @@
 					:show-file-list="false" :auto-upload="false" name="file">
 					<el-button :loading="loading3" type="primary">Import ASIN Listing Table UAE</el-button>
 				</el-upload> -->
-				<div style="margin-left: 20px; display: inline" class="flex flex-wrap items-center">
+				<div style="margin-left: 10px; display: inline" class="flex flex-wrap items-center">
 					<el-dropdown>
 						<el-button type="primary" :loading="Exportloading">
 							{{ area == 'CN' ? '导出' : 'Export' }}
@@ -111,7 +111,7 @@
 						</template>
 					</el-dropdown>
 				</div>
-
+				<el-button style="margin-left: 10px;" type="primary" :disabled="selectedRows?.length <= 0" @click="ASINBatchDelete">批量删除</el-button>
 				<!-- <div class="setting">
 					<el-button v-if="IsEdit" type="primary" icon="ele-Document" :loading="loading"
 						@click="update">保存</el-button>
@@ -167,9 +167,9 @@
 							<el-button v-if="!scope.row.IsEdit" icon="ele-Edit" size="small" text="" type="primary" @click="openEdit(scope.row)"></el-button>
 						</el-tooltip>
 
-						<el-tooltip class="box-item" effect="dark" content="删除" placement="bottom">
+						<!-- <el-tooltip class="box-item" effect="dark" content="删除" placement="bottom">
 							<el-button icon="ele-Delete" size="small" text="" type="primary" @click="delASINBasicData(scope.row)"> </el-button>
-						</el-tooltip>
+						</el-tooltip> -->
 					</template>
 				</el-table-column>
 				<el-table-column type="selection" width="40" />
@@ -604,7 +604,7 @@ import { ref, watch } from 'vue';
 import { ElMessageBox, ElMessage, ElNotification } from 'element-plus';
 import { auth } from '/@/utils/authFunction';
 //import { formatDate } from '/@/utils/formatTime';
-import { SAINListingTablePage, Save, ImportCN, ImportUAE, Delete, Update, GetUserRole } from '/@/api/modular/main/SAINListingTable.ts';
+import { SAINListingTablePage, Save, ImportCN, ImportUAE, Delete, Update, GetUserRole,ASINListBatchDelete } from '/@/api/modular/main/SAINListingTable.ts';
 import axios from 'axios';
 import { ArrowDownBold, ArrowUpBold, QuestionFilled } from '@element-plus/icons-vue';
 import router from '/@/router';
@@ -844,15 +844,6 @@ const clearAsin = () => {
 const handleQuery = async () => {
 	loading.value = true;
 	tableParams.value.Site = area.value;
-
-	//if (queryParams.value.aSINList?.length > 0) {
-	// queryParams.value.asinTextArea = '';
-	//queryParams.value.aSIN = '';
-	//} else {
-	//queryParams.value.aSIN = aSIN.value;
-	//queryParams.value.aSINList = null;
-	//}
-
 	var res = await SAINListingTablePage(Object.assign(queryParams.value, tableParams.value));
 	tableData.value = res.data.result?.items ?? [];
 	tableData.value.forEach((element: any) => {
@@ -862,7 +853,23 @@ const handleQuery = async () => {
 	tableParams.value.total = res.data.result?.total;
 	loading.value = false;
 };
-
+const ASINBatchDelete = () => {
+	ElMessageBox.confirm(area.value == 'CN' ? `确定要删除吗?` : 'Are you sure you want to delete it?', area.value == 'CN' ? '提示' : 'prompt', {
+		confirmButtonText: area.value == 'CN' ? '确定' : 'YES',
+		cancelButtonText: area.value == 'CN' ? '取消' : 'Cancel',
+		type: 'warning',
+	}).then(() => {
+		ASINListBatchDelete(selectedRows.value).then((res) => {
+			if (res.data.type === 'success') {
+				ElMessage.success('删除成功');
+				selectedRows.value = [];
+				handleQuery();
+			} else {
+				ElMessage.error('删除失败');
+			}
+		});
+	});
+};
 // 打开新增页面
 const openAddASINBasicData = () => {
 	router.push({
@@ -897,53 +904,7 @@ const handleConfirm = () => {
 	visibleTextarea2.value = false;
 	// handleQuery()
 };
-// function Imports(file: any) {
-// 	loading3.value = true;
-// 	const formData = new FormData();
-// 	formData.append('file', file.raw);
-// 	formData.append('Site', area.value);
-// 	if (area.value == 'CN') {
 
-// 		axios
-// 			.post((import.meta.env.VITE_API_URL as any) + `/api/aSINListingTable/importCN/` + area.value, formData)
-// 			.then((res) => {
-// 				if (res.data.code == 200) {
-// 					ElMessage.success('Import succeeded');
-// 					handleQuery();
-// 					loading3.value = false;
-// 				} else {
-// 					ElMessage.error(res.message); // + res.message
-// 					loading3.value = false;
-// 				}
-
-// 			});
-// 		// ImportCN(formData).then((res: any) => {
-// 		// 	if (res.data.code == 200) {
-// 		// 		ElMessage.success('Import succeeded');
-// 		// 		handleQuery();
-// 		// 		loading3.value = false;
-// 		// 	} else {
-// 		// 		ElMessage.error(res.message); // + res.message
-// 		// 		loading3.value = false;
-// 		// 	}
-// 		// });
-// 	} else {
-// 		axios
-// 			.post((import.meta.env.VITE_API_URL as any) + `/api/aSINListingTable/importUAE/` + area.value, formData)
-// 			.then((res) => {
-// 				if (res.data.code == 200) {
-// 					ElMessage.success('Import succeeded');
-// 					handleQuery();
-// 					loading3.value = false;
-// 				} else {
-// 					ElMessage.error(res.message); // + res.message
-// 					loading3.value = false;
-// 				}
-
-// 			});
-// 	}
-
-// }
 //选中的数据
 function handleSelectionChange(val: any) {
 	selectedRows.value.splice(0, selectedRows.value.length);
@@ -973,12 +934,6 @@ function AllExport() {
 		.post((import.meta.env.VITE_API_URL as any) + `/api/aSINListingTable/export`, Object.assign(queryParams.value, tableParams.value, formData), {
 			responseType: 'blob', // 将响应解析为二进制数据
 		})
-		// service({
-		// 	url: `/api/inventoryManagement/Export`,
-		// 	method: 'post',
-		// 	data: formData,
-		// 	responseType: 'blob',
-		// })
 		.then((data) => {
 			downloadfile(data);
 			if (data.statusText == 'OK') {
@@ -1018,12 +973,6 @@ function SelectedExport() {
 		.post((import.meta.env.VITE_API_URL as any) + `/api/aSINListingTable/export`, formData, {
 			responseType: 'blob', // 将响应解析为二进制数据
 		})
-		// service({
-		// 	url: `/api/inventoryManagement/Export`,
-		// 	method: 'post',
-		// 	data: formData,
-		// 	responseType: 'blob',
-		// })
 		.then((data) => {
 			downloadfile(data);
 			if (data.statusText == 'OK') {
@@ -1063,12 +1012,6 @@ function Exportemptycreator() {
 		.post((import.meta.env.VITE_API_URL as any) + `/api/aSINListingTable/export`, formData, {
 			responseType: 'blob', // 将响应解析为二进制数据
 		})
-		// service({
-		// 	url: `/api/inventoryManagement/Export`,
-		// 	method: 'post',
-		// 	data: formData,
-		// 	responseType: 'blob',
-		// })
 		.then((data) => {
 			downloadfile(data);
 			if (data.statusText == 'OK') {

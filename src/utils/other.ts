@@ -297,7 +297,7 @@ const other = {
 		handQueue(val);
 	},
 	beforeUpload: (val: any) => {
-		handQueue(val);
+		return beforeUpload(val);
 	},
 };
 

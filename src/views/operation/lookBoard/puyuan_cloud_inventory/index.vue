@@ -66,7 +66,7 @@
 				@size-change="handleSizeChange" @current-change="handleCurrentChange"
 				layout="total, sizes, prev, pager, next, jumper" />
 			<el-dialog v-model="visible" title="详情" @close="close" width="1000px">
-				<infoDataDialog :id="puyuanyunId" idName="Id" :weeks="weeks" :dataList="dataList"
+				<infoDataDialog :id="puyuanyunId" idName="BatchId" :weeks="weeks" :dataList="dataList"
 					:ifClose="ifClose" :pointerface="puyuanCloudInventoryPage" :formList="formList" />
 			</el-dialog>
 		</el-card>

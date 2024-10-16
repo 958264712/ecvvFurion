@@ -9,7 +9,7 @@
 					<el-button-group>
 						<el-button type="primary" icon="ele-Search" @click="handleQuery" v-auth="'tableImport:page'"> 查询
 						</el-button>
-						<el-button icon="ele-Refresh" @click="() => (queryParams = {})"> 重置 </el-button>
+						<el-button icon="ele-Refresh" @click="() => {queryParams = {};handleQuery()}"> 重置 </el-button>
 					</el-button-group>
 				</el-form-item>
 				<el-form-item>

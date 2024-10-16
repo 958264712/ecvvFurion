@@ -1,6 +1,7 @@
 <script lang="ts" setup name="DFOutboundOrder">
 import { ref, onMounted, watch } from 'vue';
 import { dFOutboundOrderpage, dFOutboundOrderexport } from '/@/api/modular/main/financial.ts';
+import moment from 'moment';
 import other from '/@/utils/other.ts';
 const tableData: any[] = ref([]);
 const queryParams = ref<any>({ Site: '', StartTime: '', EnbTime: '' });
@@ -66,40 +67,12 @@ const TableData = ref<any>([
 ]);
 
 // 查询
-const getAppPage = async (): void => {
+const handleQuery = async (): void => {
 	loading.value = true;
-	queryParams.value.StartOrderPlaceDate = queryParams.value.OrderPlaceDates ? queryParams.value.OrderPlaceDates[0] : null;
-	queryParams.value.EndOrderPlaceDate = queryParams.value.OrderPlaceDates ? queryParams.value.OrderPlaceDates[1] : null;
-	queryParams.value.StartRequiredShipDate = queryParams.value.RequiredShipDates ? queryParams.value.RequiredShipDates[0] : null;
-	queryParams.value.EndRequiredShipDate = queryParams.value.RequiredShipDates ? queryParams.value.RequiredShipDates[1] : null;
-	if (queryParams.value.StartOrderPlaceDate) {
-		const date1 = new Date(queryParams.value.StartOrderPlaceDate);
-		const year1 = date1.getFullYear();
-		const month1 = date1.getMonth() + 1;
-		const day1 = date1.getDate();
-		queryParams.value.StartOrderPlaceDate = year1 + '-' + month1 + '-' + day1;
-	}
-	if (queryParams.value.EndOrderPlaceDate) {
-		const date2 = new Date(queryParams.value.EndOrderPlaceDate);
-		const year2 = date2.getFullYear();
-		const month2 = date2.getMonth() + 1;
-		const day2 = date2.getDate();
-		queryParams.value.EndOrderPlaceDate = year2 + '-' + month2 + '-' + day2;
-	}
-	if (queryParams.value.StartRequiredShipDate) {
-		const date3 = new Date(queryParams.value.StartRequiredShipDate);
-		const year3 = date3.getFullYear();
-		const month3 = date3.getMonth() + 1;
-		const day3 = date3.getDate();
-		queryParams.value.StartRequiredShipDate = year3 + '-' + month3 + '-' + day3;
-	}
-	if (queryParams.value.EndRequiredShipDate) {
-		const date4 = new Date(queryParams.value.EndRequiredShipDate);
-		const year4 = date4.getFullYear();
-		const month4 = date4.getMonth() + 1;
-		const day4 = date4.getDate();
-		queryParams.value.EndRequiredShipDate = year4 + '-' + month4 + '-' + day4;
-	}
+	queryParams.value.StartOrderPlaceDate = queryParams.value.OrderPlaceDates ? moment(queryParams.value.OrderPlaceDates[0]).format('YYYY-MM-DD') : undefined;
+	queryParams.value.EndOrderPlaceDate = queryParams.value.OrderPlaceDates ? moment(queryParams.value.OrderPlaceDates[1]).format('YYYY-MM-DD') : undefined;
+	queryParams.value.StartRequiredShipDate = queryParams.value.RequiredShipDates ? moment(queryParams.value.RequiredShipDates[0]).format('YYYY-MM-DD') : undefined;
+	queryParams.value.EndRequiredShipDate = queryParams.value.RequiredShipDates ?moment(queryParams.value.RequiredShipDates[1]).format('YYYY-MM-DD') : undefined;
 	await dFOutboundOrderpage(Object.assign(queryParams.value, tableParams.value)).then((res) => {
 		//tableData.value = res.data.result.items;
 		tableData.value.splice(0, tableData.value.length);
@@ -112,9 +85,13 @@ const getAppPage = async (): void => {
 };
 
 onMounted(() => {
-	getAppPage();
+	handleQuery();
 });
-
+// 改变页面容量
+const handleSizeChange = (val: number): void => {
+	tableParams.value.pageSize = val;
+	handleQuery();
+};
 // 获取keys
 const selectChange = (selection: any) => {
 	selectExport.value.splice(0, selectExport.value.length);
@@ -125,7 +102,7 @@ const selectChange = (selection: any) => {
 // 改变页码序号
 const handleCurrentChange = (val: number): void => {
 	tableParams.value.page = val;
-	getAppPage();
+	handleQuery();
 };
 // 导出选中
 const SelectedExport = async (coltype) => {
@@ -151,7 +128,7 @@ const AllExport = async (coltype) => {
 		<el-card shadow="hover" :body-style="{ paddingBottom: '0' }">
 			<el-form :model="queryParams" :inline="true">
 				<el-form-item label="站点">
-					<el-select clearable="" @change="getAppPage()" v-model="queryParams.Site">
+					<el-select clearable="" @change="handleQuery()" v-model="queryParams.Site">
 						<el-option value="UAE" label="UAE"></el-option>
 						<el-option value="SA" label="SA"></el-option>
 					</el-select>
@@ -166,11 +143,11 @@ const AllExport = async (coltype) => {
 				</el-form-item>
 				<el-form-item>
 					<el-button-group>
-						<el-button v-auth="'shippingDetails:page'" type="primary" icon="ele-Search"
-							@click="getAppPage()" style="width: 70px; margin-right: 2px"> 查询 </el-button>
+						<el-button  type="primary" icon="ele-Search"
+							@click="handleQuery()" style="width: 70px; margin-right: 2px"> 查询 </el-button>
 						<el-button icon="ele-Refresh" @click="() => {
 			queryParams = {};
-			getAppPage();
+			handleQuery();
 		}" style="width: 70px; margin-right: 2px"> 重置
 						</el-button>
 
@@ -185,7 +162,7 @@ const AllExport = async (coltype) => {
 						<el-button type="primary" :loading="cardLoading"> 导出 </el-button>
 						<template #dropdown>
 							<el-dropdown-menu>
-								<el-dropdown-item style="height: 24px" @click="SelectedExport(1)">导出选中
+								<el-dropdown-item style="height: 24px" :disabled="selectExport?.length <= 0" @click="SelectedExport(1)">导出选中
 								</el-dropdown-item>
 								<el-dropdown-item style="height: 24px" @click="AllExport(1)">导出全部
 								</el-dropdown-item>
@@ -205,6 +182,7 @@ const AllExport = async (coltype) => {
 			</el-table>
 			<el-pagination v-model:currentPage="tableParams.page" v-model:page-size="tableParams.pageSize"
 				:total="tableParams.total" :page-sizes="[50, 100, 500, 1000]" small="" background=""
+				@size-change="handleSizeChange"
 				@current-change="handleCurrentChange" layout="total, sizes, prev, pager, next, jumper" />
 		</el-card>
 	</div>

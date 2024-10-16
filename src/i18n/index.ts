@@ -18,6 +18,13 @@ import enLocale from 'element-plus/lib/locale/lang/en';
 import zhcnLocale from 'element-plus/lib/locale/lang/zh-cn';
 import zhtwLocale from 'element-plus/lib/locale/lang/zh-tw';
 
+// 更改分页文字
+enLocale.el.pagination = {
+	pagesize: 'Results/Page',
+	total: `{total} Results`,
+	goto: 'Go to page',
+	pageClassifier:'Page'
+}
 // 定义变量内容
 const messages = {};
 const element = { en: enLocale, 'zh-cn': zhcnLocale, 'zh-tw': zhtwLocale };
