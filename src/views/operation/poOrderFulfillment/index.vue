@@ -36,6 +36,7 @@ const ifClose = ref(false);
 const pointerface = ref<any>(null);
 const orderFulfillmentId = ref<number>(0);
 const ifdisabled = ref(true);
+
 const sites = ref([
 	{
 		key: null,
@@ -492,9 +493,6 @@ onMounted(() => {
 				<el-form-item label="PO">
 					<el-input v-model="queryParams.po" clearable="" placeholder="请输入PO" />
 				</el-form-item>
-				<!-- <el-form-item label="订单时间">
-					<el-date-picker v-model="timevalue1" type="daterange" start-placeholder="Start date" end-placeholder="End date" :default-time="defaultTime" />
-				</el-form-item> -->
 				<el-form-item label="Creation Date">
 					<el-date-picker v-model="timevalue2" type="daterange" start-placeholder="Start date" end-placeholder="End date" :default-time="defaultTime" />
 				</el-form-item>
@@ -574,9 +572,6 @@ onMounted(() => {
 				<el-table-column prop="batchId" label="批次号" align="center" />
 				<el-table-column prop="site" label="站点" align="center" />
 				<el-table-column prop="createTime" label="Creation Date" align="center" />
-				<!-- <el-table-column prop="orderTime" label="订单时间 " align="center" /> -->
-				<!-- <el-table-column prop="contractedWarehouseTime" label="约仓时间 " align="center" />
-				<el-table-column prop="deliveryTime" label="送达时间 " align="center" /> -->
 				<el-table-column prop="exportStatus" label="导出状态 " align="center">
 					<template #default="scope">
 						<el-text v-if="scope.row.exportStatus == 1" type="primary">未导出</el-text>
@@ -627,7 +622,6 @@ onMounted(() => {
 				layout="total, sizes, prev, pager, next, jumper"
 			/>
 			<el-dialog v-model="visible" title="POs PANEL详情" @close="close" width="1000px">
-				<!-- <editDialog :id="orderFulfillmentId" /> -->
 				<InfoDataDialog :id="orderFulfillmentId" idName="poFulfillingOrderBatchId" :dataList="dataList" :pointerface="pointerface" :formList="formList" :ifClose="ifClose" />
 			</el-dialog>
 			<el-dialog v-model="visible1" title="Confirmed New POs详情" @close="close1" width="1000px">

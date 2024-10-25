@@ -15,6 +15,7 @@ enum Api {
 	importPurchaseUnitPrice = '/api/pYYPurchaseOrder/importPurchaseUnitPrice',
 	initialInventoryDataPage = '/api/initialInventoryData/page',
 	getInitialInventoryData = '/api/initialInventoryData/getInitialInventoryData',
+	initialInventorySynchronizeData = '/api/initialInventoryData/synchronizeData',
 	importInitialInventoryData = '/api/initialInventoryData/import',
 	inventoryQueryPage = '/api/inventoryQuery/page',
 	inventoryQueryExport = '/api/inventoryQuery/export',
@@ -33,6 +34,13 @@ export const inventoryQueryExport = (params?: any) =>
 		method: 'post',
 		data: params,
 		responseType: 'blob',
+	});
+// 同步期初库存数据
+export const initialInventorySynchronizeData = (params?: any,time?:string) =>
+	request({
+		url: Api.initialInventorySynchronizeData+'/'+time,
+		method: 'post',
+		data: params,
 	});
 // 期初库存数据导入
 export const importInitialInventoryData = (params?: any) =>

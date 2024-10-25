@@ -1,9 +1,10 @@
 <script lang="ts" setup name="inventory_data">
 import { ref, onMounted, watch } from 'vue';
-import { initialInventoryDataPage,getInitialInventoryData } from '/@/api/modular/main/financial.ts';
+import { initialInventoryDataPage,getInitialInventoryData,initialInventorySynchronizeData } from '/@/api/modular/main/financial.ts';
 import { ElMessageBox, ElMessage, ElNotification } from 'element-plus';
 import importDialog from './component/importDialog.vue';
 import infoDataDialog from '/@/components/infoDataDialog/index.vue';
+import moment from 'moment'
 
 const tableData: any[] = ref([]);
 const queryParams = ref<any>({ WarehouseName: '全部' });
@@ -20,12 +21,14 @@ const tableAddress = ref('');
 const area = ref('CN');
 const loading = ref(false);
 const loading1 = ref(false);
+const synchronousLoading = ref(false);
 const ifClose = ref(false);
 const visible = ref(false)
 const selectExport = ref([]);
 const yearList = ref<any>([]);
 const date = new Date();
 const year = date.getFullYear();
+const month = ref(new Date())
 
 for (let i = year ; i >= 2005; i--) {
 	yearList.value.push({ label: `${i}`, value: `${i}` });
@@ -46,6 +49,12 @@ const TableData = ref<any>([
 	{
 		titleCN: '月份',
 		dataIndex: 'time',
+		checked: true,
+		fixed: false,
+	},
+	{
+		titleCN: '生成类型',
+		dataIndex: 'buildType',
 		checked: true,
 		fixed: false,
 	},
@@ -169,6 +178,21 @@ const handleQuery = async (): void => {
 	});
 	loading.value = false;
 };
+// 同步 获取到系统最近1月的数据，并提示：同步成功
+const Synchronization = async () => {
+	synchronousLoading.value = true
+	await initialInventorySynchronizeData(null,moment(month.value).format('YYYY-MM')).then(res=>{
+		if(res.data.code===200){
+			ElMessage.success('同步成功')
+			synchronousLoading.value = false
+			handleQuery()
+		}else{
+			synchronousLoading.value = false
+		}
+	}).catch(err=>{
+		synchronousLoading.value = false
+	})
+}
 const openEditUser = (row: any) => {
 	visible.value = true
 	puyuanyunId.value = row.batchId
@@ -226,6 +250,8 @@ const handleCurrentChange = (val: number): void => {
 			<div class="settingf" style="margin-bottom: 5px; display: flex; justify-content: space-between">
 				<div class="flex flex-wrap items-center">
 					<el-button :loading="loading1" type="primary" @click="openimportDialog" v-auth="'inventory_data:import'">导入</el-button>
+					<el-button :loading="synchronousLoading" type="primary" @click="Synchronization" :disabled="month?.length" style="margin-right:10px;">同步</el-button>
+					<el-date-picker v-model="month" type="month"/>
 				</div>
 			</div>
 			<el-table :data="tableData" size="large" style="width: 100%" v-loading="loading" tooltip-effect="light">

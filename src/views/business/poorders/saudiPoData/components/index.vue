@@ -11,10 +11,12 @@ import {
 	newDownLoadPOZip,
 	exportNewPoData,
 	upLoadNewPoData,
+	upLoadNewPoDataDownBarCode,
 } from '/@/api/modular/main/aSINBasicData.ts';
 import PoDataSource from './poDataSource.vue';
 import { service } from '/@/utils/request';
 import infoDataDialog from '/@/components/infoDataDialog/index.vue';
+import importDialog from '/@/components/newImportDialog/index.vue';
 import other from '/@/utils/other.ts';
 import moment from 'moment';
 const timer = ref<any>();
@@ -24,7 +26,7 @@ const loading1 = ref(false);
 const ifClose = ref(false);
 const ifClose1 = ref(false);
 const cardLoading = ref(false);
-const downLoading = ref(false) //下载批量修改拣货单
+const downLoading = ref(false); //下载批量修改拣货单
 const tableData = ref<any>([]);
 const queryParams = ref<PoParamsType>({
 	orderDate: 'Creation Date',
@@ -40,15 +42,22 @@ const pos = ref('');
 const visible = ref(false); //ASIN列表弹窗
 const visible1 = ref(false); //编辑OrderDate弹窗
 const visible2 = ref(false); //导出历史记录弹窗
+const isImportNewPoData = ref(false);
 const remarkDisabled = ref(true);
 const costpriceBatchId = ref<number>(0);
 const showId = ref<number>(0);
 const remark = ref('');
+const exportAsinBarCode = ref('');
 const disabledList = ref<any>([]);
 const selectedRows = ref([]);
 const selectedRowKeys = ref([]);
 const formList = ref<any>([]);
-const baseUrl = import.meta.env.VITE_API_URL
+
+const baseUrl = import.meta.env.VITE_API_URL;
+const importDialogRef = ref();
+const url = ref('/api/newPoData/upLoadNewPoData');
+const tableAddress = `${baseUrl}/upload/TableAddress/PO履单系统批量上传模版.xlsx`;
+
 const formList1 = ref<any>([
 	{
 		label: 'ASIN',
@@ -137,6 +146,21 @@ const tabelList = ref<any>([
 		titleCN: 'Invoiced Status',
 		titleEN: 'Invoiced Status',
 		dataIndex: 'invoicedStatus',
+	},
+	{
+		titleCN: 'Export Status By PO Xlsx',
+		titleEN: 'Export Status By PO Xlsx',
+		dataIndex: 'exportStatusByXlsx',
+	},
+	{
+		titleCN: 'Export Status By BarCode Docx',
+		titleEN: 'Export Status By BarCode Docx',
+		dataIndex: 'exportStatusByDocx',
+	},
+	{
+		titleCN: 'ASIN Count',
+		titleEN: 'ASIN Count',
+		dataIndex: 'asinCount',
 	},
 ]);
 const optionList = ref<any>([
@@ -257,7 +281,11 @@ const dataList1 = ref<any>([
 		prop: 'asin',
 	},
 	{
-		label: 'Merchant Sku',
+		label: 'Inventory Quantity',
+		prop: 'inventoryQuantity',
+	},
+	{
+		label: 'Storage Bin',
 		prop: 'merchantSku',
 	},
 	{
@@ -380,6 +408,10 @@ const dataList1 = ref<any>([
 		label: 'Merchant Sku ratio',
 		prop: 'merchantSkuratio',
 	},
+	{
+		label: 'Export Status By BarCode Docx',
+		prop: 'exportHistoryDocx',
+	},
 ]);
 //打开弹窗
 const showModal = (id: any) => {
@@ -406,6 +438,7 @@ const close2 = () => {
 const close1 = () => {
 	visible1.value = false;
 	ifClose1.value = false;
+	handleQuery();
 };
 const close = () => {
 	visible.value = false;
@@ -560,7 +593,7 @@ const multipleExport = (interfaces: any, type: strign) => {
 		data.push(selectedRows.value[i]?.id);
 	}
 	cardLoading.value = true;
-	interfaces(Object.assign({ poList: data, Site: 'SA' },queryParams.value)).then((res: any) => {
+	interfaces(Object.assign({ poList: data, Site: 'SA' }, queryParams.value)).then((res: any) => {
 		if (res.data.code !== 200) {
 			cardLoading.value = false;
 			ElMessage.error(res.message);
@@ -569,7 +602,7 @@ const multipleExport = (interfaces: any, type: strign) => {
 			ElMessage.success('Table generated, waiting for compression');
 			startTime.value = new Date().getTime(); // 获取触发轮询时的时间
 			if (type === 'listBin') {
-				inquireData(false,res.data.result); // 调用轮询接口,开始进行轮询
+				inquireData(false, res.data.result); // 调用轮询接口,开始进行轮询
 			} else {
 				inquireData(true); // 调用轮询接口,开始进行轮询
 			}
@@ -577,7 +610,7 @@ const multipleExport = (interfaces: any, type: strign) => {
 	});
 };
 
-const inquireData = (bol: boolean,fileName='') => {
+const inquireData = (bol: boolean, fileName = '') => {
 	const reload = () => {
 		clearTimeout(timer.value); // 清除定时器
 		// 超过3分钟则停止轮询
@@ -587,7 +620,7 @@ const inquireData = (bol: boolean,fileName='') => {
 		}
 		// 3s一次, 轮询中
 		timer.value = setTimeout(() => {
-			inquireData(bol,fileName); // 调用轮询
+			inquireData(bol, fileName); // 调用轮询
 		}, 3000);
 	};
 	if (!bol) {
@@ -601,7 +634,10 @@ const inquireData = (bol: boolean,fileName='') => {
 			} else {
 				window.open(res.data.result, '_blank');
 				cardLoading.value = false;
+				isImportNewPoData.value = false;
+				exportAsinBarCode.value = '';
 				ElMessage.success('Build succeeded');
+				handleQuery();
 			}
 		});
 	} else {
@@ -644,16 +680,25 @@ const poListExport = async () => {
 		});
 };
 // 导入newpodata改变数据状态
-const importNewPoData = (file: any) => {
+const importNewPoData = () => {
+	importDialogRef.value.openDialog();
+};
+const Imports = async (file: any) => {
+	isImportNewPoData.value = true;
 	const formData = new FormData();
 	formData.append('file', file.raw);
-	upLoadNewPoData(formData).then((res: any) => {
-		ElMessage.success('Import Success!');
-		handleQuery();
-	}).catch(err=>{
-		ElMessage.error(err);
-	})
+	await upLoadNewPoDataDownBarCode(formData, queryParams.value.checkbox ? 'true' : 'false').then((res) => {
+		if (res.data.result && res.data.code === 200) {
+			ElMessage.success('Import Successed,Now Downloading ZIP File');
+			exportAsinBarCode.value = res.data.result;
+			startTime.value = new Date().getTime(); // 获取触发轮询时的时间
+			inquireData(false, exportAsinBarCode.value);
+		} else {
+			ElMessage.error('Import Failed');
+		}
+	});
 };
+
 // 获取keys
 const selectChange = (selection: any) => {
 	selectedRowKeys.value = [];
@@ -718,25 +763,23 @@ handleQuery();
 			</el-form>
 		</el-card>
 		<el-card class="full-table" shadow="hover" style="margin-top: 8px">
-			<div style="display:flex">
+			<div style="display: flex">
 				<el-dropdown style="margin-right: 10px">
 					<el-button type="primary" :loading="cardLoading">Export</el-button>
 					<template #dropdown>
 						<el-dropdown-menu>
-							<el-dropdown-item @click="multipleExport(newMultipleExportByTemplate,'poList')">Export PO</el-dropdown-item>
-							<el-dropdown-item @click="multipleExport(newMultipleExportByTemplateListBin,'listBin')">PO Picking List-Bin</el-dropdown-item>
+							<el-dropdown-item @click="multipleExport(newMultipleExportByTemplate, 'poList')">Export PO</el-dropdown-item>
+							<el-dropdown-item @click="multipleExport(newMultipleExportByTemplateListBin, 'listBin')">PO Picking List-Bin</el-dropdown-item>
 							<el-dropdown-item @click="showModal2"> Export History </el-dropdown-item>
 							<el-dropdown-item @click="poListExport" :disabled="selectedRowKeys?.length <= 0"> PO List </el-dropdown-item>
 						</el-dropdown-menu>
 					</template>
 				</el-dropdown>
-				<el-upload :on-change="importNewPoData" :multiple="false" action="#" :show-file-list="false" :auto-upload="false" name="file">
-					<el-button type="primary" style="margin-right: 10px">import NewPodata</el-button>
+				<el-button type="primary" @click="importNewPoData" style="margin-right: 10px">import NewPodata</el-button>
+				<el-upload :on-change="Imports" :multiple="false" :show-file-list="false" :auto-upload="false" name="file">
+					<el-button type="primary" :loading="isImportNewPoData" >Export Asin BarCode</el-button>
 				</el-upload>
-				<el-button type="primary" :loading="downLoading" >
-					<el-link style="color:#fff" :underline="false" :href="`${baseUrl}/upload/TableAddress/PO履单系统批量上传模版.xlsx`">Download Import Template</el-link>
-				</el-button>
-				<el-checkbox value="Made in China" label="Made in China" v-model="queryParams.checkbox" style="margin-left:10px"/>
+				<el-checkbox value="Made in China" label="Made in China" v-model="queryParams.checkbox" style="margin-left: 10px" />
 			</div>
 			<el-table
 				:data="tableData"
@@ -784,6 +827,17 @@ handleQuery();
 					<el-table-column v-else-if="item.dataIndex === 'creationDate'" width="150px" :prop="item.dataIndex" :label="item.titleCN" align="center" show-overflow-tooltip="" sortable />
 					<el-table-column v-else-if="item.dataIndex === 'rwAppointmentDate'" width="190" :prop="item.dataIndex" :label="item.titleCN" align="center" show-overflow-tooltip="" sortable />
 					<el-table-column v-else-if="item.dataIndex === 'latestDate'" width="180" :prop="item.dataIndex" :label="item.titleCN" align="center" show-overflow-tooltip="" sortable />
+					<el-table-column v-else-if="item.dataIndex === 'exportStatusByXlsx'" width="200" :prop="item.dataIndex" :label="item.titleCN" align="center" show-overflow-tooltip="">
+						<template #default="scope">
+							{{ scope.row.exportStatusByXlsx === 0 ? 'NO' : 'YES' }}
+						</template>
+					</el-table-column>
+					<el-table-column v-else-if="item.dataIndex === 'exportStatusByDocx'" width="230" :prop="item.dataIndex" :label="item.titleCN" align="center" show-overflow-tooltip="">
+						<template #default="scope">
+							{{ scope.row.exportStatusByDocx === 0 ? 'NO' : scope.row.exportStatusByDocx === 1 ? 'YES' : 'Partial Export' }}
+						</template>
+					</el-table-column>
+					<el-table-column v-else-if="item.dataIndex === 'asinCount'" width="100" :prop="item.dataIndex" :label="item.titleCN" align="center" show-overflow-tooltip="" />
 					<el-table-column v-else-if="item.dataIndex" :prop="item.dataIndex" :label="item.titleCN" align="center" show-overflow-tooltip="" :width="item.width" />
 				</template>
 				<el-table-column label="Operation" width="250" align="center" fixed="right" show-overflow-tooltip="">
@@ -805,9 +859,6 @@ handleQuery();
 				@current-change="handleCurrentChange"
 				layout="total, sizes, prev, pager, next, jumper"
 			/>
-			<!-- <el-dialog v-model="visible" title="Product List" @close="close" width="1000px">
-				<PoDataSource :po="pos"></PoDataSource>
-			</el-dialog> -->
 			<el-dialog v-model="visible1" title="Remark" width="400px">
 				<el-input v-model="remark" placeholder="Please enter orderDate" :disabled="remarkDisabled" style="height: 30px" />
 				<template #footer>
@@ -818,12 +869,23 @@ handleQuery();
 					</span>
 				</template>
 			</el-dialog>
-			<el-dialog v-model="visible2" title="导出历史记录" @close="close2" width="1000px">
+			<el-dialog v-model="visible2" title="Export History" @close="close2" width="1000px">
 				<infoDataDialog :id="111" idName="dibaiPoDataDataId" :dataList="dataList" :ifClose="ifClose" :pointerface="getNewPoDataExportHistory" :formList="formList" />
 			</el-dialog>
-			<el-dialog v-model="visible" title="Confirmed New POs详情" @close="close1" width="1000px">
-				<infoDataDialog :id="showId" idName="id" :dataList="dataList1" :pointerface="getConfirmedNewPOsPage" :formList="formList1" :ifClose="ifClose1" :exportBarCode="true" />
+			<el-dialog v-model="visible" title="Confirmed New POs Info" @close="close1" width="1000px">
+				<infoDataDialog :id="showId" idName="id" :dataList="dataList1" :pointerface="getConfirmedNewPOsPage" :formList="formList1" site="SA" :ifClose="ifClose1" :exportBarCode="true" />
 			</el-dialog>
+			<importDialog
+				ref="importDialogRef"
+				title="PO Pick List lmport"
+				excelName="PO Pick List "
+				:ifExcelBol="true"
+				:tableAddress="tableAddress"
+				area="EN"
+				:url="url"
+				@reloadTable="handleQuery"
+				@reuturnHref="reuturnHref"
+			/>
 		</el-card>
 	</div>
 </template>

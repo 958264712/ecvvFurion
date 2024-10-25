@@ -617,6 +617,12 @@ const handleErpList = () => {
 	router.push({ path: '/operation/asin/asindata' });
 }
 
+// 排序
+const sortfun = (v: any) => {
+	tableParams.value.order = v.order;
+	tableParams.value.prop = v.prop;
+	handleQuery();
+}
 watch(
 	() => erpAndGoodsName.value,
 	() => {
@@ -779,12 +785,12 @@ onMounted(() => {
 			<el-tabs v-model="activeName" type="card" style="height: 85%" @tab-click="handleClick">
 				<el-tab-pane :label="item.label" :name="item.name" style="height: 100%" v-for="item in tabsList">
 					<el-table :data="tableData" style="height: 100%" v-loading="loading" tooltip-effect="light"
-						row-key="id" @selection-change="(selection: any) => selectChange(selection)">
+						row-key="id" @selection-change="(selection: any) => selectChange(selection)" @sort-change="sortfun">
 						<el-table-column type="selection" width="55" />
 						<el-table-column type="index" :label="area == 'CN' ? '序号' : 'NO.'" width="55" align="center" />
 						<template v-for="(item, index) in TableData" :key="index">
 							<el-table-column v-if="item.checked && item.dataIndex === 'site'" :prop="item.dataIndex" show-overflow-tooltip
-								:fixed="item.fixed" :label="area == 'CN' ? item.titleCN : item.titleEN" align="center">
+								:fixed="item.fixed" :label="area == 'CN' ? item.titleCN : item.titleEN" sortable align="center">
 								<template #header>
 									<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
 										<div style="display: flex; align-items: center; justify-content: center">
@@ -803,7 +809,7 @@ onMounted(() => {
 								</template>
 							</el-table-column>
 							<el-table-column v-else-if="item.checked && item.dataIndex === 'inventorySKU'" width="110"
-								:fixed="item.fixed" :prop="item.dataIndex" show-overflow-tooltip
+								:fixed="item.fixed" :prop="item.dataIndex" show-overflow-tooltip sortable
 								:label="area == 'CN' ? item.titleCN : item.titleEN" align="center">
 								<template #header>
 									<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
@@ -824,7 +830,7 @@ onMounted(() => {
 								</template>
 							</el-table-column>
 							<el-table-column v-else-if="item.checked && item.dataIndex === 'itemStatus'"
-								:fixed="item.fixed" :prop="item.dataIndex" show-overflow-tooltip
+								:fixed="item.fixed" :prop="item.dataIndex" show-overflow-tooltip sortable
 								:label="area == 'CN' ? item.titleCN : item.titleEN" width="100" align="center">
 								<template #header>
 									<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
@@ -846,8 +852,8 @@ onMounted(() => {
 								</template>
 							</el-table-column>
 							<el-table-column v-else-if="item.checked && item.dataIndex === 'listCount'"
-								:fixed="item.fixed" :prop="item.dataIndex" show-overflow-tooltip
-								:label="area == 'CN' ? item.titleCN : item.titleEN" align="center">
+								:fixed="item.fixed" :prop="item.dataIndex" show-overflow-tooltip width="110" sortable
+								:label="area == 'CN' ? item.titleCN : item.titleEN" align="center" >
 								<template #header>
 									<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
 										<div style="display: flex; align-items: center; justify-content: center">
@@ -867,7 +873,7 @@ onMounted(() => {
 								</template>
 							</el-table-column>
 							<el-table-column v-else-if="item.checked" :fixed="item.fixed" :prop="item.dataIndex"
-								:label="area == 'CN' ? item.titleCN : item.titleEN" width="120" align="center" show-overflow-tooltip>
+								:label="area == 'CN' ? item.titleCN : item.titleEN" width="120" align="center" sortable show-overflow-tooltip>
 								<template #header>
 									<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
 										<div style="display: flex; align-items: center; justify-content: center">
@@ -921,6 +927,8 @@ onMounted(() => {
 
 :deep(.cell) {
 	white-space: nowrap;
+	display:flex;
+	align-items:center;
 }
 
 :deep( .el-table td.el-table__cell div ){

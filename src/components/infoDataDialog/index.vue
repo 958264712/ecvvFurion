@@ -60,6 +60,11 @@
 							{{ scope.row?.bookingTime ? moment(scope.row?.bookingTime).format('YYYY-MM-DD') : undefined }}
 						</template>
 					</el-table-column>
+					<el-table-column v-else-if="item.prop === 'exportHistoryDocx'" align="center" :prop="item.prop" :label="item.label" show-overflow-tooltip="">
+						<template #default="scope">
+							{{scope.row?.exportHistoryDocx == 0 ? 'NO' : 'YES'}}
+						</template>
+					</el-table-column>
 					<el-table-column v-else-if="item.prop" align="center" :prop="item.prop" :label="item.label" show-overflow-tooltip="" />
 				</template>
 			</el-table>
@@ -95,6 +100,7 @@ import other from '/@/utils/other.ts';
  * @props formList 传入筛选列表
  * @props ifClose 操作弹窗
  * @props exportBarCode 导出条形码  --- new po单特有
+ * @props site 接口添加站点  --- new po单特有
  */
 declare type formListType<T = any> = {
 	label: String;
@@ -102,7 +108,7 @@ declare type formListType<T = any> = {
 	select?: Boolean;
 	options?: [T];
 }[];
-const props = defineProps(['id', 'weeks', 'idName', 'pointerface', 'dataList', 'formList', 'ifClose', 'exportBarCode']);
+const props = defineProps(['id', 'weeks', 'idName', 'pointerface', 'dataList', 'formList', 'ifClose', 'exportBarCode','site']);
 const loading = ref(false);
 const exportLoading = ref(false);
 const timer = ref(null);
@@ -123,6 +129,9 @@ const handleQuery = async () => {
 	loading.value = true;
 	if (props.idName === 'BatchId') {
 		queryParams.value.TimeQuantum = props.weeks;
+	}
+	if(props.exportBarCode){
+		queryParams.value.site = props.site;
 	}
 	queryParams.value.checkbox = false;
 	var res = await props.pointerface(Object.assign(queryParams.value, tableParams.value));
@@ -169,6 +178,7 @@ const inquireData = (fileName: String) => {
 			window.open(res.data.result, '_blank');
 			exportLoading.value = false;
 			ElMessage.success('Export Success!');
+			handleQuery()
 		}
 	});
 };
@@ -206,7 +216,9 @@ watch(
 	() => {
 		if (props.ifClose) {
 			queryParams.value = {};
-			handleQuery();
+			exportLoading.value = false
+		}else{
+			if(props.exportBarCode)return clearTimeout(timer.value);
 		}
 	}
 );

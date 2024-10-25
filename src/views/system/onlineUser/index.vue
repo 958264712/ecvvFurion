@@ -53,6 +53,7 @@
 import { onMounted, reactive } from 'vue';
 import { ElMessageBox, ElNotification } from 'element-plus';
 import { throttle } from 'lodash-es';
+import { Local } from '/@/utils/storage';
 
 import { getAPI, clearAccessTokens } from '/@/utils/axios-utils';
 import { SysOnlineUserApi, SysAuthApi } from '/@/api-services/api';
@@ -80,35 +81,40 @@ const state = reactive({
 });
 
 onMounted(async () => {
-	// 在线用户列表
-	signalR.off('OnlineUserList');
-	signalR.on('OnlineUserList', (data: any) => {
-		state.onlineUserList = data.userList;
+	// PO下载文件提示
+	signalR.off('ReceiveMessage');
+	signalR.on('ReceiveMessage', (data: any) => {
 		state.lastUserState = {
-			online: data.online,
-			realName: data.realName,
+			message: data.message,
+			messageType: data.messageType,
+			title:data.title
 		};
-		// notificationThrottle();
+		if(data.title === '连接ID'){
+			Local.set('poReceiveId',data.message)
+		}else if(data.connectionId === Local.get('connectionId')){
+			notificationThrottle();
+		}
 	});
 	// 强制下线
-	signalR.off('ForceOffline');
-	signalR.on('ForceOffline', async (data: any) => {
-		console.log('强制下线', data);
-		await signalR.stop();
+	// signalR.off('ForceOffline');
+	// signalR.on('ForceOffline', async (data: any) => {
+	// 	console.log('强制下线', data);
+	// 	await signalR.stop();
 
-		await getAPI(SysAuthApi).apiSysAuthLogoutPost();
-		clearAccessTokens();
-	});
+	// 	await getAPI(SysAuthApi).apiSysAuthLogoutPost();
+	// 	clearAccessTokens();
+	// });
 });
 
 // 通知提示节流
 const notificationThrottle = throttle(
 	function () {
 		ElNotification({
-			title: '提示',
-			message: `${state.lastUserState.online ? `【${state.lastUserState.realName}】上线了` : `【${state.lastUserState.realName}】离开了`}`,
-			type: `${state.lastUserState.online ? 'info' : 'error'}`,
+			title: state.lastUserState.title,
+			message: state.lastUserState.message,
+			type: `${state.lastUserState.messageType === 0 ? 'info' :state.lastUserState.messageType === 1 ? 'success' :state.lastUserState.messageType === 2 ? 'warn' :'error'}`,
 			position: 'bottom-right',
+			duration:0,
 		});
 	},
 	3000,

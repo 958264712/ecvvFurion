@@ -24,13 +24,41 @@ enum Api {
 	getBarCode = '/api/newPoData/getBarCode',
 	exportNewPoData = '/api/newPoData/exportNewPoData',
 	upLoadNewPoData = '/api/newPoData/upLoadNewPoData',
+	upLoadNewPoDataDownBarCode = '/api/newPoData/upLoadNewPoDataDownBarCode',
 	newUpdate = '/api/newPoData/update',
 	newMultipleExportByTemplate = '/api/newPoData/multipleExportByTemplate',
 	newMultipleExportByTemplateListBin = '/api/newPoData/multipleExportByTemplate2',
 	newDownLoadPOZip = '/api/newPoData/downLoadPOZip',
 	downLoadPODataTemplate = '/api/newPoData/downLoadPODataTemplate',
 	getNewPoDataExportHistory = '/api/newPoData/getNewPoDataExportHistory',
+	exprotShipmentConfrmationPage = '/api/exprotShipmentConfrmation/page',
+	exprotShipmentConfrmationDeliveryList = '/api/exprotShipmentConfrmation/exportDeliveryList',
 }
+// 根据导入的NewPoData，导出条形码
+export const upLoadNewPoDataDownBarCode = (params?: any,checkbox?:boolean) =>
+	request({
+		url: Api.upLoadNewPoDataDownBarCode+'/'+checkbox,
+		method: 'post',
+		data: params,
+		headers: {
+			'Content-Type': 'multipart/form-data; boundary=----WebKitFormBoundarynl6gT1BKdPWIejNq',
+		},
+	});
+// 导出出货清单列表
+export const exprotShipmentConfrmationDeliveryList = (params?: any) =>
+	request({
+		url: Api.exprotShipmentConfrmationDeliveryList,
+		method: 'post',
+		data: params,
+		responseType:'blob'
+	});
+// 获取导出发货确认单
+export const exprotShipmentConfrmationPage = (params?: any) =>
+	request({
+		url: Api.exprotShipmentConfrmationPage,
+		method: 'post',
+		data: params,
+	});
 // 获取导出历史记录
 export const getNewPoDataExportHistory = (params?: any) =>
 	request({

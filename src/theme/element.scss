@@ -305,7 +305,13 @@
 .el-dialog__headerbtn:hover .el-dialog__close{
 	color: var(--el-color-danger) !important;
 }
-
+/* Upload 上传
+------------------------------- */
+.el-upload-dragger,.is-dragover{
+	padding: 0 !important;
+	border: none !important;
+	background-color: #fff !important;
+}
 /* Card 卡片
 ------------------------------- */
 .el-card__header {

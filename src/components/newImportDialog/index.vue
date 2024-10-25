@@ -1,8 +1,9 @@
 ﻿<template>
 	<div class="tableImport-container">
-		<el-dialog v-model="isShowDialog" title="导入" :width="800" @close="closeDialog(ruleFormRef)" draggable="" center>
+		<el-dialog v-model="isShowDialog" :title="props.title" :width="800" @close="closeDialog(ruleFormRef)" draggable="" center>
 			<div class="import" v-if="isShowImport">
-				<p>1、下载导入模版，如已有下载模版可直接在第二步选择文件上传</p>
+				<p v-if="props.area === 'CN'">1、下载导入模版，如已有下载模版可直接在第二步选择文件上传</p>
+				<p v-else>1、Download the import template, if there is a download template, you can directly select the file upload in the second step</p>
 				<div class="moban">
 					<div style="display: flex; align-items: center">
 						<svg t="1709867915105" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2468" width="64" height="64">
@@ -17,14 +18,21 @@
 								fill="#707070"
 							></path>
 						</svg>
-						<span>{{ props.excelName }}模版</span>
+						<span v-if="props.area === 'CN'">{{ props.excelName }}模版</span>
+						<span v-else>{{ props.excelName }}Template</span>
 					</div>
-					<el-button><el-link type="success" :href="props.tableAddress">下载</el-link></el-button>
+					<el-button v-if="props.area === 'CN'"><el-link type="success" :href="props.tableAddress">下载</el-link></el-button>
+					<el-button v-else><el-link type="success" :href="props.tableAddress">Download</el-link></el-button>
 				</div>
 			</div>
 			<div class="import" v-if="isShowImport">
-				<p>2、上传需要导入表格</p>
-				<el-upload :on-change="Imports" :multiple="false" :show-file-list="false" :auto-upload="false" name="file">
+				<div style="display: flex" v-if="props.area === 'CN'">
+					<p>2、上传需要导入表格<strong v-if="props.multiple">（导入成功后，将覆盖原有数据，支持批量导入）</strong></p>
+				</div>
+				<div style="display: flex" v-else>
+					<p>2、Upload requires importing the table<strong v-if="props.multiple">（After the import is successful, the original data will be overwritten and can be imported in batches）</strong></p>
+				</div>
+				<el-upload :on-change="Imports" :multiple="props.multiple" drag :show-file-list="false" :auto-upload="false" name="file">
 					<div class="moban1">
 						<svg t="1709867915105" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2468" width="128" height="128">
 							<path
@@ -38,33 +46,36 @@
 								fill="#707070"
 							></path>
 						</svg>
-						<span>支持.xls、.xlsx文件类型</span>
-						<el-button>选择文件</el-button>
+						<span v-if="props.area === 'CN'">支持.xls、.xlsx文件类型</span>
+						<span v-else>.xls and .xlsx files are supported</span>
+						<el-button v-if="props.area === 'CN'">选择文件</el-button>
+						<el-button v-else>Select file</el-button>
 					</div>
 				</el-upload>
 			</div>
 			<div v-if="!isShowImport">
 				<div v-if="result?.istrue && result?.total !== 0">
 					<Check class="success" style="border: 2px solid #62e48d; border-radius: 50%; width: 18px" />
-					导入成功，总<span class="success">{{ result?.total }}</span
-					>条，成功导入<span class="success"> {{ result?.total }}</span
-					>条数据，失败<span class="fail">0</span>条
+					{{ props.area === 'CN' ? '导入成功，总' : 'Import successed, Total' }}<span class="success">{{ result?.total }}</span
+					>{{ props.area === 'CN' ? '条，成功导入' : 'article, Successfully imported' }}<span class="success"> {{ result?.total }}</span
+					>{{ props.area === 'CN' ? '条数据，失败' : 'rows data, Failed'}}<span class="fail">0</span>{{ props.area === 'CN' ? '条' : 'rows'}}
 				</div>
 				<div v-else-if="result?.istrue && result?.total === 0">
 					<CloseBold class="fail" style="border: 2px solid #f44d4d; border-radius: 50%; width: 18px" />
-					导入失败，表格为空
+					{{ props.area === 'CN' ? '导入失败，表格为空' : 'The table is empty because the import failed' }}
 				</div>
 				<div v-else>
 					<CloseBold class="fail" style="border: 2px solid #f44d4d; border-radius: 50%; width: 18px; margin-right: 5px" />
 					<template v-if="result.isTemplate">{{ result?.error }}</template>
 					<template v-else>
-						导入失败，总<span class="success">{{ result?.total }}</span
-						>条，成功导入<span class="success">0</span> 条数据，失败<span class="fail">{{ result?.fail }}</span
-						>条，可下载错误报告，修改后再次上传
+						{{ props.area === 'CN' ? '导入失败，总' : 'Import failed, Total' }}<span class="success">{{ result?.total }}</span
+						>{{ props.area === 'CN' ? '条，成功导入' : 'article, Successfully imported' }}<span class="success">0</span> {{ props.area === 'CN' ? '条数据，失败' : 'rows data, Failed'
+						}}<span class="fail">{{ result?.fail }}</span
+						>{{ props.area === 'CN' ? '条，可下载错误报告，修改后再次上传' : 'article, You can download the error report, modify it and upload it again' }}
 						<el-table :data="result?.items" size="lagre" style="width: 100%; margin: 20px 0" v-loading="loading1" tooltip-effect="light" row-key="id" border="">
-							<el-table-column prop="rowNO" label="行数" width="80" sortable align="center" show-overflow-tooltip="" />
+							<el-table-column prop="rowNO" :label="props.area === 'CN' ? '行数' : 'Line Number'" width="80" sortable align="center" show-overflow-tooltip="" />
 							<el-table-column v-for="item in errorData" :prop="item.prop" :label="item.label" min-width="150" sortable align="center" show-overflow-tooltip="" />
-							<el-table-column prop="errorInfo" label="失败原因" min-width="150" sortable align="center" show-overflow-tooltip="">
+							<el-table-column prop="errorInfo" :label="props.area === 'CN' ? '失败原因' : 'Cause of failure'" min-width="150" sortable align="center" show-overflow-tooltip="">
 								<template #default="scope">
 									<span class="fail">{{ scope.row.errorInfo }}</span>
 								</template>
@@ -106,12 +117,18 @@ import other from '/@/utils/other';
  * @props ifExcelBol 是否进行格式约束
  * @props exportUrl 导出接口链接
  * @props errorData 报错字段表格
+ * @props multiple 是否导入多个文件
+ * @props madeChina 是否加入madechina条形码
  * @emit close 关闭窗口
  * @emit reloadTable 调用外部接口刷新数据列表
  */
 
 //父级传递来的参数
 var props = defineProps({
+	title: {
+		type: String,
+		default: '导入',
+	},
 	excelName: {
 		type: String,
 		default: '',
@@ -140,6 +157,10 @@ var props = defineProps({
 		type: Array,
 		default: [],
 	},
+	multiple: {
+		type: Boolean,
+		dafault: false,
+	},
 });
 //父级传递来的函数，用于回调
 const emit = defineEmits(['reloadTable']);
@@ -156,9 +177,9 @@ const tableParams = ref({
 	total: 0,
 });
 const beforeUpload = (rawFile: any) => {
-	const isXLSX =  rawFile.raw.type ==='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || rawFile.raw.type === 'application/vnd.ms-excel'
+	const isXLSX = rawFile.raw.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || rawFile.raw.type === 'application/vnd.ms-excel';
 	if (!isXLSX) {
-		ElMessage.error('导入的文件类型不符，请选择.xls、.xlsx文件类型再次上传');
+		ElMessage.error(props.area === 'CN' ? '导入的文件类型不符，请选择.xls、.xlsx文件类型再次上传' : 'The type of the imported file does not match that of the imported file. Select .xls or .xlsx');
 		return false;
 	}
 	return true;
@@ -168,8 +189,7 @@ const beforeUpload = (rawFile: any) => {
 const Imports = (file: any) => {
 	loading.value = true;
 	const ifupload = props.ifExcelBol ? beforeUpload(file) : true;
-	console.log(ifupload);
-	
+
 	if (ifupload) {
 		const formData = new FormData();
 		formData.append('file', file.raw);
@@ -183,16 +203,25 @@ const Imports = (file: any) => {
 			},
 		}).then((res: any) => {
 			loading.value = false;
-			isShowImport.value = false;
-			if (res.data.result.istrue && res.data.result.total !== 0) {
-				result.value = res.data.result;
-				tableParams.value.total = res.data.result.total;
-				ElMessage.success('导入成功');
-				emit('reloadTable');
-			} else {
-				result.value = res.data.result;
-				tableParams.value.total = res.data.result?.total;
-				ElMessage.error('导入失败'); // + res.message
+			if (props.area === 'CN') {
+				isShowImport.value = false;
+				if (res.data.result.istrue && res.data.result.total !== 0) {
+					result.value = res.data.result;
+					tableParams.value.total = res.data.result.total;
+					ElMessage.success(props.area === 'CN' ? '导入成功' : 'Import Successed');
+					emit('reloadTable');
+				} else {
+					result.value = res.data.result;
+					tableParams.value.total = res.data.result?.total;
+					ElMessage.error(props.area === 'CN' ? '导入失败' : 'Import Failed'); // + res.message
+				}
+			}else{
+				if (res.data.result && res.data.code === 200) {
+					ElMessage.success(props.area === 'CN' ? '导入成功' : 'Import Successed');
+					emit('reloadTable');
+				} else {
+					ElMessage.error(props.area === 'CN' ? '导入失败' : 'Import Failed'); // + res.message
+				}
 			}
 		});
 	}
@@ -211,26 +240,26 @@ const exportExcel = () => {
 			other.downloadfile(data);
 			if (data.statusText == 'OK') {
 				ElNotification({
-					title: '系统提示',
-					message: '导出成功',
+					title: props.area === 'CN' ? '系统提示' : 'System prompt',
+					message: props.area === 'CN' ? '导出成功' : 'Export Successed',
 					type: 'success',
 				});
 				ElMessage({
 					type: 'success',
-					message: '导出成功',
+					message: props.area === 'CN' ? '导出成功' : 'Export Successed',
 				});
 			}
 			Exportloading.value = false;
 		})
-		.catch((arr) => {
+		.catch((err) => {
 			ElNotification({
-				title: '系统提示',
-				message: '下载错误：获取文件流错误',
+				title: props.area === 'CN' ? '系统提示' : 'System prompt',
+				message: props.area === 'CN' ? '下载错误：获取文件流错误' : 'Download error: Obtaining file stream error',
 				type: 'error',
 			});
 			ElMessage({
 				type: 'error',
-				message: '导出失败',
+				message: props.area === 'CN' ? '导出失败' : 'Export Failed',
 			});
 			Exportloading.value = false;
 		});
