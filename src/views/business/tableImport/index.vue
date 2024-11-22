@@ -9,7 +9,8 @@
 					<el-button-group>
 						<el-button type="primary" icon="ele-Search" @click="handleQuery" v-auth="'tableImport:page'"> 查询
 						</el-button>
-						<el-button icon="ele-Refresh" @click="() => {queryParams = {};handleQuery()}"> 重置 </el-button>
+						<el-button icon="ele-Refresh" @click="() => { queryParams = {}; handleQuery() }"> 重置
+						</el-button>
 					</el-button-group>
 				</el-form-item>
 				<el-form-item>
@@ -43,7 +44,7 @@
 					v-if="auth('tableImport:edit') || auth('tableImport:delete')">
 					<template #default="scope">
 						<el-button icon="ele-Upload" size="small" text="" type="primary"
-							@click="clickselecturl(scope.row)" > 导入 </el-button>
+							@click="clickselecturl(scope.row)"> 导入 </el-button>
 						<el-button icon="ele-Edit" size="small" text="" type="primary"
 							@click="openEditTableImport(scope.row)" v-auth="'tableImport:edit'"> 编辑 </el-button>
 						<!-- <el-button icon="ele-Delete" size="small" text="" type="primary" @click="delTableImport(scope.row)"
@@ -56,7 +57,8 @@
 				@size-change="handleSizeChange" @current-change="handleCurrentChange"
 				layout="total, sizes, prev, pager, next, jumper" />
 			<editDialog ref="editDialogRef" :title="editTableImportTitle" @reloadTable="handleQuery" />
-			<importDialog ref="importDialogRef" :excelName="excelName" :tableAddress="tableAddress" :url="url" @reloadTable="handleQuery"/>
+			<importDialog ref="importDialogRef" :excelName="excelName" :tableAddress="tableAddress" :url="url"
+				@reloadTable="handleQuery" />
 		</el-card>
 	</div>
 </template>
@@ -147,6 +149,10 @@ enum ImportMethod {
 	AmazonProductPricebase = '/api/amazonProductPricebase/import', //AmazonProductPricebase
 	AmazonProPricebaseSA = '/api/amazonProPricebaseSA/import', //AmazonProPricebaseSA
 	inventoryManagement = '/api/inventoryManagement/Imports/金蝶云采购申请单/UAE',//金蝶云采购申请单
+	inventoryManagementamazonUAE = '/api/inventoryManagement/Imports/amazon-orders-Dropship/UAE',//amazon-orders-Dropship
+	inventoryManagementamazonSA = '/api/inventoryManagement/Imports/amazon-orders-Dropship/SA',//amazon-orders-Dropship
+	inventoryManagementInventoryUAE = '/api/inventoryManagement/Imports/Inventory_Sourcing_Retail/UAE',//Inventory_Sourcing_Retail
+	inventoryManagementInventorySA = '/api/inventoryManagement/Imports/Inventory_Sourcing_Retail/SA',//Inventory_Sourcing_Retail
 }
 
 //根据id判断url
@@ -176,7 +182,14 @@ const switchImportMethod = (id: any) => {
 			return ImportMethod.AmazonProductPricebase;
 		case 16313837384517:
 			return ImportMethod.inventoryManagement;
-
+		case 19099450199493:
+			return ImportMethod.inventoryManagementamazonUAE;
+		case 19099451945285:
+			return ImportMethod.inventoryManagementamazonSA;
+		case 19099456018885:
+			return ImportMethod.inventoryManagementInventoryUAE;
+		case 19099457131333:
+			return ImportMethod.inventoryManagementInventorySA;
 		default:
 			return '';
 	}

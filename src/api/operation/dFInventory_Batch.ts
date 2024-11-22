@@ -5,8 +5,17 @@ enum Api {
 	UpdateDFInventory_Batch = '/api/dFInventory_Batch/update',
 	PageDFInventory_Batch = '/api/dFInventory_Batch/page',
 	Import = '/api/dFInventory_Batch/import/import',
+	ExportQuery = '/api/dFInventory_Batch/export/',
 }
 
+// 增加 DF Inventory导入数据
+export const ExportQuery = (params?: any) =>
+	request({
+		url: Api.ExportQuery + params?.Site,
+		method: 'post',
+		data: params,
+		responseType: 'blob',
+	});
 // 增加 DF Inventory导入数据
 export const addDFInventory_Batch = (params?: any) =>
 	request({

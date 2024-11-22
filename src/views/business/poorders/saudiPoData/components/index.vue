@@ -1,6 +1,6 @@
 ﻿<script lang="ts" setup name="new_saudiPoData">
 import { ref } from 'vue';
-import { ElMessageBox, ElMessage } from 'element-plus';
+import { ElMessage } from 'element-plus';
 import {
 	newSaudiPage,
 	newUpdate,
@@ -10,26 +10,63 @@ import {
 	getNewPoDataExportHistory,
 	newDownLoadPOZip,
 	exportNewPoData,
-	upLoadNewPoData,
-	upLoadNewPoDataDownBarCode,
 } from '/@/api/modular/main/aSINBasicData.ts';
-import PoDataSource from './poDataSource.vue';
 import { service } from '/@/utils/request';
 import infoDataDialog from '/@/components/infoDataDialog/index.vue';
 import importDialog from '/@/components/newImportDialog/index.vue';
+import exportDialog from '/@/components/newPoImportDialog/index.vue';
 import other from '/@/utils/other.ts';
 import moment from 'moment';
+
+interface PoParamsType {
+  orderDate?: string;
+  type?: string;
+  state?: string;
+  type1?: string;
+  po?: string;
+  vendor?: string;
+  shipToLocation?: string;
+  invoicedStatus?: number;
+  time?: any;
+  checkbox?: boolean;
+  orderDateStartTime?: string;
+  orderDateEndTime?: string;
+  contractedWarehouseTimeStartTime?: string;
+  contractedWarehouseTimeEndTime?: string;
+  latestDateStartTime?: string;
+  latestDateEndTime?: string;
+  windowStart?: string;
+  windowEnd?: string;
+  bookTimeStart?: string;
+  bookTimeEnd?: string;
+  actualDateStart?: string;
+  actualDateEnd?: string;
+  descStr?: string;
+  field?: string;
+}
+interface PoRowType {
+  id?: number;
+  po?: string; 
+}
+
 const timer = ref<any>();
 const startTime = ref(0); // 初始开始请求时间
 const loading = ref(false);
-const loading1 = ref(false);
 const ifClose = ref(false);
 const ifClose1 = ref(false);
 const cardLoading = ref(false);
-const downLoading = ref(false); //下载批量修改拣货单
 const tableData = ref<any>([]);
+
+const baseUrl = import.meta.env.VITE_API_URL
+const importDialogRef = ref();
+const exportDialogRef = ref();
+const url = ref('/api/newPoData/upLoadNewPoData');
+const exportUrl = ref('/api/newPoData/upLoadNewPoDataDownBarCode');
+const tableAddress = `${baseUrl}/upload/TableAddress/PO履单系统批量上传模版.xlsx`;
+const exportTableAddress = `https://sa1api.ecvv.com/upload/TableAddress/条码批量.xlsx`;
+
 const queryParams = ref<PoParamsType>({
-	orderDate: 'Creation Date',
+	orderDate: 'CreationDate',
 	type: 'Vendor',
 	state: '全部',
 });
@@ -44,19 +81,13 @@ const visible1 = ref(false); //编辑OrderDate弹窗
 const visible2 = ref(false); //导出历史记录弹窗
 const isImportNewPoData = ref(false);
 const remarkDisabled = ref(true);
-const costpriceBatchId = ref<number>(0);
 const showId = ref<number>(0);
 const remark = ref('');
 const exportAsinBarCode = ref('');
 const disabledList = ref<any>([]);
-const selectedRows = ref([]);
-const selectedRowKeys = ref([]);
+const selectedRows = ref<PoRowType[]>([]);
+const selectedRowKeys = ref<number[]>([]);
 const formList = ref<any>([]);
-
-const baseUrl = import.meta.env.VITE_API_URL;
-const importDialogRef = ref();
-const url = ref('/api/newPoData/upLoadNewPoData');
-const tableAddress = `${baseUrl}/upload/TableAddress/PO履单系统批量上传模版.xlsx`;
 
 const formList1 = ref<any>([
 	{
@@ -281,7 +312,7 @@ const dataList1 = ref<any>([
 		prop: 'asin',
 	},
 	{
-		label: 'Inventory Quantity',
+		label: 'ERPQTY',
 		prop: 'inventoryQuantity',
 	},
 	{
@@ -440,10 +471,8 @@ const close1 = () => {
 	ifClose1.value = false;
 	handleQuery();
 };
-const close = () => {
-	visible.value = false;
-};
-const switchOrder = (key) => {
+
+const switchOrder = (key:string) => {
 	switch (key) {
 		case 'orderDate':
 			queryParams.value.orderDateStartTime = queryParams.value.time?.length ? moment(queryParams.value.time[0]).format() : undefined;
@@ -518,19 +547,19 @@ const handleQuery = async () => {
 	var res = await newSaudiPage(Object.assign(queryParams.value, tableParams.value));
 	tableData.value = res.data.result?.items ?? [];
 	tableParams.value.total = res.data.result?.total;
-	res.data.result?.items.map((item) => {
+	res.data.result?.items.map((item:any) => {
 		disabledList.value.push(item.id);
 	});
 	loading.value = false;
 };
 // 修改状态等内容
-const openEdit = async (id: any, row): void => {
-	if (disabledList.value.some((item) => item === id)) {
-		const index = disabledList.value.findIndex((item) => item === id);
+const openEdit = async (id: any, row:any): Promise<void> => {
+	if (disabledList.value.some((item:any) => item === id)) {
+		const index = disabledList.value.findIndex((item:any) => item === id);
 		disabledList.value.splice(index, 1);
 	} else {
 		if (id > 0) {
-			let obj = {};
+			let obj:any = {};
 			if (row.invoicedStatus >= 0) {
 				obj.invoicedStatus = row.invoicedStatus;
 			}
@@ -563,7 +592,7 @@ const openEdit = async (id: any, row): void => {
 	}
 };
 const disabledAuto = (scope: any): void => {
-	return disabledList.value.some((item) => item === scope.row.id);
+	return disabledList.value.some((item:any) => item === scope.row.id);
 };
 // 排序
 const sortChange = (data: { column: any; prop: string; order: any }) => {
@@ -583,7 +612,7 @@ const handleCurrentChange = (val: number) => {
 	handleQuery();
 };
 // 开始准备轮询
-const multipleExport = (interfaces: any, type: strign) => {
+const multipleExport = (interfaces: any, type: string) => {
 	if (selectedRows.value.length === 0) {
 		ElMessage.warning('Please select at least one PO');
 		return;
@@ -683,29 +712,24 @@ const poListExport = async () => {
 const importNewPoData = () => {
 	importDialogRef.value.openDialog();
 };
-const Imports = async (file: any) => {
-	isImportNewPoData.value = true;
-	const formData = new FormData();
-	formData.append('file', file.raw);
-	await upLoadNewPoDataDownBarCode(formData, queryParams.value.checkbox ? 'true' : 'false').then((res) => {
-		if (res.data.result && res.data.code === 200) {
-			ElMessage.success('Import Successed,Now Downloading ZIP File');
-			exportAsinBarCode.value = res.data.result;
-			startTime.value = new Date().getTime(); // 获取触发轮询时的时间
-			inquireData(false, exportAsinBarCode.value);
-		} else {
-			ElMessage.error('Import Failed');
-		}
-	});
-};
+const exportNewPoDataBtn = () => {
+	exportUrl.value = '/api/newPoData/upLoadNewPoDataDownBarCode/' + (queryParams.value.checkbox ? true :false)
+	exportDialogRef.value.openDialog();
+}
+const returnHref = (str:string) => {
+	startTime.value = new Date().getTime(); // 获取触发轮询时的时间
+	inquireData(false, str);
+}
 
 // 获取keys
-const selectChange = (selection: any) => {
+const selectChange = (selection: PoRowType[]) => {
 	selectedRowKeys.value = [];
 	selectedRows.value = [];
 	selectedRows.value = selection;
-	selection.map((item: any) => {
-		selectedRowKeys.value.push(item?.id);
+	selection.map((item: PoRowType) => {
+		 if (item.id !== undefined) {
+        	selectedRowKeys.value.push(item.id);
+		}
 	});
 };
 
@@ -775,10 +799,8 @@ handleQuery();
 						</el-dropdown-menu>
 					</template>
 				</el-dropdown>
-				<el-button type="primary" @click="importNewPoData" style="margin-right: 10px">import NewPodata</el-button>
-				<el-upload :on-change="Imports" :multiple="false" :show-file-list="false" :auto-upload="false" name="file">
-					<el-button type="primary" :loading="isImportNewPoData" >Export Asin BarCode</el-button>
-				</el-upload>
+				<el-button type="primary" @click="importNewPoData" >import NewPodata</el-button>
+				<el-button type="primary" @click="exportNewPoDataBtn" >Export Asin BarCode</el-button>
 				<el-checkbox value="Made in China" label="Made in China" v-model="queryParams.checkbox" style="margin-left: 10px" />
 			</div>
 			<el-table
@@ -787,7 +809,7 @@ handleQuery();
 				v-loading="loading"
 				tooltip-effect="light"
 				row-key="id"
-				@sort-change="(data) => sortChange(data)"
+				@sort-change="(data:any) => sortChange(data)"
 				size="lagre"
 				border=""
 				@selection-change="(selection: any) => selectChange(selection)"
@@ -806,9 +828,9 @@ handleQuery();
 							</el-select>
 						</template>
 					</el-table-column>
-					<el-table-column v-else-if="item.dataIndex === 'contractedWarehouseTime'" sortable :prop="item.dataIndex" :label="item.titleCN" align="center" width="180">
+					<el-table-column v-else-if="item.dataIndex === 'contractedWarehouseTime'" sortable :prop="item.dataIndex" :label="item.titleCN" align="center" width="190">
 						<template #default="scope">
-							<el-date-picker v-model="scope.row.contractedWarehouseTime" style="width: 96px" format="YYYY-MM-DD" type="date" :disabled="disabledAuto(scope)" />
+							<el-date-picker  v-model="scope.row.contractedWarehouseTime" style="width: 126px;" format="MM/DD/YYYY HH:mm" type="datetime" :disabled="disabledAuto(scope)" />
 						</template>
 					</el-table-column>
 					<el-table-column v-else-if="item.dataIndex === 'actualDate'" :prop="item.dataIndex" sortable :label="item.titleCN" align="center" width="190">
@@ -884,8 +906,8 @@ handleQuery();
 				area="EN"
 				:url="url"
 				@reloadTable="handleQuery"
-				@reuturnHref="reuturnHref"
 			/>
+			<exportDialog ref="exportDialogRef" :inquireData="true"  title="Import PO Export ASIN BarCode" :ifExcelBol="true" :tableAddress="exportTableAddress" area="EN" :url="exportUrl" @reloadTable="handleQuery" @returnHref="returnHref"/>
 		</el-card>
 	</div>
 </template>
@@ -914,5 +936,23 @@ handleQuery();
 	.el-input {
 		width: 100%;
 	}
+	.el-input.is-disabled .el-input__wrapper {
+    background-color: transparent !important;
+    // 如果需要保持文字可见度
+    .el-input__inner {
+      -webkit-text-fill-color: inherit;
+      color: inherit;
+    }
+  }
+}
+// 添加以下样式来处理日期选择器的禁用状态
+:deep(.el-date-editor.is-disabled) {
+  .el-input__wrapper {
+    background-color: transparent !important;
+    .el-input__inner {
+      -webkit-text-fill-color: inherit;
+      color: inherit;
+    }
+  }
 }
 </style>

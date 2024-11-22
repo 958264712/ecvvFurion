@@ -10,8 +10,7 @@ import importDialog from '/@/components/newPoImportDialog/index.vue';
 const loading = ref(false);
 const tableData = ref<any>([]);
 const selectedRowKeys = ref<any>([]);
-const selectedRows = ref<any>([]);
-const queryParams = ref<PoParamsType>({ orderDate: 'Export Time' });
+const queryParams = ref<any>({ orderDate: 'Export Time' });
 const tableParams = ref({
 	page: 1,
 	pageSize: 10,
@@ -56,7 +55,7 @@ const handleQuery = async () => {
 	tableParams.value.total = res.data.result?.total;
 	loading.value = false;
 };
-const importNewPoData = (file: any) => {
+const importNewPoData = () => {
 	url.value = `/api/newPoData/impoertPickingList/${Local.get('poReceiveId')}`;
 	Local.set('connectionId', Local.get('poReceiveId'));
 	importDialogRef.value.openDialog();
@@ -64,7 +63,7 @@ const importNewPoData = (file: any) => {
 // 导出出货清单列表
 const exportDeliverList = async (id = undefined) => {
 	let idList = [];
-	if (id > 0) {
+	if (id !== undefined) {
 		idList.push(id);
 	} else {
 		idList = selectedRowKeys.value;

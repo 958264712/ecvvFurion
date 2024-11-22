@@ -5,18 +5,18 @@ import { QuestionFilled } from '@element-plus/icons-vue';
 import tabDragColum from '/@/components/tabDragColum/index.vue';
 import moment from 'moment';
 import other from '/@/utils/other.ts';
-const tableData: any[] = ref([]);
+const tableData = ref<any>([]);
 const queryParams = ref<any>({});
-const tableParams = ref({
+const tableParams = ref<any>({
 	page: 1,
 	pageSize: 50,
 });
 const cardLoading = ref(false);
 const loading = ref(false);
 const area = ref('CN');
-const selectedRows = ref([]);
-const selectedRowKeys = ref([]);
-const deliveryNoteNotes = ref([])
+const selectedRows = ref<any>([]);
+const selectedRowKeys = ref<any>([]);
+const deliveryNoteNotes = ref<any>([])
 const warehouse = ref<any>([
 	{ value: 'EG Warehouse X1', lable: 'EG Warehouse X1' },
 	{ value: '埃及不良品仓', lable: '埃及不良品仓' },
@@ -143,7 +143,7 @@ const TableData = ref<any>([
 
 const handleData = (list: any) => {
 	if (list?.length) {
-		list.map((item, index) => {
+		list.map((item: any, index: number) => {
 			if (item.dataIndex === TableData.value[index].dataIndex) {
 				TableData.value[index].checked = item.checked;
 				TableData.value[index].fixed = item.fixed;
@@ -153,7 +153,7 @@ const handleData = (list: any) => {
 };
 const handleRemarkData = (list: any) => {
 	if (list?.length) {
-		list.map((item, index) => {
+		list.map((item: any, index: number) => {
 			if (item.dataIndex === TableData.value[index].dataIndex) {
 				TableData.value[index].desc = item.desc;
 				TableData.value[index].remark = item.remark;
@@ -163,7 +163,7 @@ const handleRemarkData = (list: any) => {
 };
 
 // 查询
-const handleQuery = async (): void => {
+const handleQuery = async (): Promise<void> => {
 	loading.value = true;
 	queryParams.value.startEntryAndExitTime = queryParams.value.OrderPlaceDates ? moment(queryParams.value.OrderPlaceDates[0]).format('YYYY-MM-DD') : undefined;
 	queryParams.value.endEntryAndExitTime = queryParams.value.OrderPlaceDates ? moment(queryParams.value.OrderPlaceDates[1]).format('YYYY-MM-DD') : undefined;
@@ -191,6 +191,7 @@ const handleCurrentChange = (val: number): void => {
 const selectChange = (selection: any) => {
 	selectedRowKeys.value = [];
 	selectedRows.value = [];
+	deliveryNoteNotes.value = [];
 	selectedRows.value = selection;
 	selection.map((item: any) => {
 		selectedRowKeys.value.push(item.id);
@@ -199,7 +200,7 @@ const selectChange = (selection: any) => {
 };
 const SelectedExport = async () => {
 	cardLoading.value = true;
-	await inventoryQueryExport(Object.assign({ type: 1, ids: selectedRowKeys.value,deliveryNoteNotes:deliveryNoteNotes.value }, queryParams.value)).then((res) => {
+	await inventoryQueryExport(Object.assign({ type: 1, ids: selectedRowKeys.value, deliveryNoteNotes: deliveryNoteNotes.value }, queryParams.value)).then((res) => {
 		cardLoading.value = false;
 		other.downloadfile(res);
 	});
@@ -218,7 +219,8 @@ const AllExport = async () => {
 		<el-card shadow="hover" :body-style="{ paddingBottom: '0' }">
 			<el-form :model="queryParams" :inline="true">
 				<el-form-item label="出入库时间">
-					<el-date-picker style="width: 250px" start-placeholder=" 开始时间" end-placeholder="结束时间" type="daterange" v-model="queryParams.OrderPlaceDates" format="YYYY-MM-DD" />
+					<el-date-picker style="width: 250px" start-placeholder=" 开始时间" end-placeholder="结束时间"
+						type="daterange" v-model="queryParams.OrderPlaceDates" format="YYYY-MM-DD" />
 				</el-form-item>
 				<el-form-item label="所在仓库">
 					<el-select clearable="" v-model="queryParams.warehouse">
@@ -230,17 +232,13 @@ const AllExport = async () => {
 				</el-form-item>
 				<el-form-item>
 					<el-button-group>
-						<el-button type="primary" icon="ele-Search" @click="handleQuery()" style="width: 70px; margin-right: 2px"> 查询 </el-button>
-						<el-button
-							icon="ele-Refresh"
-							@click="
-								() => {
-									queryParams = {};
-									handleQuery();
-								}
-							"
-							style="width: 70px; margin-right: 2px"
-						>
+						<el-button type="primary" icon="ele-Search" @click="handleQuery()"
+							style="width: 70px; margin-right: 2px"> 查询 </el-button>
+						<el-button icon="ele-Refresh" @click="() => {
+								queryParams = {};
+								handleQuery();
+							}
+							" style="width: 70px; margin-right: 2px">
 							重置
 						</el-button>
 					</el-button-group>
@@ -254,19 +252,24 @@ const AllExport = async () => {
 						<el-button type="primary" :loading="cardLoading"> 导出 </el-button>
 						<template #dropdown>
 							<el-dropdown-menu>
-								<el-dropdown-item style="height: 24px" :disabled="selectedRowKeys?.length <= 0" @click="SelectedExport">导出选中 </el-dropdown-item>
+								<el-dropdown-item style="height: 24px" :disabled="selectedRowKeys?.length <= 0"
+									@click="SelectedExport">导出选中 </el-dropdown-item>
 								<el-dropdown-item style="height: 24px" @click="AllExport">导出全部 </el-dropdown-item>
 							</el-dropdown-menu>
 						</template>
 					</el-dropdown>
 				</div>
-				<tabDragColum :data="TableData" :name="`inventory_query`" :area="area" @handleData="handleData" @handleRemarkData="handleRemarkData" />
+				<tabDragColum :data="TableData" :tagInfo="true" :name="`inventory_query`" :area="area" @handleData="handleData"
+					@handleRemarkData="handleRemarkData" />
 			</div>
-			<el-table :data="tableData" size="large" style="width: 100%" @selection-change="(selection: any) => selectChange(selection)" v-loading="loading" tooltip-effect="light">
+			<el-table :data="tableData" size="large" style="width: 100%"
+				@selection-change="(selection: any) => selectChange(selection)" v-loading="loading"
+				tooltip-effect="light">
 				<el-table-column type="selection" width="55" />
 				<el-table-column type="index" label="序号" width="65" />
 				<template v-for="(item, index) in TableData" :key="index">
-					<el-table-column :fixed="item.fixed" :prop="item.dataIndex" show-overflow-tooltip :label="area == 'CN' ? item.titleCN : item.titleEN" align="center" min-width="150">
+					<el-table-column :fixed="item.fixed" :prop="item.dataIndex" show-overflow-tooltip
+						:label="area == 'CN' ? item.titleCN : item.titleEN" align="center" min-width="150">
 						<template #header>
 							<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
 								<div style="display: flex; align-items: center; justify-content: center">
@@ -282,17 +285,10 @@ const AllExport = async () => {
 					</el-table-column>
 				</template>
 			</el-table>
-			<el-pagination
-				v-model:currentPage="tableParams.page"
-				v-model:page-size="tableParams.pageSize"
-				:total="tableParams.total"
-				:page-sizes="[50, 100, 500, 1000]"
-				small=""
-				background=""
-				@size-change="handleSizeChange"
-				@current-change="handleCurrentChange"
-				layout="total, sizes, prev, pager, next, jumper"
-			/>
+			<el-pagination v-model:currentPage="tableParams.page" v-model:page-size="tableParams.pageSize"
+				:total="tableParams.total" :page-sizes="[50, 100, 500, 1000]" small="" background=""
+				@size-change="handleSizeChange" @current-change="handleCurrentChange"
+				layout="total, sizes, prev, pager, next, jumper" />
 		</el-card>
 	</div>
 </template>
@@ -300,6 +296,7 @@ const AllExport = async () => {
 :deep(.el-tag--dark) {
 	--el-tag-border-color: none;
 }
+
 :deep(.el-textarea__inner) {
 	box-shadow: initial;
 	margin: 0;

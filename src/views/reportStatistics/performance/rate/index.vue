@@ -1,15 +1,10 @@
 <script lang="ts" setup name="performance_rate">
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import { ratePage } from '/@/api/modular/main/performance.ts';
-import { service } from '/@/utils/request';
 import editDialog from './component/editDialog.vue'
 import tabDragColum from '/@/components/tabDragColum/index.vue';
-import { auth } from '/@/utils/authFunction';
-import { getAPI } from '/@/utils/axios-utils';
-import { SysAuthApi } from '/@/api-services/api';
 
 const loading = ref(false);
-const visible = ref(false);
 const tableData = ref<any>([]);
 const yearList = ref<any>([
 	{ label: '全部', value: null },
@@ -46,7 +41,7 @@ const editDialogRef = ref();
 const editCollectionOrderInfoTitle = ref('');
 const area = ref('CN');
 
-const tableParams = ref({
+const tableParams = ref<any>({
 	page: 1,
 	pageSize: 20,
 });

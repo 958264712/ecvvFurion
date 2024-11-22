@@ -7,7 +7,6 @@ import tabDragColum from '/@/components/tabDragColum/index.vue';
 import { auth } from '/@/utils/authFunction';
 
 const loading = ref(false);
-const visible = ref(false);
 const tableData = ref<any>([]);
 const stateList = ref<any>([
 	{ label: '全部', value: null },
@@ -21,7 +20,7 @@ const editDialogRef = ref();
 const editCollectionOrderInfoTitle = ref('');
 const area = ref('CN');
 
-const tableParams = ref({
+const tableParams = ref<any>({
 	page: 1,
 	pageSize: 20,
 });
@@ -139,7 +138,7 @@ const reset = () => {
 const getSiteWareHouseName = async () => {
 	await getSitesWareHouse().then((res) => {
 		if (res.data.type === 'success') {
-			res.data.result?.map((item) => {
+			res.data.result?.map((item: any) => {
 				let obj = { label: item, value: item };
 				siteList.value.push(obj);
 				siteItemList.value.push(obj);

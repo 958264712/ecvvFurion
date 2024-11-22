@@ -3,13 +3,21 @@ import { ref } from 'vue';
 import { Setting } from '@element-plus/icons-vue';
 import draggable from 'vuedraggable';
 import { service } from '/@/utils/request';
-import { auth } from '/@/utils/authFunction';
 import { getAPI } from '/@/utils/axios-utils';
 import { SysAuthApi } from '/@/api-services/api';
 import { ElMessage } from 'element-plus';
 import { getInterestRate } from '/@/api/modular/main/uAE_ProcurementDetails.ts';
-
-const props = defineProps(['data', 'name', 'area', 'handleData','handleRemarkData']);
+/**
+ * 列设置组件 搭配draggable使用
+ * tabDragColum 配套参数
+ * @props data 传入列名以及参数 需要包含dataIndex,titleEN,titleCN,checked，fixed
+ * @props name 传入接口独自name区分data内容
+ * @props area 传入地区CN-EN
+ * @props tagInfo 传入判断是否应用列提示设置 搭配列中#header使用
+ * @emit handleData 调用外部接口获取后台存的顺序以及内容
+ * @emit handleRemarkData 调用外部接口获取后台存的列提示信息
+ */
+const props = defineProps(['data', 'name', 'area','tagInfo', 'handleData','handleRemarkData']);
 const emit = defineEmits(['handleData','handleRemarkData']);
 const checkOrderAll = ref<any>(true);
 const BaoguanShows = ref<any>(false);
@@ -38,7 +46,7 @@ const CollectionOrder = () => {
 		},
 	});
 };
-const CollectionOrderOnChange = (item, type) => {
+const CollectionOrderOnChange = (item: any, type: any) => {
 	checkOrderAll.value = !props.data.some((elemant: any) => {
 		if (type === 1) {
 			elemant.checked == false;
@@ -79,7 +87,7 @@ const CollectionOrderUpdate = (e: any) => {
 	});
 };
 
-const openSetModel = (item) => {
+const openSetModel = (item: any) => {
 	centerDialogVisible.value = true
 	// disabled.value = true
 	desc.value = item.desc?.replaceAll('<br/>','\n')
@@ -89,7 +97,7 @@ const openSetModel = (item) => {
 const apply = () => {
 	// disabled.value = !disabled.value
 	// if(disabled.value){
-		props.data?.map(item=>{
+		props.data?.map((item: any) => {
 			if( item.dataIndex === name.value ){
 				item.desc = desc.value.replaceAll('\n','<br/>')
 			}
@@ -119,11 +127,15 @@ const handleAuth = async () => {
 		page: 1,
 		pageSize: 1,
 	};
-	var result = await getAPI(SysAuthApi).apiSysAuthUserInfoGet();
-	var res = await getInterestRate(param).then((res) => {
+	const result = await getAPI(SysAuthApi).apiSysAuthUserInfoGet();
+	await getInterestRate(param).then((res: any) => {
 		if (res.data.type === 'success') {
-			if (res.data.result.items[0].value === result.data.result.account) {
-				ifSuper.value = true;
+			if (res.data.result?.items[0]?.value === result.data.result?.account) {
+				if (props?.tagInfo) {
+					ifSuper.value = true;
+				} else {
+					ifSuper.value = false;
+				}
 			} 
 		}
 	});

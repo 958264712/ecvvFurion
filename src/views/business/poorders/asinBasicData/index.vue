@@ -97,7 +97,7 @@ const switchLanguage = () => {
 
 const handleData = (list: any) => {
 	if (list?.length) {
-		list.map((item, index) => {
+		list.map((item: any, index: number) => {
 			if (item.dataIndex === TableData.value[index].dataIndex) {
 				TableData.value[index].checked = item.checked;
 				TableData.value[index].fixed = item.fixed;
@@ -107,7 +107,7 @@ const handleData = (list: any) => {
 };
 const handleRemarkData = (list: any) => {
 	if (list?.length) {
-		list.map((item, index) => {
+		list.map((item: any, index: number) => {
 			if (item.dataIndex === TableData.value[index].dataIndex) {
 				TableData.value[index].desc = item.desc;
 				TableData.value[index].remark = item.remark;
@@ -241,10 +241,10 @@ const delASINBasicData = (row: any) => {
 		.then(async () => {
 			if (row.id != null) {
 				await deleteASINBasicData(row);
-				tableData.value = tableData.value.filter((i) => i !== row);
+				tableData.value = tableData.value.filter((i: any) => i !== row);
 				ElMessage.success('删除成功');
 			} else {
-				tableData.value = tableData.value.filter((i) => i !== row);
+				tableData.value = tableData.value.filter((i: any) => i !== row);
 				IsEdit.value = false;
 			}
 		})

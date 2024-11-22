@@ -1,15 +1,14 @@
 <script lang="ts" setup name="shippingDetails">
 import { ref, onMounted, reactive } from 'vue';
-import { ElMessageBox, ElMessage, ElNotification } from 'element-plus';
 import { getShipmentDetails, ExportShipmentDetails } from '/@/api/modular/main/collections.ts';
 import other from '/@/utils/other.ts';
 import moment from 'moment';
-import { SysCodeGenConfigApi, SysConstApi, SysDictDataApi, SysDictTypeApi, SysEnumApi } from '/@/api-services/api';
+import { SysDictDataApi } from '/@/api-services/api';
 import { getAPI } from '/@/utils/axios-utils';
 import tabDragColum from '/@/components/tabDragColum/index.vue'
 
 const tagoptions = ref<any>([]);
-const tableData: any[] = ref([]);
+const tableData = ref<any>([]);
 const destinationList = ref<any>([]);
 const queryParams = reactive<any>({
 	destination: '迪拜',
@@ -17,15 +16,15 @@ const queryParams = reactive<any>({
 	startTime_departureDate: '',
 	endTime_departureDate: '',
 });
-const tableParams = ref({
+const tableParams = ref<any>({
 	page: 1,
 	pageSize: 50,
 	total: 0,
 });
 const cardLoading = ref(false);
 const loading = ref(false);
-const selectedRows = ref([]);
-const selectedRowKeys = ref([]);
+const selectedRows = ref<any>([]);
+const selectedRowKeys = ref<number[]>([]);
 const area = ref('CN')
 const TableData = ref<any>([
 	{
@@ -35,8 +34,8 @@ const TableData = ref<any>([
 		fixed: false,
 	},
 	{
-		titleCN: '单据编号',
-		dataIndex: 'documentNo',
+		titleCN: '货代入仓号',
+		dataIndex: 'inWareHouseNo',
 		checked: true,
 		fixed: false,
 	},
@@ -121,6 +120,18 @@ const TableData = ref<any>([
 	{
 		titleCN: '总箱数(共多少箱)',
 		dataIndex: 'packBoxesQuantity',
+		checked: true,
+		fixed: false,
+	},
+	{
+		titleCN: '实收箱数',
+		dataIndex: 'actualBoxesQuantity',
+		checked: true,
+		fixed: false,
+	},
+	{
+		titleCN: '实收数量',
+		dataIndex: 'actualQuantityInBoxes',
 		checked: true,
 		fixed: false,
 	},
@@ -301,7 +312,7 @@ const handleData = (list: any) => {
 	}
 }
 // 查询
-const getAppPage = async (): void => {
+const getAppPage = async (): Promise<void> => {
 	loading.value = true;
 	var res = await getAPI(SysDictDataApi).apiSysDictDataDataListCodeGet('warn_tag');
 	tagoptions.value = res.data.result;
@@ -332,8 +343,8 @@ const resetfun = (): void => {
 	getAppPage();
 };
 //判断标签是否存在于集合中
-function IsTag(tag: any) {
-	const element = tagoptions.value.find(item => item.value === tag);
+function IsTag(tag: any): string {
+	const element = tagoptions.value.find((item:any) => item.value === tag);
 	if (element) {
 		return element.code;
 	}
@@ -357,7 +368,7 @@ const handleCurrentChange = (val: number): void => {
 	getAppPage();
 };
 //排序
-const handleSort = (v: any) => {
+const handleSort = (v: any): void => {
 	tableParams.value.order = v.order;
 	tableParams.value.field = v.prop;
 	getAppPage();
@@ -367,12 +378,12 @@ const selectChange = (selection: any) => {
 	selectedRowKeys.value = [];
 	selectedRows.value = [];
 	selectedRows.value = selection;
-	selection.map((item: any) => {
+	selection.map((item: { id: any; }) => {
 		selectedRowKeys.value.push(item.id);
 	});
 };
 // 导出选中
-const SelectedExport = async (coltype) => {
+const SelectedExport = async (coltype:number): Promise<void> => {
 	cardLoading.value = true;
 	await ExportShipmentDetails(Object.assign({ type: 0, coltype: coltype, idList: selectedRowKeys.value, destination: queryParams.destination })).then((res) => {
 		cardLoading.value = false;
@@ -382,7 +393,7 @@ const SelectedExport = async (coltype) => {
 	});
 };
 // 导出所有
-const AllExport = async (coltype) => {
+const AllExport = async (coltype:number): Promise<void> => {
 	cardLoading.value = true;
 	await ExportShipmentDetails(Object.assign({ type: 1, queryParams, coltype: coltype }, queryParams, tableParams.value)).then((res) => {
 		cardLoading.value = false;
@@ -391,7 +402,7 @@ const AllExport = async (coltype) => {
 	});
 };
 //底色
-function customCellStyle({ row, column, rowIndex, columnIndex }) {
+function customCellStyle(row:any, column:any, rowIndex:number, columnIndex:number): any {
 	if (row.warnTag != null && row.warnTag != "") {
 		return { backgroundColor: '#FEF0F0' };
 	}
@@ -426,6 +437,7 @@ function customCellStyle({ row, column, rowIndex, columnIndex }) {
 						<el-option label="集货" value="集货" />
 						<el-option label="截仓" value="截仓" />
 						<el-option label="在途中" value="在途中" />
+						<el-option label="部分入仓" value="部分入仓" />
 						<el-option label="已入仓" value="已入仓" />
 					</el-select>
 				</el-form-item>
@@ -493,7 +505,7 @@ function customCellStyle({ row, column, rowIndex, columnIndex }) {
 			</el-form>
 		</el-card>
 		<el-card class="full-table" shadow="hover" style="margin-top: 8px">
-			<tabDragColum :data="TableData" :name="`shippingDetailsData`" :area="area" @handleData="handleData" />
+			<tabDragColum :data="TableData" :name="`shippingDetailData`" :area="area" @handleData="handleData" />
 			<el-table :data="tableData" size="large" style="width: 100%" :cell-style="customCellStyle"
 				@selection-change="(selection: any) => selectChange(selection)" v-loading="loading"
 				tooltip-effect="light" @sort-change="handleSort">
@@ -503,7 +515,7 @@ function customCellStyle({ row, column, rowIndex, columnIndex }) {
 						:prop="item.dataIndex" :label="area == 'CN' ? item.titleCN : item.titleEN" align="center"
 						width="120">
 						<template #default="scope">
-							<div v-for="(i, index) in scope.row.warnTag" :key="ind">
+							<div v-for="(i, index) in scope.row.warnTag" :key="index">
 								<el-tag class="mx-1" :color="IsTag(i)" :hit="false" effect="dark">{{ i }}</el-tag>
 							</div>
 						</template>

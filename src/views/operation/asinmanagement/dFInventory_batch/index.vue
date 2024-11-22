@@ -29,35 +29,24 @@
 						</el-button>
 					</el-button-group>
 				</el-form-item>
-				<!-- <el-form-item>
-					<el-button type="primary" icon="ele-Plus" @click="openAddDFInventory_Batch" v-auth="'dFInventory_Batch:add'"> 新增 </el-button>
-				</el-form-item> -->
 			</el-form>
 		</el-card>
 		<el-card class="full-table" shadow="hover" style="margin-top: 8px">
-			<el-form-item><el-button @click="opendialog" type="primary"> 导入 </el-button></el-form-item>
-			<el-dialog v-model="dialogFormVisible" title="DFInventoryBatch导入" :width="600" center>
-				<importDialog
-					:type="importType"
-					text="选择站点，点击'确定'后，选择需要导入的文件，将导入该数据"
-					:formList="importFormList"
-					:importsInterface="Import"
-					@close="importClose"
-					@importQuery="importQuery"
-				/>
-			</el-dialog>
+			<div class="flex justify-end">
+				<el-button @click="opendialog" type="primary"> 导入 </el-button>
+				<el-button @click="exportDFInventoryBatch" type="primary"> 导出DF Inventory bulk </el-button>
+			</div>
+
 			<el-table :data="tableData" style="width: 100%" v-loading="loading" tooltip-effect="light" row-key="id" border="">
 				<el-table-column type="index" label="序号" width="55" align="center" />
-				<el-table-column prop="site" label="站点" align="center" />
 				<el-table-column prop="fileName" label="文件名" align="center" width="175" show-overflow-tooltip="" />
 				<el-table-column prop="batchId" label="批次号" align="center" />
+				<el-table-column prop="site" label="站点" align="center" />
 				<el-table-column prop="createTime" label="导入时间 " align="center" />
 				<el-table-column prop="creator" label="操作人 " align="center" />
 				<el-table-column label="操作" width="140" align="center" fixed="right" v-if="auth('dFInventory_Batch:edit') || auth('dFInventory_Batch:delete')">
 					<template #default="scope">
 						<el-button icon="ele-Document" size="small" text="" type="primary" @click="showModal(scope.row.id)"> 详情 </el-button>
-						<!-- <el-button icon="ele-Edit" size="small" text="" type="primary" @click="openEditDFInventory_Batch(scope.row)" v-auth="'dFInventory_Batch:edit'"> 编辑 </el-button>
-						<el-button icon="ele-Delete" size="small" text="" type="primary" @click="delDFInventory_Batch(scope.row)" v-auth="'dFInventory_Batch:delete'"> 删除 </el-button> -->
 					</template>
 				</el-table-column>
 			</el-table>
@@ -78,6 +67,24 @@
 			<InfoDataDialog :id="dFInventoryBatchId" idName="dFInventoryBatchId" :dataList="dataList" :ifClose="ifClose" :pointerface="pageDFInventory" :formList="formList" />
 			<!-- <dFInventory :id="dFInventoryBatchId"></dFInventory> -->
 		</el-dialog>
+		<el-dialog v-model="dialogFormVisible" title="DFInventoryBatch导入" :width="600" center>
+			<importDialog
+				:type="importType"
+				text="选择站点，点击'确定'后，选择需要导入的文件，将导入该数据"
+				:formList="importFormList"
+				:importsInterface="Import"
+				@close="importClose"
+				@importQuery="importQuery"
+			/>
+		</el-dialog>
+		<el-dialog v-model="dialogFormVisible1" title="DFInventoryBulk导出" :width="600" center>
+			<exportDialog
+				text="选择站点，点击'确定'后，将导出相应站点最新ERP库存数据"
+				:formList="importFormList"
+				:exportInterface="ExportQuery"
+				@close="exportClose"
+			/>
+		</el-dialog>
 	</div>
 </template>
 
@@ -89,10 +96,11 @@ import { auth } from '/@/utils/authFunction';
 import editDialog from './component/editDialog.vue';
 import dFInventory from './component/dFInventory.vue';
 import { pageDFInventory } from '/@/api/operation/dFInventory';
-import { pageDFInventory_Batch, deleteDFInventory_Batch, Import } from '/@/api/operation/dFInventory_Batch';
+import { pageDFInventory_Batch, deleteDFInventory_Batch, Import,ExportQuery } from '/@/api/operation/dFInventory_Batch';
 import { getDictDataList } from '/@/api/system/admin';
 import InfoDataDialog from '/@/components/infoDataDialog/index.vue';
 import importDialog from '/@/components/importDialog/index.vue';
+import exportDialog from '/@/components/exportDialog/index.vue';
 
 const getsiteData = ref<any>([]);
 
@@ -150,6 +158,7 @@ const dataList = ref<any>([
 var dFInventoryBatchId = ref<number>(0);
 const importloading = ref(false);
 const dialogFormVisible = ref(false);
+const dialogFormVisible1 = ref(false);
 const visible = ref(false); //列表弹窗
 const site = ref<any>(''); //站点
 const options = ref([
@@ -192,6 +201,9 @@ const importFormList = ref<any>([
 const importClose = (bol: boolean) => {
 	dialogFormVisible.value = bol;
 };
+const exportClose = (bol: boolean) => {
+	dialogFormVisible1.value = bol;
+};
 const importQuery = () => {
 	handleQuery();
 };
@@ -232,32 +244,9 @@ const handleQuery = async () => {
 	loading.value = false;
 	getsiteData.value = await dictTypeDataList('zhandian');
 };
-
-// 打开新增页面
-const openAddDFInventory_Batch = () => {
-	editDFInventory_BatchTitle.value = '添加 DF Inventory导入数据';
-	editDialogRef.value.openDialog({});
-};
-
-// 打开编辑页面
-const openEditDFInventory_Batch = (row: any) => {
-	editDFInventory_BatchTitle.value = '编辑 DF Inventory导入数据';
-	editDialogRef.value.openDialog(row);
-};
-
-// 删除
-const delDFInventory_Batch = (row: any) => {
-	ElMessageBox.confirm(`确定要删除吗?`, '提示', {
-		confirmButtonText: '确定',
-		cancelButtonText: '取消',
-		type: 'warning',
-	})
-		.then(async () => {
-			await deleteDFInventory_Batch(row);
-			handleQuery();
-			ElMessage.success('删除成功');
-		})
-		.catch(() => {});
+// 导出
+const exportDFInventoryBatch = () => {
+	dialogFormVisible1.value = true;
 };
 
 // 改变页面容量

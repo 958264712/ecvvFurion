@@ -34,7 +34,7 @@ const siteList1 = ref<any>([
 	{ value: 'SA', label: 'SA' },
 ]);
 const nameList = ref<any>([{ label: '全部', value: null }]);
-const queryName = async (id: number) => {
+const queryName = async (id?: number) => {
 	await service({
 		url: '/api/sysUser/page',
 		method: 'post',
@@ -45,7 +45,7 @@ const queryName = async (id: number) => {
 		},
 	}).then((res) => {
 		if (res.data.type == 'success') {
-			res.data.result.items?.map((item) => {
+			res.data.result?.items?.map((item: any) => {
 				nameList.value?.push({ value: item.realName, label: item.realName });
 				nameList1.value?.push({ value: item.realName, label: item.realName });
 			});
@@ -57,7 +57,7 @@ const editDialogRef = ref();
 const editCollectionOrderInfoTitle = ref('');
 const area = ref('CN');
 
-const tableParams = ref({
+const tableParams = ref<any>({
 	page: 1,
 	pageSize: 20,
 });
@@ -65,13 +65,13 @@ const tableParams = ref({
 const handleAuth = async () => {
 	var res = await getAPI(SysAuthApi).apiSysAuthUserInfoGet();
 	if (res.data.type === 'success') {
-		if (res.data.result.account === 'superadmin') {
+		if (res.data.result?.account === 'superadmin') {
 			queryName();
 			handleQuery();
 		} else {
-			queryParams.value.nameList=[res.data.result.realName]
-			nameList.value = [{ value: res.data.result.realName, label: res.data.result.realName }];
-			nameList1.value = [{ value: res.data.result.realName, label: res.data.result.realName }];
+			queryParams.value.nameList=[res.data.result?.realName]
+			nameList.value = [{ value: res.data.result?.realName, label: res.data.result?.realName }];
+			nameList1.value = [{ value: res.data.result?.realName, label: res.data.result?.realName }];
 			handleQuery();
 		}
 	}
@@ -337,7 +337,7 @@ const handleCurrentChange = (val: number) => {
 								<el-button type="primary" size="small" @click="deletes(scope)">确定</el-button>
 							</div>
 							<template #reference>
-								<el-button size="small" :disabled="allCompiles" text type="primary" @click="visible = false"> 删除</el-button>
+								<el-button size="small"  text type="primary" @click="visible = false"> 删除</el-button>
 							</template>
 						</el-popover>
 					</template>
@@ -355,7 +355,7 @@ const handleCurrentChange = (val: number) => {
 				layout="total, sizes, prev, pager, next, jumper"
 			/>
 		</el-card>
-		<editDialog ref="editDialogRef" :monthList="monthList" :nameList="nameList1" :siteList="siteList1" :yearList="yearList1" :title="editCollectionOrderInfoTitle" @reloadTable="handleQuery()" />
+		<editDialog ref="editDialogRef"  :nameList="nameList1" :siteList="siteList1" :yearList="yearList1" :title="editCollectionOrderInfoTitle" @reloadTable="handleQuery()" />
 	</div>
 </template>
 

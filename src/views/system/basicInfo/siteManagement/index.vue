@@ -7,7 +7,6 @@ import tabDragColum from '/@/components/tabDragColum/index.vue';
 import { auth } from '/@/utils/authFunction';
 
 const loading = ref(false);
-const visible = ref(false);
 const tableData = ref<any>([]);
 const stateList = ref<any>([
 	{ label: '全部', value: null },
@@ -20,7 +19,7 @@ const editDialogRef = ref();
 const editCollectionOrderInfoTitle = ref('');
 const area = ref('CN');
 
-const tableParams = ref({
+const tableParams = ref<any>({
 	page: 1,
 	pageSize: 20,
 });

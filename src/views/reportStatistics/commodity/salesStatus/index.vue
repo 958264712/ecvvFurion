@@ -11,20 +11,11 @@ const radio = ref('日');
 const radio1 = ref('销量');
 const area = ref('CN');
 
-const tableParams = ref({
+const tableParams = ref<any>({
 	page: 1,
 	pageSize: 20,
 });
-const tabsList = ref([
-	{
-		label: 'UAE',
-		name: 'UAE',
-	},
-	{
-		label: 'SA',
-		name: 'SA',
-	},
-]);
+
 const disabledDate = (time: Date) => {
 	return time.getTime() > Date.now();
 };
@@ -123,7 +114,7 @@ const TableData = ref<any>([
 	},
 ]);
 
-const changeRange = (type)=>{
+const changeRange = (type: string)=>{
     let today = new Date();
     let firstDayOfYear = new Date(today.getFullYear(), 0, 1);
     let lastDayOfYear = new Date(today.getFullYear(), 11, 31);
@@ -207,7 +198,7 @@ handleQuery();
 				<tabDragColum :data="TableData" :name="`salesStatus`" :area="area" @handleData="handleData" />
 			</div>
 
-			<el-table :data="tableData" style="height: 100%" v-loading="loading" tooltip-effect="light" row-key="id" border="" @selection-change="handleSelectionChange" @sort-change="handleSortChange">
+			<el-table :data="tableData" style="height: 100%" v-loading="loading" tooltip-effect="light" row-key="id" border="" >
 				<!-- <el-table-column type="selection" width="40" align="center" /> -->
 				<el-table-column type="index" label="排名" align="center" width="50"/>
 				<template v-for="(item, index) in TableData" :key="index">

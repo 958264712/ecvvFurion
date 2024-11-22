@@ -82,7 +82,7 @@
 							</el-table-column>
 						</el-table>
 						<el-pagination
-							v-model:currentPage="tableParams.page"
+							v-model:currentPage="tableParams.Page"
 							v-model:page-size="tableParams.pageSize"
 							:total="tableParams.total"
 							:page-sizes="[10, 20, 50, 100, 500, 1000]"
@@ -101,11 +101,12 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue';
+import { ref, PropType } from 'vue';
 import { ElMessage, ElNotification } from 'element-plus';
 import { Check, CloseBold } from '@element-plus/icons-vue';
 import { service } from '/@/utils/request';
 import other from '/@/utils/other';
+import { FormInstance } from 'element-plus';
 
 /**
  * 和弹窗组件el-dialog配套使用，外部弹窗控制大小，本组件主要用于详情，带查询表格展示，不带弹窗
@@ -122,6 +123,11 @@ import other from '/@/utils/other';
  * @emit close 关闭窗口
  * @emit reloadTable 调用外部接口刷新数据列表
  */
+
+ interface ErrorDataItem {
+  prop: string;
+  label: string;
+}
 
 //父级传递来的参数
 var props = defineProps({
@@ -154,7 +160,7 @@ var props = defineProps({
 		default: '',
 	},
 	errorData: {
-		type: Array,
+		type: Array as PropType<ErrorDataItem[]>,
 		default: [],
 	},
 	multiple: {
@@ -280,13 +286,13 @@ const closeDialog = (ruleFormRef: FormInstance | undefined) => {
 // 改变页面容量
 const handleSizeChange = (val: number) => {
 	tableParams.value.pageSize = val;
-	handleQuery();
+	// handleQuery();
 };
 
 // 改变页码序号
 const handleCurrentChange = (val: number) => {
 	tableParams.value.Page = val;
-	handleQuery();
+	// handleQuery();
 };
 //将属性或者函数暴露给父组件
 defineExpose({ openDialog });

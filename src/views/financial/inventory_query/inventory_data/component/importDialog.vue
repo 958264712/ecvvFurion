@@ -25,9 +25,11 @@
 			<div class="import" v-if="isShowImport">
 				<p>2、选择需要导入数据的月份</p>
 				<el-date-picker :clearable="false" v-model="time" type="month" style="width: 200px; margin-top: 10px" placeholder="请选择月份" />
+						
 			</div>
 			<div class="import" v-if="isShowImport">
 				<p>3、上传需要导入表格</p>
+				<el-checkbox v-model="IsUpdData" label="是否需要重新生成上传文件之后月份的数据" size="large"/>
 				<el-upload :on-change="Imports" :multiple="false" :show-file-list="false" :auto-upload="false" name="file">
 					<div class="moban1">
 						<svg t="1709867915105" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2468" width="104" height="104">
@@ -103,6 +105,7 @@ const isShowDialog = ref(false);
 const isShowImport = ref(true);
 const isMime = ref(true);
 const time = ref<any>(undefined);
+const IsUpdData = ref<any>(false);
 const result = ref<any>({});
 const tableParams = ref({
 	Page: 1,
@@ -127,6 +130,7 @@ const Imports = (file: any) => {
 			const formData = new FormData();
 			formData.append('file', file.raw);
 			formData.append('time', moment(time.value).format('YYYY-MM'));
+			formData.append('IsUpdData',IsUpdData.value)
 			service({
 				url: props.url,
 				method: 'post',

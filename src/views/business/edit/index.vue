@@ -4,6 +4,7 @@
 		<el-card shadow="hover" :body-style="{ padding: '3px 0 0 3px' }" style="margin-bottom: 30px">
 			<el-row v-if="id">
 				<el-form-item>
+					<el-button v-if="collectionOrderInfo.customsDeclarationNo" size="small" type="primary" @click="deblockingBox" v-auth="'edit:deblocking'">解锁 </el-button>
 					<el-button size="small" type="primary" icon="ele-Plus" :disabled="allCompiles" @click="OrderLockSwitch" style="margin-right: 20px"> {{ compile ? '退出编辑' : '编辑' }} </el-button>
 				</el-form-item>
 				<el-form-item>
@@ -13,7 +14,7 @@
 						<el-button type="primary" size="small" @click="exportBoxTag()"> 导出外箱标签 </el-button>
 						<el-button type="primary" size="small" @click="exportPackingListNumber()"> 导出箱单号条形码 </el-button>
 						<!--
-<el-button type="primary" :loading="loading1" icon="ele-Plus" style="margin-left:20px;"> 导入补录信息
+						<el-button type="primary" :loading="loading1" icon="ele-Plus" style="margin-left:20px;"> 导入补录信息
 						</el-button>
 						<el-link type="success"
 							href="http://localhost:5005/upload/TableAddress/补录信息模板.xlsx">下载补录信息模板</el-link>
@@ -31,7 +32,6 @@
 						:disabled="!compile || true"
 						placeholder="请输入单据编号"
 					/>
-					<!-- <span v-if="!collectionOrderInfo.documentNo" class="error-message">单据编号不能为空！</span> -->
 				</el-form-item>
 				<el-form-item label="货代名称" prop="forwarderID" required="true">
 					<el-select
@@ -42,17 +42,16 @@
 						filterable
 						clearable
 						class="w100"
-						:disabled="!compile"
+						:disabled="state.hasCusNo || !compile"
 					>
 						<el-option v-for="item in selectBox" :key="item.value" :label="item.label" :value="item.value" />
 					</el-select>
-					<!-- <span v-if="!collectionOrderInfo.forwarderID" class="error-message">贷代名称不能为空！</span> -->
 				</el-form-item>
 				<el-form-item label="目的地">
-					<el-input v-model="collectionOrderInfo.destination" @input="showCurrency()" clearable="" :disabled="!compile" placeholder="请输入目的地" />
+					<el-input v-model="collectionOrderInfo.destination" @input="showCurrency()" clearable="" :disabled="state.hasCusNo || !compile" placeholder="请输入目的地" />
 				</el-form-item>
 				<el-form-item label="截仓日期">
-					<el-date-picker v-model="collectionOrderInfo.cutOffDate" clearable="" type="date" :disabled="!compile" placeholder="请输入截仓日期" />
+					<el-date-picker v-model="collectionOrderInfo.cutOffDate" clearable="" type="date" :disabled="state.hasCusNo || !compile" placeholder="请输入截仓日期" />
 				</el-form-item>
 			</el-row>
 		</el-card>
@@ -65,7 +64,7 @@
 					<el-row>
 						<el-col :span="8">
 							<el-form-item label="收货平台(店铺)" prop="consigneeName" style="width: 90%">
-								<el-select :disabled="!compile" v-model="collectionOrderInfo.consigneeName" placeholder="请选择" filterable clearable>
+								<el-select :disabled="state.hasCusNo || !compile" v-model="collectionOrderInfo.consigneeName" placeholder="请选择" filterable clearable>
 									<el-option v-for="item in platformStoreOptions" :key="item" :label="item" :value="item" />
 								</el-select>
 							</el-form-item>
@@ -75,15 +74,14 @@
 									:formatter="formatInput"
 									@change="repricefun"
 									:class="!collectionOrderInfo.exchangeRateUSD && buttonmask ? 'avt' : ''"
-									:disabled="!compile"
+									:disabled="state.hasCusNo || !compile"
 									v-model="collectionOrderInfo.exchangeRateUSD"
 									clearable=""
 									placeholder="请输入美元汇率"
 								/>
-								<!-- <span v-if="!collectionOrderInfo.exchangeRateUSD" class="error-message">美元汇率不能为空！</span> -->
 							</el-form-item>
 							<el-form-item label="报关单号" style="width: 90%">
-								<el-input :disabled="!compile" v-model="collectionOrderInfo.customsDeclarationNo" clearable="" placeholder="请输入报关单号" />
+								<el-input :disabled="state.hasCusNo || !compile" v-model="collectionOrderInfo.customsDeclarationNo" clearable="" placeholder="请输入报关单号" />
 							</el-form-item>
 							<el-form-item label="状态" style="width: 90%">
 								<el-select :disabled="!compile" v-model="collectionOrderInfo.state" filterable clearable>
@@ -91,22 +89,22 @@
 								</el-select>
 							</el-form-item>
 							<el-form-item label="交仓地址" style="width: 90%">
-								<el-input :disabled="!compile" v-model="collectionOrderInfo.deliveryAddress" clearable="" placeholder="请输入交仓地址" />
+								<el-input :disabled="state.hasCusNo || !compile" v-model="collectionOrderInfo.deliveryAddress" clearable="" placeholder="请输入交仓地址" />
 							</el-form-item>
-							<el-form-item label="开船／起飞日期" style="width: 90%" >
+							<el-form-item label="开船／起飞日期" style="width: 90%">
 								<el-date-picker @change="actualArrivalDateChange" :disabled="!compile" v-model="collectionOrderInfo.actualArrivalDate" type="date" placeholder="请选择日期" />
 							</el-form-item>
-							<el-form-item label="国际物流支付方" style="width: 90%" prop="internationalLogisticsFeePayer" :rules="[{ required: true, message: '国际物流支付方不能为空', trigger: 'blur'}]">
-								<el-select :disabled="!compile" @change="repricefun" v-model="collectionOrderInfo.internationalLogisticsFeePayer" filterable clearable>
+							<el-form-item label="国际物流支付方" style="width: 90%" prop="internationalLogisticsFeePayer" :rules="[{ required: true, message: '国际物流支付方不能为空', trigger: 'blur' }]">
+								<el-select :disabled="state.hasCusNo || !compile" @change="repricefun" v-model="collectionOrderInfo.internationalLogisticsFeePayer" filterable clearable>
 									<el-option v-for="item in payerOptions" :key="item" :label="item" :value="item" />
 								</el-select>
 							</el-form-item>
 							<el-form-item label="备注" style="width: 90%">
-								<el-input :disabled="!compile" v-model="collectionOrderInfo.notes" type="textarea" placeholder="请输入备注" />
+								<el-input :disabled="state.hasCusNo || !compile" v-model="collectionOrderInfo.notes" type="textarea" placeholder="请输入备注" />
 							</el-form-item>
 						</el-col>
 						<el-col :span="8">
-							<el-form-item label="物流报价" style="width: 90%" prop="logisticsPrice"  required="true">
+							<el-form-item label="物流报价" style="width: 90%" prop="logisticsPrice" required="true">
 								<el-row style="width: 100%">
 									<el-col :xs="16" :sm="16" :md="16" :xl="16">
 										<el-input
@@ -114,7 +112,7 @@
 											:formatter="formatInput"
 											@change="repricefun"
 											:class="!collectionOrderInfo.logisticsPrice && buttonmask ? 'avt' : ''"
-											:disabled="!compile"
+											:disabled="state.hasCusNo || !compile"
 											v-model="collectionOrderInfo.logisticsPrice"
 											clearable=""
 											style="width: 100%"
@@ -130,19 +128,15 @@
 											clearable
 											id="select"
 											style="width: 100%"
-											:disabled="!compile"
+											:disabled="state.hasCusNo || !compile"
 										>
 											<el-option v-for="item in currencyOptions" :key="item.value" :label="item.label" :value="item.value" />
 										</el-select>
 									</el-col>
 								</el-row>
-
-								<!-- <div class="wuliu">
-										<span v-if="!collectionOrderInfo.logisticsPrice || !collectionOrderInfo.logisticsPriceCurrency" class="error-message">物流报价不能为空！</span>
-									</div> -->
 							</el-form-item>
 							<el-form-item label="是否报关">
-								<el-switch :disabled="!compile" @change="repricefun" v-model="collectionOrderInfo.neetCustoms" inline-prompt active-text="是" inactive-text="否" /><br />
+								<el-switch :disabled="state.hasCusNo || !compile" @change="repricefun" v-model="collectionOrderInfo.neetCustoms" inline-prompt active-text="是" inactive-text="否" /><br />
 							</el-form-item>
 							<br />
 							<el-form-item label="运输方式" style="width: 90%" prop="shippingMethod" required="true">
@@ -150,73 +144,65 @@
 									:class="!collectionOrderInfo.shippingMethod && buttonmask ? 'avt' : ''"
 									@change="repricefun"
 									v-model="collectionOrderInfo.shippingMethod"
-									:disabled="!compile"
+									:disabled="state.hasCusNo || !compile"
 									filterable
 									clearable
 								>
 									<el-option v-for="item in shippingMethodOptions" :key="item" :label="item" :value="item" />
 								</el-select>
-								<!-- <span v-if="!collectionOrderInfo.shippingMethod" class="error-message">运输方式不能为空！</span> -->
 							</el-form-item>
 							<el-form-item label="收件人" style="width: 90%">
-								<el-input :disabled="!compile" v-model="collectionOrderInfo.recipientName" clearable="" placeholder="请输入收件人" />
+								<el-input :disabled="state.hasCusNo || !compile" v-model="collectionOrderInfo.recipientName" clearable="" placeholder="请输入收件人" />
 							</el-form-item>
 							<el-form-item label="验货完成日期" style="width: 90%">
-								<el-date-picker :disabled="!compile" v-model="collectionOrderInfo.departureDate" @change="departureDateChange" type="date" placeholder="请选择日期" />
+								<el-date-picker :disabled="state.hasCusNo || !compile" v-model="collectionOrderInfo.departureDate" @change="departureDateChange" type="date" placeholder="请选择日期" />
 							</el-form-item>
-							<!-- <el-form-item label="送仓日期" style="width: 90%">
-								<el-date-picker :disabled="!compile" v-model="collectionOrderInfo.deliveryDate" type="date"
-									placeholder="请选择日期" />
-							</el-form-item> -->
 							<el-form-item label="创建日期" style="width: 90%">
-								<el-date-picker :disabled="!compile" v-model="collectionOrderInfo.orderCreatedDate" type="date" placeholder="请选择日期" />
+								<el-date-picker :disabled="state.hasCusNo || !compile" v-model="collectionOrderInfo.orderCreatedDate" type="date" placeholder="请选择日期" />
 							</el-form-item>
 							<el-form-item label="附件" style="width: 90%">
 								<el-upload
 									v-model:file-list="fileList"
 									action="http://192.168.1.81:5568/api/collectionOrderInfo/collectionUploadAttachment"
 									:on-success="successfun"
-									:on-error="errorfun"
 									:multiple="true"
 									:show-file-list="true"
 									name="file"
 									:before-remove="handleRemovefun"
-									:disabled="!compile"
+									:disabled="state.hasCusNo || !compile"
 								>
-									<el-button :disabled="!compile" type="primary" :loading="loading1" icon="ele-Plus" style="margin-right: 20px"> 附件上传 </el-button>
+									<el-button :disabled="state.hasCusNo || !compile" type="primary" :loading="loading1" icon="ele-Plus" style="margin-right: 20px"> 附件上传 </el-button>
 								</el-upload>
 							</el-form-item>
 						</el-col>
 						<el-col :span="8">
-							<el-form-item label="汇率" style="width: 90%"  prop="exchangeRate" required="true">
+							<el-form-item label="汇率" style="width: 90%" prop="exchangeRate" required="true">
 								<el-input
 									type="number"
 									:formatter="formatInput"
 									:class="!collectionOrderInfo.exchangeRate && buttonmask ? 'avt' : ''"
-									:disabled="!compile"
+									:disabled="state.hasCusNo || !compile"
 									v-model="collectionOrderInfo.exchangeRate"
 									clearable=""
 									placeholder="请输入"
 								/>
-								<!-- <span v-if="!collectionOrderInfo.exchangeRate" class="error-message">汇率不能为空！</span> -->
 							</el-form-item>
-							<el-form-item label="报关费" style="width: 90%"  prop="totalCustomsDeclarationFee" required="true">
+							<el-form-item label="报关费" style="width: 90%" prop="totalCustomsDeclarationFee" required="true">
 								<el-input
 									type="number"
 									:formatter="formatInput"
 									:class="!collectionOrderInfo.totalCustomsDeclarationFee && buttonmask ? 'avt' : ''"
-									:disabled="!compile"
+									:disabled="state.hasCusNo || !compile"
 									v-model="collectionOrderInfo.totalCustomsDeclarationFee"
 									clearable=""
 									placeholder="请输入报关费"
 								/>
-								<!-- <span v-if="!collectionOrderInfo.totalCustomsDeclarationFee" class="error-message">报关费不能为空！</span> -->
 							</el-form-item>
 							<el-form-item label="货代入仓号" style="width: 90%">
-								<el-input :disabled="!compile" v-model="collectionOrderInfo.inWareHouseNo" clearable="" placeholder="请输入货代入仓号" />
+								<el-input :disabled="state.hasCusNo || !compile" v-model="collectionOrderInfo.inWareHouseNo" clearable="" placeholder="请输入货代入仓号" />
 							</el-form-item>
 							<el-form-item label="收件联系电话" style="width: 90%">
-								<el-input type="number" :disabled="!compile" v-model="collectionOrderInfo.recipientPhone" clearable="" placeholder="请输入收件联系电话" />
+								<el-input type="number" :disabled="state.hasCusNo || !compile" v-model="collectionOrderInfo.recipientPhone" clearable="" placeholder="请输入收件联系电话" />
 							</el-form-item>
 							<el-form-item label="预计送仓日期" style="width: 90%">
 								<el-date-picker :disabled="!compile" v-model="collectionOrderInfo.estimatedArrivalDate" type="date" placeholder="请选择日期" />
@@ -228,12 +214,12 @@
 								<el-date-picker :disabled="!compile" v-model="collectionOrderInfo.estimatedDeliveryDate" type="date" placeholder="请选择日期" />
 							</el-form-item>
 							<el-form-item label="创建人" style="width: 90%">
-								<el-input :disabled="!compile" v-model="collectionOrderInfo.orderCreatedUser" clearable="" placeholder="请输入" />
+								<el-input :disabled="state.hasCusNo || !compile" v-model="collectionOrderInfo.orderCreatedUser" clearable="" placeholder="请输入" />
 							</el-form-item>
 						</el-col>
 						<div style="margin: 0 auto; position: relative">
 							<el-button :disabled="!compile" type="primary" @click="commit">提交</el-button>
-							<el-button v-if="!isCommit" type="primary" style="positihandleselectchacon: absolute; left: -11px; background-color: rgba(0, 0, 0, 0); border: 0" @click="commitzz()">提交</el-button>
+							<el-button v-if="!isCommit" type="primary" style="position: absolute; left: -11px; background-color: rgba(0, 0, 0, 0); border: 0" @click="commitzz()">提交</el-button>
 						</div>
 					</el-row>
 				</el-form>
@@ -260,7 +246,9 @@
 
 				<el-table-column fixed label="操作" width="100" align="center">
 					<template #default="scope">
-						<el-button :disabled="!compile || allCompiles" size="small" text type="primary" ref="myButton" @click="disabledfun(scope)">{{ scope.row.rowCompile ? '保存' : '编辑' }}</el-button>
+						<el-button :disabled="state.hasCusNo || !compile || allCompiles" size="small" text type="primary" ref="myButton" @click="disabledfun(scope)">{{
+							scope.row.rowCompile ? '保存' : '编辑'
+						}}</el-button>
 						<el-popover placement="top" width="200" :disabled="visible" trigger="click">
 							<p>确定{{ scope.row.rowCompile ? '取消' : '删除' }}吗？</p>
 							<div style="text-align: right; margin: 0">
@@ -276,7 +264,7 @@
 								<el-button type="primary" size="small" @click="examine(scope)">确定</el-button>
 							</div>
 							<template #reference>
-								<el-button :disabled="!compile || allCompiles" size="small" text type="primary" @click="visible = false"> {{ scope.row.rowCompile ? '取消' : '删除' }} </el-button>
+								<el-button :disabled="!compile || state.hasCusNo || allCompiles" size="small" text type="primary" @click="visible = false"> {{ scope.row.rowCompile ? '取消' : '删除' }} </el-button>
 							</template>
 						</el-popover>
 					</template>
@@ -674,7 +662,7 @@
 				<el-form-item>
 					<el-button type="primary" size="small" icon="ele-Plus" @click="copy()" style="margin-right: 20px"> 复制 </el-button>
 				</el-form-item>
-				<el-form-item v-show="compile">
+				<el-form-item v-show="compile && !state.hasCusNo">
 					<el-button-group>
 						<el-button type="primary" size="small" @click="bulkEditing()" :disabled="batch"> {{ allCompiles ? '保存' : '批量编辑' }} </el-button>
 						<el-button size="small" @click="newrow()"> 新增一行 </el-button>
@@ -689,7 +677,7 @@
 				v-model:currentPage="tableParams.page"
 				v-model:page-size="tableParams.pageSize"
 				:total="tableParams.total"
-				:page-sizes="[10, 20, 50, 100,200, 500, 1000]"
+				:page-sizes="[10, 20, 50, 100, 200, 500, 1000]"
 				small=""
 				background=""
 				@size-change="handleSizeChange"
@@ -708,6 +696,7 @@
 			:url="url"
 			@reloadTable="getAppPage"
 		/>
+		<deblockingDialog ref="deblockingDialogRef" :title="deblockingDialogTitle" @reloadTable="getAppPage" />
 		<!-- <EditMenu ref="editMenuRef" :title="state.editMenuTitle" :menuData="state.menuData" @handleQuery="handleQuery" /> -->
 	</div>
 </template>
@@ -715,22 +704,20 @@
 <script lang="ts" setup name="compile">
 import { onMounted, reactive, ref, toRefs, computed, watch, watchEffect, onBeforeUnmount, onActivated, onDeactivated, onUpdated, onBeforeUpdate } from 'vue';
 import { ElMessageBox, ElMessage, ElNotification } from 'element-plus';
-import { useRouter, useRoute, onBeforeRouteUpdate } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { getAPI } from '/@/utils/axios-utils';
 import { SysMenuApi } from '/@/api-services/api';
 import { SysMenu } from '/@/api-services/models';
 import service from '/@/utils/request';
 import { Session } from '/@/utils/storage';
-import { useTagsViewRoutes } from '/@/stores/tagsViewRoutes';
-import { da, tr } from 'element-plus/es/locale';
-import { type } from 'os';
 import type { UploadInstance } from 'element-plus';
 import router from '/@/router';
 import importDialog from '/@/components/newImportDialog/index.vue';
-import { log } from 'console';
 import { getCollectionGoodsInfoCache } from '/@/api/modular/main/collections.ts';
 import { platformStoreGetList } from '/@/api/modular/main/platformStoreInfo.ts';
-import { SysCodeGenConfigApi, SysConstApi, SysDictDataApi, SysDictTypeApi, SysEnumApi } from '/@/api-services/api';
+import { SysDictDataApi } from '/@/api-services/api';
+import deblockingDialog from '/@/views/business/collection/collections/component/deblockingDialog.vue';
+
 const state = reactive({
 	loading: true,
 	menuData: [] as Array<SysMenu>,
@@ -739,6 +726,7 @@ const state = reactive({
 		type: undefined,
 	},
 	editMenuTitle: '',
+	hasCusNo: undefined,
 });
 let tableParams = ref<any>({
 	page: 1,
@@ -747,27 +735,27 @@ let tableParams = ref<any>({
 });
 let id = ref<any>();
 const queryForm = ref();
+const deblockingDialogRef = ref();
+const deblockingDialogTitle = ref('');
+
 let collectionOrderInfo = reactive<any>({});
 let collectionGoodsInfolist = reactive<any>([]);
 const platformStoreOptions = ref<any>([]);
 let compile = ref<boolean>(false);
+let loading1 = ref<boolean>(false);
 let rowCompile = ref<boolean>(false);
 let widths = ref<any>(120);
-let buttonDisabled = ref<any>(false);
 const notResetPrice = ref(false);
 const myButton = ref(null);
 let visible = ref(false);
 let allCompiles = ref(false);
-let loadAll = ref();
 let restaurants = ref<any>();
 let states = ref<any>('');
 let timeout = ref<any>(null);
 let countRow = ref<any>([]);
-let selectDelete = ref<any>([]);
 let selectedRows = ref<any>([]);
 let warnTagList = ref<any>([]);
 let selectedWarnTag = ref<any>([]);
-const spliceWarnTag = ref<any>([]); //切割好的风险标签列表
 const splitSearchTag = ref<any>({}); //切割好的内部识别码标签列表
 let copyDate = ref<any>([]);
 let activeNames = ref('2');
@@ -805,7 +793,7 @@ const errorData = ref<any>([
 let visibleediit = ref(false);
 const uploadRef = ref<UploadInstance>();
 let shippingMethodOptions = ref(['海运', '空运', '快递', '小包']);
-let stateOptions = ref(['集货', '截仓', '在途中', '已入仓']);
+let stateOptions = ref(['集货', '截仓', '在途中','部分入仓', '已入仓']);
 let payerOptions = ref(['国内支付', '迪拜支付']);
 let currencyOptions = ref([
 	{ label: 'RMB 人民币', value: 'RMB' },
@@ -873,11 +861,11 @@ function querySearchAsync(queryString: any, cb: any) {
 	let restaurant = restaurants.value;
 	let results = queryString ? restaurant.filter(createStateFilter(queryString)) : restaurant;
 	if (warnTagList.value?.length) {
-		restaurant?.map((item) => {
-			let list = [];
+		restaurant?.map((item: any) => {
+			let list: any = [];
 			let tagList = item.warnTag?.split(',');
-			tagList?.map((it) => {
-				warnTagList.value?.map((i) => {
+			tagList?.map((it: any) => {
+				warnTagList.value?.map((i: any) => {
 					if (i.value === it) {
 						let obj = {
 							color: i.code,
@@ -1044,7 +1032,7 @@ function examine(val: any): void {
 }
 ////附件上传
 let fileLists = ref<any>([]);
-function successfun(data: any, res: any) {
+const successfun = (data: any, res: any) => {
 	if (data.type == 'success') {
 		fileLists.value.push({
 			name: res.name,
@@ -1057,7 +1045,7 @@ function successfun(data: any, res: any) {
 		type: 'success',
 		message: '上传成功',
 	});
-}
+};
 //删除附件
 function handleRemovefun(file: any, rawFile: any) {
 	if (collectionOrderInfo.fileList.some((ele: any) => ele.uid == file.uid)) {
@@ -1112,15 +1100,14 @@ async function getAppPage() {
 				data.data.result.collectionGoodsInfolist.items.forEach((element: any) => {
 					if (element.warnTag != null && element.warnTag != '') {
 						let tag = element.warnTag?.split(',');
-						let list = [];
+						let list: any = [];
 						if (tag?.length && warnTagList.value?.length) {
-							tag?.map((item) => {
+							tag?.map((item: any) => {
 								list.push(item);
 							});
 						}
 						element.warnTagList = list;
 					}
-					//spliceWarnTag.value[element.id] = { warn: list };
 					collectionGoodsInfolist.push(element);
 				});
 				olddocumentNo = collectionOrderInfo.documentNo;
@@ -1131,6 +1118,7 @@ async function getAppPage() {
 						fileList.value.push(element);
 					});
 				}
+				state.hasCusNo = data.data.result.hasCusNo;
 				fileLists.value = fileList.value;
 				tableParams.value.page = data.data.result.collectionGoodsInfolist.page;
 				tableParams.value.pageSize = data.data.result.collectionGoodsInfolist.pageSize;
@@ -1175,33 +1163,7 @@ const handleCurrentChange = (val: number) => {
 	tableParams.value.page = val;
 	getAppPage();
 };
-//滚动条触底刷新
-// let bottomingOut=debounce(function(e:any){
-// 	if(e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight<50){
-// 			page.value++
-// 			service({
-// 			url: `/api/collectionOrderInfo/detail`,
-// 			method: 'get',
-// 			params: {
-// 				id: id.value,
-// 				goodsPage:page.value,
-// 				goodsPageSize:10,
-// 			},
-// 		}).then((data) => {
-// 			if (data.data.type == 'success') {
 
-// 				data.data.result.collectionGoodsInfolist.items.forEach((element: any) => {
-// 					collectionGoodsInfolist.push(element);
-// 				});
-// 				collectionGoodsInfolist.forEach((element: any) => {
-// 					element.rowCompile = false;
-// 				});
-// 				state.loading = false;
-// 				OrderLockSwitch();
-// 			}
-// 		});
-// 	}
-// },1000)
 onActivated(async () => {
 	var refreshID = Session.get('refresh');
 	if (refreshID == collectionOrderInfo.documentNo) {
@@ -1221,7 +1183,7 @@ onMounted(async () => {
 		compile.value = true;
 	}
 	const results = await platformStoreGetList();
-	results.data.result.map((res) => {
+	results.data.result.map((res: any) => {
 		platformStoreOptions.value.push(res);
 	});
 
@@ -1292,8 +1254,9 @@ function newrow() {
 				message: '新增成功',
 			});
 			getAppPage();
+			const row = (document.querySelector('.el-table__row') as HTMLElement)?.offsetHeight;
 			setTimeout(() => {
-				myTable.value.setScrollTop(document.querySelector('.el-table__row').offsetHeight * collectionGoodsInfolist.length);
+				myTable.value.setScrollTop(row * collectionGoodsInfolist.length);
 				collectionGoodsInfolist[collectionGoodsInfolist.length - 1].rowCompile = true;
 			}, 500);
 		} else {
@@ -1307,7 +1270,8 @@ function newrow() {
 //检查后台是否被占用
 let timer = ref<any>();
 let olddocumentNo = '';
-function OrderLockSwitch() {
+// 打开编辑状态，并且判断后台是否被占用
+const OrderLockSwitch = () => {
 	if (!compile.value) {
 		service({
 			url: `/api/collectionOrderInfo/orderLock/${olddocumentNo}`,
@@ -1324,6 +1288,13 @@ function OrderLockSwitch() {
 					});
 				} else {
 					compile.value = !compile.value;
+					if (state.hasCusNo) {
+						ElMessage({
+							type: 'warning',
+							message: '已生成报关单，仅支持修改集货状态和时间',
+						});
+					} else {
+					}
 					timer.value = setInterval(() => {
 						service({
 							url: `/api/collectionOrderInfo/updateLockTime/${olddocumentNo}`,
@@ -1352,7 +1323,7 @@ function OrderLockSwitch() {
 			clearInterval(timer.value);
 		}
 	}
-}
+};
 //组件销毁
 onBeforeUnmount(() => {
 	compile.value = !compile.value;
@@ -1470,8 +1441,7 @@ const resetPriceFun = (row: any, index: number) => {
 	}
 };
 //计算价格
-let pricefun = (row: any, index: number) => {
-
+let pricefun = (row: any, index = 0) => {
 	//装箱数=实际出货数量/装箱个数
 	if (row.actualShipmentQuantity && row.quantityInBoxes) {
 		row.packBoxesQuantity = Math.ceil(Number(row.actualShipmentQuantity / row.quantityInBoxes));
@@ -1508,18 +1478,19 @@ let pricefun = (row: any, index: number) => {
 		);
 	}
 	//报关采购单价(RMB)=（集货采购单价*集货数量/报关数量）+（国内物流费用RMB/个*集货数量/报关数量）
-	if(row.plannedShipmentQuantity){//集货数量和报关数量一样时，集货采购单价就是（报关采购单价+国内物流费用(RMB/个)）
-		row.cusPurchasePrice=Number(row.includingTaxPurchasePrice)+Number(row.domesticLogisticsCost);
-		if(row.actualShipmentQuantity != row.plannedShipmentQuantity)
-		{
-			row.cusPurchasePrice=(row.actualShipmentQuantity*row.includingTaxPurchasePrice/row.plannedShipmentQuantity)+(Number(row.domesticLogisticsCost)*row.actualShipmentQuantity/row.plannedShipmentQuantity );
+	if (row.plannedShipmentQuantity) {
+		//集货数量和报关数量一样时，集货采购单价就是（报关采购单价+国内物流费用(RMB/个)）
+		row.cusPurchasePrice = Number(row.includingTaxPurchasePrice) + Number(row.domesticLogisticsCost);
+		if (row.actualShipmentQuantity != row.plannedShipmentQuantity) {
+			row.cusPurchasePrice =
+				(row.actualShipmentQuantity * row.includingTaxPurchasePrice) / row.plannedShipmentQuantity + (Number(row.domesticLogisticsCost) * row.actualShipmentQuantity) / row.plannedShipmentQuantity;
 		}
 	}
 	//空运
 	//总毛重和体积重 谁大用谁
 	//国际物流费用总额= 物流报价*(总毛重KG||体积重KG)
 	//海运
-    //国际物流费用总额= 物流报价*(总方数)
+	//国际物流费用总额= 物流报价*(总方数)
 	row.totalInternationalLogisticsFee =
 		collectionOrderInfo.shippingMethod == '空运'
 			? row.volumeWeight > row.totalGrossWeightKG
@@ -1538,18 +1509,20 @@ let pricefun = (row: any, index: number) => {
 		row.singleInternationalLogisticsFee = roundToThreeDecimalPlaces(row.totalInternationalLogisticsFee / row.actualShipmentQuantity);
 	}
 
-
-	//出口单价(USD)=（报关采购价*1.1+国内运费单个+报关运费单个）/美元汇率
-	var singlecusfee = Number(row['singleCusInternationalLogisticsFee']); //报关运费单个（国外支付时是0）
+	//中东	//【迪拜支付】出口单价(USD)=（报关采购价含税(RMB)*1.1）/美元汇率
+	//中东	//【国内支付】出口单价(USD)=（报关采购价含税(RMB)*1.1+报关费/个(RMB)+国际物流运费/报关数量）/美元汇率
+	//美国//【国内支付】：出口单价(USD)=（报关采购价含税(RMB)+报关费/个(RMB)+国际物流运费/报关数量）/美元汇率
 	if (collectionOrderInfo.internationalLogisticsFeePayer == '迪拜支付') {
-		singlecusfee = 0;
+		row['exportUnitPrice'] = Number(((row['cusPurchasePrice'] * 1.1) / collectionOrderInfo.exchangeRateUSD).toFixed(2));
 	}
-	row['exportUnitPrice'] = Number(((row['cusPurchasePrice'] * 1.1 + Number(row['domesticLogisticsCost']) + singlecusfee) / collectionOrderInfo.exchangeRateUSD).toFixed(2));
-	if (collectionOrderInfo.destination == "美国") {
-			//目的国是美国的：出口单价(USD)=（报关采购价含税(RMB)+国际物流费用(RMB/个)）/汇率
-				row['exportUnitPrice']=Number(((row['cusPurchasePrice']  + Number(row['domesticLogisticsCost']) + singlecusfee) / collectionOrderInfo.exchangeRateUSD).toFixed(2));
+	if (collectionOrderInfo.internationalLogisticsFeePayer == '国内支付') {
+		row['exportUnitPrice'] = Number(((row['cusPurchasePrice'] * 1.1+Number(row.customsDeclarationFee)+ row.singleInternationalLogisticsFee) / collectionOrderInfo.exchangeRateUSD).toFixed(2));
+	}
+
+	if (collectionOrderInfo.destination == "美国"&&collectionOrderInfo.internationalLogisticsFeePayer == '国内支付') {
+		//【国内支付】：出口单价(USD)=（报关采购价含税(RMB)+报关费/个(RMB)+国际物流运费/报关数量）/美元汇率
+		row['exportUnitPrice']=Number(((row['cusPurchasePrice']  +Number(row.customsDeclarationFee)+ Number(row['singleInternationalLogisticsFee'])) / collectionOrderInfo.exchangeRateUSD).toFixed(2));
 	} 
-	
 	//出口总价(USD)=出口单价*报关数量
 	row.totalExportPrice = row.exportUnitPrice * row.plannedShipmentQuantity;
 	notResetPrice.value = false;
@@ -1615,8 +1588,9 @@ function cut() {
 	});
 }
 //粘贴
-function affix() {
+const affix = () => {
 	let obj = Session.get('selectedGoods');
+	const row = (document.querySelector('.el-table__row') as HTMLElement)?.offsetHeight;
 	if (!obj) {
 		ElMessage({
 			type: 'info',
@@ -1625,23 +1599,25 @@ function affix() {
 		return;
 	}
 	let iscut = Session.get('iscut');
-	if (Session.get('iscut')) {
-		Session.set('isRefresh', true);
-		if (obj.length == 1) {
-			obj[0].documentNo = collectionOrderInfo.documentNo;
-			obj[0].id = collectionOrderInfo.id;
-			service({
-				url: '/api/collectionGoodsInfo/add',
-				method: 'post',
-				data: obj[0],
-			}).then((data) => {
-				if (data.data.type == 'success') {
-					tableParams.value.page = Math.ceil(tableParams.value.total / tableParams.value.pageSize);
-					ElMessage({
-						type: 'success',
-						message: '粘贴成功',
-					});
-
+	Session.set('isRefresh', true);
+	if (obj.length > 0) {
+		//粘贴前修改集货单号
+		obj.forEach((element: any) => {
+			element.documentNo = collectionOrderInfo.documentNo;
+		});
+		service({
+			url: '/api/collectionGoodsInfo/addList',
+			method: 'post',
+			data: obj,
+		}).then((data) => {
+			if (data.data.type == 'success') {
+				tableParams.value.page = Math.ceil(tableParams.value.total / tableParams.value.pageSize);
+				ElMessage({
+					type: 'success',
+					message: '粘贴成功',
+				});
+				if (iscut) {
+					//如果是剪切，删除原集货单商品
 					service({
 						url: '/api/collectionOrderInfo/batchDelete',
 						method: 'post',
@@ -1650,153 +1626,54 @@ function affix() {
 						if (data.data.type == 'success') {
 							ElMessage({
 								type: 'success',
-								message: '剪切板内容已清空',
+								message: '原集货单剪切商品已删除',
 							});
-							Session.set('selectedGoods', null);
-							Session.set('iscut', null);
-
-							getAppPage();
+							getAppPage().then(() => {
+								if (row) {
+									myTable.value.setScrollTop(row * (collectionGoodsInfolist.length + 1));
+								}
+							});
 						}
 					});
-
-					getAppPage().then(() => {
-						myTable.value.setScrollTop(document.querySelector('.el-table__row').offsetHeight * (collectionGoodsInfolist.length + 1));
-					});
 				} else {
-					ElMessage({
-						type: 'error',
-						message: '粘贴失败',
-					});
-				}
-			});
-		}
-		if (obj.length > 1) {
-			obj.forEach((element: any) => {
-				element.documentNo = collectionOrderInfo.documentNo;
-				element.id = collectionOrderInfo.id;
-				service({
-					url: '/api/collectionGoodsInfo/add',
-					method: 'post',
-					data: element,
-				}).then((data) => {
-					if (data.data.type == 'success') {
-						tableParams.value.page = Math.ceil(tableParams.value.total / tableParams.value.pageSize);
-						ElMessage({
-							type: 'success',
-							message: '粘贴成功',
-						});
-
-						getAppPage().then(() => {
-							myTable.value.setScrollTop(document.querySelector('.el-table__row').offsetHeight * (collectionGoodsInfolist.length + 1));
-						});
-					} else {
-						ElMessage({
-							type: 'error',
-							message: '粘贴失败',
-						});
-						return;
-					}
-				});
-				collectionGoodsInfolist.push(element);
-			});
-
-			service({
-				url: '/api/collectionOrderInfo/batchDelete',
-				method: 'post',
-				data: iscut,
-			}).then((data) => {
-				if (data.data.type == 'success') {
-					ElMessage({
-						type: 'success',
-						message: '剪切板内容已清空',
-					});
-				}
-			});
-			Session.set('selectedGoods', null);
-			Session.set('iscut', null);
-		}
-	} else {
-		if (obj.length == 1) {
-			obj[0].documentNo = collectionOrderInfo.documentNo;
-			obj[0].id = collectionOrderInfo.id;
-			service({
-				url: '/api/collectionGoodsInfo/add',
-				method: 'post',
-				data: obj[0],
-			}).then((data) => {
-				if (data.data.type == 'success') {
-					tableParams.value.page = Math.ceil(tableParams.value.total / tableParams.value.pageSize);
-					ElMessage({
-						type: 'success',
-						message: '粘贴成功,剪切板内容已清空',
-					});
-
-					Session.set('selectedGoods', null);
-					Session.set('iscut', null);
 					getAppPage().then(() => {
-						myTable.value.setScrollTop(document.querySelector('.el-table__row').offsetHeight * (collectionGoodsInfolist.length + 1));
-					});
-				} else {
-					ElMessage({
-						type: 'error',
-						message: '粘贴失败',
+						if (row) {
+							myTable.value.setScrollTop(row * (collectionGoodsInfolist.length + 1));
+						}
 					});
 				}
-			});
-		}
-		if (obj.length > 1) {
-			obj.forEach((element: any) => {
-				element.documentNo = collectionOrderInfo.documentNo;
-				element.id = collectionOrderInfo.id;
-				service({
-					url: '/api/collectionGoodsInfo/add',
-					method: 'post',
-					data: element,
-				}).then((data) => {
-					if (data.data.type == 'success') {
-						tableParams.value.page = Math.ceil(tableParams.value.total / tableParams.value.pageSize);
-						ElMessage({
-							type: 'success',
-							message: '粘贴成功',
-						});
-						Session.set('selectedGoods', null);
-						Session.set('iscut', null);
-						getAppPage().then(() => {
-							myTable.value.setScrollTop(document.querySelector('.el-table__row').offsetHeight * (collectionGoodsInfolist.length + 1));
-						});
-					} else {
-						ElMessage({
-							type: 'error',
-							message: '粘贴失败',
-						});
-						return;
-					}
+				Session.set('selectedGoods', null);
+				Session.set('iscut', null);
+				ElMessage({
+					type: 'success',
+					message: '剪切板内容已清空',
 				});
-				collectionGoodsInfolist.push(element);
-			});
-			ElMessage({
-				type: 'success',
-				message: '剪切板内容已清空',
-			});
-		}
+			} else {
+				ElMessage({
+					type: 'error',
+					message: '粘贴失败',
+				});
+				return;
+			}
+		});
 	}
-}
+};
 
 //下载文件
-function downloadfile(res) {
+function downloadfile(res: any) {
 	var blob = new Blob([res.data], {
 		type: 'application/octet-stream;charset=UTF-8',
 	});
 	var contentDisposition = res.headers['content-disposition'];
 	var patt = new RegExp('filename=([^;]+\\.[^\\.;]+);*');
 	var result = patt.exec(contentDisposition);
-	var filename = result[1];
+	var filename = result?.[1];
 	var downloadElement = document.createElement('a');
 	var href = window.URL.createObjectURL(blob); // 创建下载的链接
 	var reg = /^["](.*)["]$/g;
 	downloadElement.style.display = 'none';
 	downloadElement.href = href;
-	downloadElement.download = decodeURI(filename.replace(reg, '$1')); // 下载后文件名
+	downloadElement.download = decodeURI(filename?.replace(reg, '$1') || ''); // 下载后文件名
 	document.body.appendChild(downloadElement);
 	downloadElement.click(); // 点击下载
 	document.body.removeChild(downloadElement); // 下载完成移除元素
@@ -1804,7 +1681,7 @@ function downloadfile(res) {
 }
 //判断标签是否存在于集合中
 function IsTag(tag: any) {
-	const element = warnTagList.value.find((item) => item.value === tag);
+	const element = warnTagList.value.find((item: any) => item.value === tag);
 	if (element) {
 		return element.code;
 	}
@@ -1818,9 +1695,9 @@ function handleSelect(val: any) {
 				if (i == 'rowCompile' || i == 'documentNo' || i == 'id' || i == 'boxNo' || i == 'ShippingTime') {
 				} else if (i == 'warnTagList') {
 					if (data.data.result.warnTag != null && data.data.result.warnTag != '') {
-						let list = [];
+						let list: any = [];
 						let tag = data.data.result.warnTag?.split(',');
-						tag?.map((item) => {
+						tag?.map((item: any) => {
 							list.push(item);
 						});
 						val.row[i] = list;
@@ -1829,15 +1706,20 @@ function handleSelect(val: any) {
 					val.row[i] = data.data.result[i];
 				}
 			}
-			const chace = Editchace.value.find((obj) => obj.id === val.row.id);
+			const chace = Editchace.value.find((obj: any) => obj.id === val.row.id);
 			if (chace) {
-				Editchace.value[Editchace.value.findIndex((obj) => obj.id === val.row.id)] = JSON.parse(JSON.stringify(val.row));
+				Editchace.value[Editchace.value.findIndex((obj: any) => obj.id === val.row.id)] = JSON.parse(JSON.stringify(val.row));
 			} else {
 				Editchace.value.push(JSON.parse(JSON.stringify(val.row)));
 			}
 		}
 	});
 }
+//解锁集货单
+const deblockingBox = () => {
+	deblockingDialogTitle.value = `解锁集货单（${collectionOrderInfo.documentNo}）`;
+	deblockingDialogRef.value.openDialog(collectionOrderInfo);
+};
 //导出报关件
 function exportBaoguan() {
 	service({
@@ -2047,7 +1929,7 @@ const commit = () => {
 			});
 		}
 	});
-}
+};
 //提交按钮遮罩
 let buttonmask = ref<any>(false);
 function commitzz() {
@@ -2138,22 +2020,6 @@ const handleQuery = async () => {
 	state.loading = false;
 };
 
-// 重置操作
-const resetQuery = () => {
-	state.queryParams.title = undefined;
-	state.queryParams.type = undefined;
-	handleQuery();
-};
-
-// 打开新增页面
-const openAddMenu = () => {
-	state.editMenuTitle = '添加菜单';
-};
-
-// 打开编辑页面
-const openEditMenu = (row: any) => {
-	state.editMenuTitle = '编辑菜单';
-};
 //货代名称
 function changefun(val: any) {
 	service({

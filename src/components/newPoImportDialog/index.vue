@@ -29,7 +29,7 @@
 						></path>
 					</svg>
 					<span v-if="props.area === 'CN'">支持<span class="blue">点击</span>或<span class="blue">拖拽文件</span>上传,支持.xls、.xlsx文件类型</span>
-					<p v-else>Please <span class="blue">Click</span> or <span class="blue">Drop file here</span> to upload. .xls and .xlsx file are supported, and can be imported in batches</p>
+					<p v-else>Please <span class="blue">Click</span> or <span class="blue">Drop file here</span> to upload. .xls and .xlsx file are supported<span v-if="props.multiple">, and can be imported in batches</span></p>
 				</div>
 			</el-upload>
 		</div>
@@ -43,11 +43,9 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue';
-import { ElMessage, ElNotification } from 'element-plus';
-import { Check, CloseBold } from '@element-plus/icons-vue';
+import { ref } from 'vue';
+import { ElMessage } from 'element-plus';
 import { service } from '/@/utils/request';
-import other from '/@/utils/other';
 
 /**
  * 和弹窗组件el-dialog配套使用，外部弹窗控制大小，本组件主要用于详情，带查询表格展示，不带弹窗
@@ -57,8 +55,10 @@ import other from '/@/utils/other';
  * @props area 传入中英文格式
  * @props ifExcelBol 是否进行格式约束
  * @props multiple 是否导入多个文件
+ * @props inquireData 是否需要轮询
  * @emit close 关闭窗口
  * @emit reloadTable 调用外部接口刷新数据列表
+ * @emit returnHref 配合轮询返回数据
  */
 
 //父级传递来的参数
@@ -79,6 +79,10 @@ var props = defineProps({
 		type: String,
 		default: '',
 	},
+	inquireData:{
+		type: Boolean,
+		default: false,
+	},
 	ifExcelBol: {
 		type: Boolean,
 		default: false,
@@ -97,8 +101,7 @@ var props = defineProps({
 	},
 });
 //父级传递来的函数，用于回调
-const emit = defineEmits(['reloadTable']);
-const ruleFormRef = ref<FormInstance>();
+const emit = defineEmits(['reloadTable', 'returnHref']);
 const loading = ref(false);
 const isImport = ref(true);
 const isShowDialog = ref(false);
@@ -120,7 +123,6 @@ const beforeUpload = (rawFile: any) => {
 //导入
 const Imports = (file: any, fileList: any) => {
 	fileList.value = fileList;
-
 	if (fileList.value?.length) {
 		isImport.value = false;
 	}
@@ -128,22 +130,22 @@ const Imports = (file: any, fileList: any) => {
 const customUpload = () => {
 	loading.value = true;
 	const ifupload = props.ifExcelBol
-		? fileList.value.every((item) => {
+		? fileList.value.every((item:any) => {
 				return beforeUpload(item);
 		  })
 		: true;
-	fileList.value?.forEach((item) => {
+	fileList.value?.forEach((item:any) => {
 		fileRawList.value.push(item.raw);
 	});
 	if (ifupload) {
 		const formData = new FormData();
-		fileRawList.value?.forEach((item) => {
+		fileRawList.value?.forEach((item:any) => {
 			if (props.multiple) {
 				formData.append('fileList', item);
 			} else {
 				formData.append('file', item);
 			}
-		});
+		});		
 		service({
 			url: props.url,
 			method: 'post',
@@ -157,12 +159,21 @@ const customUpload = () => {
 			fileList.value = [];
 			fileRawList.value = [];
 			if (res.data.code === 200) {
-				ElMessage.success(props.area === 'CN' ? '导入成功' : 'Import Successed');
+				ElMessage.success(props.area === 'CN' ? '导入成功' : 'Import Successed' +( props?.inquireData? ', Please Wait Some Time,Now Downloading ZIP File' : ''));
+				if (props?.inquireData) {
+					emit('returnHref', res.data.result);
+				}
 				emit('reloadTable');
 			} else {
-				ElMessage.error(props.area === 'CN' ? '导入失败' : 'Import Failed'); // + res.message
+				ElMessage.error(props.area === 'CN' ? '导入失败' : 'Import Failed！' + res.data.message); 
 			}
-		});
+		}).catch(err=>{
+			loading.value = false;
+			isImport.value = true;
+			fileList.value = [];
+			fileRawList.value = [];
+			ElMessage.error(props.area === 'CN' ? '导入失败' : 'Import Failed！' + err.message); 
+		})
 	}
 };
 // 打开弹窗
@@ -177,19 +188,8 @@ const closeDialog = () => {
 	isImport.value = true;
 	fileList.value = [];
 	fileRawList.value = [];
-	emit('reloadTable');
-};
-// 改变页面容量
-const handleSizeChange = (val: number) => {
-	tableParams.value.pageSize = val;
-	handleQuery();
 };
 
-// 改变页码序号
-const handleCurrentChange = (val: number) => {
-	tableParams.value.Page = val;
-	handleQuery();
-};
 //将属性或者函数暴露给父组件
 defineExpose({ openDialog });
 </script>

@@ -1,5 +1,5 @@
 declare type inventoryParamsType = {
-    inventorySKU?: string;
+    ErpSKU?: string;
 }
 declare type procurementsParamsType = {
     index?: string;

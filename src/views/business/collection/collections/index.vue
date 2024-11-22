@@ -39,6 +39,7 @@
 						<el-option label="集货" value="集货" />
 						<el-option label="截仓" value="截仓" />
 						<el-option label="在途中" value="在途中" />
+						<el-option label="部分入仓" value="部分入仓" />
 						<el-option label="已入仓" value="已入仓" />
 					</el-select>
 				</el-form-item>
@@ -209,6 +210,7 @@
 										<el-dropdown-item @click="exportYanhuo(scope)"> 导出验货单 </el-dropdown-item>
 										<el-dropdown-item @click="exportBoxTag(scope)"> 导出外箱标签 </el-dropdown-item>
 										<el-dropdown-item @click="download(scope)"> 附件下载 </el-dropdown-item>
+										<el-dropdown-item v-if="scope.row.customsDeclarationNo" @click="deblockingBox(scope)" v-auth="'collection:deblocking'"> 解锁 </el-dropdown-item>
 									</el-dropdown-menu>
 								</template>
 							</el-dropdown>
@@ -220,7 +222,7 @@
 				:total="tableParams.total" :page-sizes="[10, 20, 50, 100, 500, 1000]" small="" background=""
 				@size-change="handleSizeChange" @current-change="handleCurrentChange"
 				layout="total, sizes, prev, pager, next, jumper" />
-			<editDialog ref="editDialogRef" :title="editCollectionOrderInfoTitle" @reloadTable="handleQuery" />
+			<editDialog ref="editDialogRef" :title="editCollectionOrderInfoTitle" @reloadTable="getAppPage" />
 		</el-card>
 		<el-dialog v-model="dialogFormVisible" title="附件" style="width: 400px">
 			<el-form label-width="130px">
@@ -234,28 +236,31 @@
 			<template #footer>
 				<span class="dialog-footer">
 					<el-button @click="dialogFormVisible = false">Cancel</el-button>
-					<el-button type="primary" @click="confirm()"> OK </el-button>
+					<!-- <el-button type="primary" @click="confirm"> OK </el-button> -->
 				</span>
 			</template>
 		</el-dialog>
+		<deblockingDialog ref="deblockingDialogRef" :title="deblockingDialogTitle" @reloadTable="getAppPage"/>
 	</div>
 </template>
 <script lang="ts" setup name="administrate">
-import { da, fa } from 'element-plus/es/locale';
 import draggable from 'vuedraggable';
-import { ref, Ref, onMounted, reactive, computed } from 'vue';
+import { ref, onMounted, reactive } from 'vue';
 import router from '/@/router';
-import { onBeforeRouteUpdate } from 'vue-router';
 import { getAPI } from '/@/utils/axios-utils';
 import { service } from '/@/utils/request';
 import moment from 'moment';
-import { get } from 'http';
 import { Refresh, Setting, DCaret, Grid } from '@element-plus/icons-vue';
 import { ElMessageBox, ElMessage, ElNotification } from 'element-plus';
-import { Session } from '/@/utils/storage';
 import { collectionOrderInfoPage } from '/@/api/modular/main/collections.ts';
-import { SysAuthApi, SysUserApi,SysDictDataApi } from '/@/api-services/api';
+import { SysAuthApi, SysDictDataApi } from '/@/api-services/api';
+import deblockingDialog from './component/deblockingDialog.vue';
+
 const editDialogRef = ref();
+const deblockingDialogRef = ref();
+
+const deblockingDialogTitle = ref('解锁集货单');
+
 const loading = ref(true);
 let dialogFormVisible = ref(false);
 let Exportloading = ref<any>(false);
@@ -705,7 +710,7 @@ let OrderColumns = ref([{
 	sorter: true,
 	checked: true,
 	dataIndex: 'cutOffDate',
-	customRender: val => {
+	customRender: (val: any) => {
 		return val ? moment(val).format('YYYY-MM-DD') : ''
 	}
 },
@@ -757,45 +762,16 @@ function IsDel(row: any) {
 	}
 }
 
+
 async function getAppPage() {
 	loading.value = true;
 	var res = await getAPI(SysAuthApi).apiSysAuthUserInfoGet();
 	ruleFormBase.value = res.data.result ?? { account: '' };
-
-	// service({
-	// 	url: '/api/collectionOrderInfo/page',
-	// 	method: 'get',
-	// 	params: {
-	// 		page: tableParams.value.page,
-	// 		pageSize: tableParams.value.pageSize,
-	// 		startTime: queryList.time.length ? moment(queryList.time[0]).format('YYYY-MM-DD') : '',
-	// 		endTime: queryList.time.length ? moment(queryList.time[1]).format('YYYY-MM-DD') : '',
-	// 		inWareHouseNo: queryList.inWareHouseNo,
-	// 		customsDeclarationNo: queryList.customsDeclarationNo,
-	// 		internalProductName: queryList.internalProductName,
-	// 		ecvvBoxNo: queryList.ecvvBoxNo,
-	// 		purchaseContractNo: queryList.purchaseContractNo,
-	// 		shippingMethod: queryList.shippingMethod,
-	// 		state: queryList.state,
-	// 		field: tableParams.value.field,
-	// 		order: tableParams.value.order,
-	// 		destination: queryList.destination,
-	// 	},
-	// }).then((data) => {
-	// 	if (data.data.type == 'success') {
-	// 		tableData.splice(0, tableData.length);
-	// 		data.data.result.items.forEach((element: any) => {
-	// 			tableData.push(element);
-	// 		});
-	// 		tableParams.value.total = data.data.result.total;
-	// 	}
-	// 	loading.value = false;
-	// });
 	queryList.startTime = queryList.time.length ? moment(queryList.time[0]).format('YYYY-MM-DD') : '';
 	queryList.endTime = queryList.time.length ? moment(queryList.time[1]).format('YYYY-MM-DD') : '';
-	var res = await collectionOrderInfoPage(Object.assign(queryList, tableParams.value));
-	tableData.value = res.data.result?.items ?? [];
-	tableParams.value.total = res.data.result?.total;
+	var result = await collectionOrderInfoPage(Object.assign(queryList, tableParams.value));
+	tableData.value = result.data.result?.items ?? [];
+	tableParams.value.total = result.data.result?.total;
 	loading.value = false;
 
 	service({
@@ -839,11 +815,7 @@ async function getAppPage() {
 
 
 //行样式
-const tableRowClassName = ({
-	rowIndex
-}: {
-	rowIndex: number
-}) => {
+const tableRowClassName = ({rowIndex}:{rowIndex: number}) => {
 	if (tableData?._rawValue[rowIndex].warnTagCount) {
 		return 'warnTag'
 	}
@@ -900,13 +872,13 @@ function downloadfile(res: any) {
 	var contentDisposition = res.headers['content-disposition'];
 	var patt = new RegExp('filename=([^;]+\\.[^\\.;]+);*');
 	var result = patt.exec(contentDisposition);
-	var filename = result[1];
+	var filename = result?.[1];
 	var downloadElement = document.createElement('a');
 	var href = window.URL.createObjectURL(blob); // 创建下载的链接
 	var reg = /^["](.*)["]$/g;
 	downloadElement.style.display = 'none';
 	downloadElement.href = href;
-	downloadElement.download = decodeURI(filename.replace(reg, '$1')); // 下载后文件名
+	downloadElement.download = decodeURI(filename?.replace(reg, '$1') ?? ''); // 下载后文件名
 	document.body.appendChild(downloadElement);
 	downloadElement.click(); // 点击下载
 	document.body.removeChild(downloadElement); // 下载完成移除元素
@@ -1042,7 +1014,6 @@ function deletefun(val: any) {
 //导出报关件
 function exportBaoguan(val: any) {
 	if (Exportloading.value === true) {
-
 		ElMessage({
 			type: 'warning',
 			message: '正在导出文件，请等待本次导出完成后再进行导出操作',
@@ -1123,7 +1094,7 @@ function exportYanhuo(val: any) {
 }
 // ElMessage.error(row.internalProductName+'：数据异常，总净重大于总毛重。')
 //导出外箱标签
-function exportBoxTag(val: any) {
+const exportBoxTag = (val: any) => {
 	service({
 		url: `/api/collectionOrderInfo/exportWord/${val.row.documentNo}/${val.row.id}`,
 		method: 'get',
@@ -1159,7 +1130,7 @@ function exportBoxTag(val: any) {
 }
 
 //附件下载
-function download(val: any) {
+const download = (val: any) => {
 	dialogFormVisible.value = !dialogFormVisible.value;
 	service({
 		url: `/api/collectionOrderInfo/getFileList/${val.row.id}`,
@@ -1168,6 +1139,11 @@ function download(val: any) {
 	}).then((data) => {
 		fileList.value = data.data.result;
 	});
+}
+// 解锁集货单状态
+const deblockingBox = (val: any) => {
+	deblockingDialogTitle.value = `解锁集货单（${val.row.documentNo}）`;
+	deblockingDialogRef.value.openDialog(val.row);
 }
 //查询
 function queryfun(): void {

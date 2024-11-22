@@ -144,7 +144,7 @@
 					<el-button style="width: 80px;height: 27px;" :class="{ 'buttonBackground': area == 'SA' }"
 						v-if="IsAdmin || area == 'SA'" @click="area = 'SA'; switchLanguage()">SA Sourcing</el-button> -->
 				</el-button-group>
-				<tabDragColum :data="TableData" :name="`TableData`" :area="area" @handleData="handleData" @handleRemarkData="handleRemarkData" />
+				<tabDragColum :data="TableData" :name="`TableData`" :tagInfo="true" :area="area" @handleData="handleData" @handleRemarkData="handleRemarkData" />
 			</div>
 			<el-table ref="scrollContainer" :data="tableData" size="lagre" style="width: 100%" v-loading="loading" tooltip-effect="light" @selection-change="handleSelectionChange" row-key="id" border="">
 				<el-table-column width="140" align="center" fixed="left" show-overflow-tooltip="">
@@ -545,7 +545,7 @@
 							</el-tooltip>
 							<div v-else>{{ area == 'CN' ? item.titleCN : item.titleEN }}</div>
 						</template>
-						<template #default="scope" @dblclick="openEdit(scope.row)">
+						<template #default="scope" >
 							<!-- @dblclick="openEdit(scope.row)" 暂时不使用 -->
 							<el-input v-if="scope.row.IsEdit" type="text" v-model="scope.row.creator" clearable="" @keyup.enter.native="keyDown" />
 							<!-- <div>
@@ -651,9 +651,9 @@ const IsEdit = ref<any>(false);
 const IsAdmin = ref<any>(false);
 const visibleTextarea2 = ref(false);
 const aSIN = ref('');
-const queryParams = ref<AsinParamsType>({});
+const queryParams = ref<any>({});
 const area = ref<any>('CN');
-const tableParams = ref({
+const tableParams = ref<any>({
 	page: 1,
 	pageSize: 50,
 	total: 0,
@@ -817,7 +817,7 @@ const switchLanguage = () => {
 
 const handleData = (list: any) => {
 	if (list?.length) {
-		list.map((item, index) => {
+		list.map((item: any, index: number) => {
 			if (item.dataIndex === TableData.value[index].dataIndex) {
 				TableData.value[index].checked = item.checked;
 				TableData.value[index].fixed = item.fixed;
@@ -827,7 +827,7 @@ const handleData = (list: any) => {
 };
 const handleRemarkData = (list: any) => {
 	if (list?.length) {
-		list.map((item, index) => {
+		list.map((item: any, index: number) => {
 			if (item.dataIndex === TableData.value[index].dataIndex) {
 				TableData.value[index].desc = item.desc;
 				TableData.value[index].remark = item.remark;
@@ -1048,13 +1048,13 @@ const downloadfile = (res: any) => {
 	var patt = new RegExp("filename\\*=(UTF-8['']*[''])([^';]+)(?:.*)");
 	//decodeURIComponent()
 	var result = patt.exec(contentDisposition);
-	var filename = result[2];
+	var filename = result?.[2];
 	var downloadElement = document.createElement('a');
 	var href = window.URL.createObjectURL(blob); // 创建下载的链接
 	var reg = /^["](.*)["]$/g;
 	downloadElement.style.display = 'none';
 	downloadElement.href = href;
-	downloadElement.download = decodeURIComponent(filename.replace(reg, '$1')); // 下载后文件名
+	downloadElement.download = decodeURIComponent(filename?.replace(reg, '$1') ?? ''); // 下载后文件名
 	document.body.appendChild(downloadElement);
 	downloadElement.click(); // 点击下载
 	document.body.removeChild(downloadElement); // 下载完成移除元素
@@ -1135,7 +1135,7 @@ const delASINBasicData = (row: any) => {
 	})
 		.then(async () => {
 			if (row.id === 0) {
-				const selectedIndex = tableData.value.findIndex((item) => item.id === row.id);
+				const selectedIndex = tableData.value.findIndex((item: any) => item.id === row.id);
 				tableData.value.splice(selectedIndex, 1);
 				IsEdit.value = false;
 			} else {

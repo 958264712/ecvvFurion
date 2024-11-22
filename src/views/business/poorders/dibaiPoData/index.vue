@@ -131,8 +131,8 @@ function ImportsOrderDate(data: any) {
 		}
 	});
 }
-const selectedRows = ref([]);
-const selectedRowKeys = ref([]);
+const selectedRows = ref<any>([]);
+const selectedRowKeys = ref<any>([]);
 
 // 开始准备轮询
 const multipleExport = () => {

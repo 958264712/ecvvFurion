@@ -1,29 +1,28 @@
 <script lang="ts" setup name="packingInformation">
 import { ref, onMounted, reactive } from 'vue';
-import { ElMessageBox, ElMessage, ElNotification } from 'element-plus';
 import { getShipmentDetails, ExportShipmentDetails } from '/@/api/modular/main/collections.ts';
 import other from '/@/utils/other.ts';
 import moment from 'moment';
-import { SysCodeGenConfigApi, SysConstApi, SysDictDataApi, SysDictTypeApi, SysEnumApi } from '/@/api-services/api';
+import { Session } from '/@/utils/storage';
+import {SysDictDataApi} from '/@/api-services/api';
 import { getAPI } from '/@/utils/axios-utils';
-import tabDragColum from '/@/components/tabDragColum/index.vue';
 
 const tagoptions = ref<any>([]);
-const tableData: any[] = ref([]);
+const tableData = ref<any>([]);
 const queryParams = reactive<any>({
 	time: [],
 	startTime_departureDate: '',
 	endTime_departureDate: '',
 });
-const tableParams = ref({
+const tableParams = ref<any>({
 	page: 1,
 	pageSize: 50,
 	total: 0,
 });
 const cardLoading = ref(false);
 const loading = ref(false);
-const selectedRows = ref([]);
-const selectedRowKeys = ref([]);
+const selectedRows = ref<any>([]);
+const selectedRowKeys = ref<number[]>([]);
 const area = ref('CN');
 const TableData = ref<any>([
 	{
@@ -62,15 +61,27 @@ const TableData = ref<any>([
 		checked: true,
 		fixed: false,
 	},
-	// {
-	// 	titleCN: '装箱个数',
-	// 	dataIndex: 'quantityInBoxes',
-	// 	checked: true,
-	// 	fixed: false,
-	// },
+	 {
+	 	titleCN: '装箱个数',
+	 	dataIndex: 'quantityInBoxes',
+	 	checked: true,
+	 	fixed: false,
+	 },
 	{
 		titleCN: '装箱数',
 		dataIndex: 'packBoxesQuantity',
+		checked: true,
+		fixed: false,
+	},
+	{
+		titleCN: '实收箱数',
+		dataIndex: 'actualBoxesQuantity',
+		checked: true,
+		fixed: false,
+	},
+	{
+		titleCN: '实收数量',
+		dataIndex: 'actualQuantityInBoxes',
 		checked: true,
 		fixed: false,
 	},
@@ -89,12 +100,16 @@ const TableData = ref<any>([
 ]);
 
 // 查询
-const getAppPage = async (): void => {
+const getAppPage = async (): Promise<void> => {
 	loading.value = true;
 	var res = await getAPI(SysDictDataApi).apiSysDictDataDataListCodeGet('warn_tag');
 	tagoptions.value = res.data.result;
 	queryParams.startTime_departureDate = queryParams.time?.length ? moment(queryParams.time[0]).format('YYYY-MM-DD') : '';
 	queryParams.endTime_departureDate = queryParams.time?.length ? moment(queryParams.time[1]).format('YYYY-MM-DD') : '';
+	if (Session.get('queryObj')?.ifquery === false) {
+		queryParams.documentNo = Session.get('queryObj')?.documentNo ?? undefined;
+		Session.set('queryObj', {});
+	}
 	await getShipmentDetails(Object.assign(queryParams, tableParams.value)).then((res) => {
 		//tableData.value = res.data.result.items;
 		tableParams.value.total = res.data.result?.total;
@@ -116,14 +131,7 @@ const resetfun = (): void => {
 	});
 	getAppPage();
 };
-//判断标签是否存在于集合中
-function IsTag(tag: any) {
-	const element = tagoptions.value.find((item) => item.value === tag);
-	if (element) {
-		return element.code;
-	}
-	return '#DE2910';
-}
+
 onMounted(() => {
 	getAppPage();
 });
@@ -140,7 +148,7 @@ const handleCurrentChange = (val: number): void => {
 	getAppPage();
 };
 //排序
-const handleSort = (v: any) => {
+const handleSort = (v: any): void => {
 	tableParams.value.order = v.order;
 	tableParams.value.field = v.prop;
 	getAppPage();
@@ -155,7 +163,7 @@ const selectChange = (selection: any) => {
 	});
 };
 // 导出选中
-const SelectedExport = async (coltype) => {
+const SelectedExport = async (coltype: number): Promise<void> => {
 	cardLoading.value = true;
 	await ExportShipmentDetails(Object.assign({ type: 0, coltype: coltype, idList: selectedRowKeys.value, destination: queryParams.destination, documentNo: queryParams.documentNo })).then((res) => {
 		cardLoading.value = false;
@@ -165,7 +173,7 @@ const SelectedExport = async (coltype) => {
 	});
 };
 // 导出所有
-const AllExport = async (coltype) => {
+const AllExport = async (coltype: number): Promise<void> => {
 	cardLoading.value = true;
 	await ExportShipmentDetails(Object.assign({ type: 1, queryParams, coltype: coltype }, queryParams, tableParams.value)).then((res) => {
 		cardLoading.value = false;

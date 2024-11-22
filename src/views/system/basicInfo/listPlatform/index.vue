@@ -26,7 +26,7 @@ const editDialogRef = ref();
 const editCollectionOrderInfoTitle = ref('');
 const area = ref('CN');
 
-const tableParams = ref({
+const tableParams = ref<any>({
 	page: 1,
 	pageSize: 20,
 });
@@ -150,12 +150,12 @@ const reset = () => {
 const getSiteAndListPlatform = async () => {
 	await getSitesListPlatform().then(res=>{
 		if(res.data.type === 'success'){
-			res.data.result.sites?.map(item=>{
+			res.data.result.sites?.map((item: any)=>{
 				let obj = { label: item, value:item }
 				siteList.value.push(obj)
 				siteItemList.value.push(obj)
 			})
-			res.data.result.listngPlatfroms?.map(item=>{
+			res.data.result.listngPlatfroms?.map((item: any)=>{
 				let obj = { label: item, value:item }
 				platformList.value.push(obj)
 			})

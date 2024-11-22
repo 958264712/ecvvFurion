@@ -46,7 +46,7 @@
 						</el-dropdown>
 					</div>
 				</div>
-				<tabDragColum :data="TableData" :name="`InventoryManagementData`" :area="area" @handleData="handleData" @handleRemarkData="handleRemarkData" />
+				<tabDragColum :data="TableData" :tagInfo="true" :name="`InventoryManagementData`" :area="area" @handleData="handleData" @handleRemarkData="handleRemarkData" />
 			</div>
 			<el-table
 				:data="tableData"
@@ -200,12 +200,8 @@
 </template>
 <script lang="ts" setup="" name="InventoryManagement">
 import { ref } from 'vue';
-import { service } from '/@/utils/request';
-import { ElMessageBox, ElMessage, ElNotification } from 'element-plus';
-//import { formatDate } from '/@/utils/formatTime';
+import { ElMessage, ElNotification } from 'element-plus';
 import { InventoryManagementInfo, ImportInventoryManagement } from '/@/api/modular/main/uAE_ProcurementDetails.ts';
-import other from '/@/utils/other.ts';
-import { Right } from '@element-plus/icons-vue/dist/types';
 import { QuestionFilled } from '@element-plus/icons-vue';
 import errorDialog from './component/error_table.vue';
 import axios from 'axios';
@@ -215,7 +211,6 @@ import importDialog from '/@/components/importDialog/index.vue';
 const loading = ref(false);
 const errorDialogRef = ref();
 const errorDTitle = ref('');
-const ImportsSalesloading = ref(false);
 const Exportloading = ref(false);
 const dialogFormVisible = ref(false);
 const IsImage = ref(false);
@@ -542,9 +537,8 @@ const options2 = ref([
 		disabled: false,
 	},
 ]);
-const Typevalue = ref<any>('UAE');
-const Namevalue = ref<any>();
-const tableParams = ref({
+
+const tableParams = ref<any>({
 	pageNo: 1,
 	pageSize: 100,
 	total: 0,
@@ -555,7 +549,7 @@ const importType = ref('inventoryManagement');
 const importText = ref('选择站点、表格名，点击"确定"后，选择需要导入的文件，将导入该数据');
 const importsOptionsItem = ref('');
 const importsOptionsItem1 = ref('');
-const importChange = (val) => {
+const importChange = (val: any) => {
 	importsOptionsItem.value = val;
 	if (val === '全部(UAE、SA)') {
 		options2.value.map((item) => {
@@ -583,7 +577,7 @@ const importChange = (val) => {
 		});
 	}
 };
-const importChange1 = (val) => {
+const importChange1 = (val: any) => {
 	importsOptionsItem1.value = val;
 };
 const importFormList = ref<any>([
@@ -614,7 +608,7 @@ const importQuery = () => {
 };
 const handleData = (list: any) => {
 	if (list?.length) {
-		list.map((item, index) => {
+		list.map((item: any, index: number) => {
 			if (item.dataIndex === TableData.value[index].dataIndex) {
 				TableData.value[index].checked = item.checked;
 				TableData.value[index].fixed = item.fixed;
@@ -624,7 +618,7 @@ const handleData = (list: any) => {
 };
 const handleRemarkData = (list: any) => {
 	if (list?.length) {
-		list.map((item, index) => {
+		list.map((item: any, index: number) => {
 			if (item.dataIndex === TableData.value[index].dataIndex) {
 				TableData.value[index].desc = item.desc;
 				TableData.value[index].remark = item.remark;
@@ -754,7 +748,7 @@ function SelectedExport() {
 			Exportloading.value = false;
 		});
 }
-function ExportPurchaseQuantity(site) {
+function ExportPurchaseQuantity(site: any) {
 	Exportloading.value = true;
 	const formData = {
 		type: 1,
@@ -802,13 +796,13 @@ const downloadfile = (res: any) => {
 	var patt = new RegExp("filename\\*=(UTF-8['']*[''])([^';]+)(?:.*)");
 	//decodeURIComponent()
 	var result = patt.exec(contentDisposition);
-	var filename = result[2];
+	var filename = result?.[2];
 	var downloadElement = document.createElement('a');
 	var href = window.URL.createObjectURL(blob); // 创建下载的链接
 	var reg = /^["](.*)["]$/g;
 	downloadElement.style.display = 'none';
 	downloadElement.href = href;
-	downloadElement.download = decodeURIComponent(filename.replace(reg, '$1')); // 下载后文件名
+	downloadElement.download = decodeURIComponent(filename?.replace(reg, '$1') ?? ''); // 下载后文件名
 	document.body.appendChild(downloadElement);
 	downloadElement.click(); // 点击下载
 	document.body.removeChild(downloadElement); // 下载完成移除元素
@@ -820,7 +814,7 @@ function sortfun(v: any) {
 	tableParams.value.prop = v.prop;
 	handleQuery();
 }
-function customHeaderCellStyle({ column, $index }) {
+function customHeaderCellStyle({ column, $index }: any) {
 	// 返回包含 CSS 样式的对象
 	return {
 		backgroundColor: '#e9e9e9	', // 设置表头背景颜色为蓝色

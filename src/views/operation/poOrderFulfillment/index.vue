@@ -1,7 +1,5 @@
 <script lang="ts" setup name="poOrderFulfillment">
 import { ref, watch, onMounted } from 'vue';
-import editDialog from './components/index.vue';
-import newDialog from './components/newPos.vue';
 import other from '/@/utils/other.ts';
 import moment from 'moment';
 import { ElMessage } from 'element-plus';
@@ -11,7 +9,6 @@ import {
 	Import,
 	ImportFolfillingOrdersNoId,
 	getPoFulfillingOrdersList,
-	getConfirmedNewPOsPage,
 	exportPoFulfillingOrders,
 	exportConfirmedNewPOs,
 } from '/@/api/modular/main/poFulfillingOrdersData';
@@ -75,7 +72,7 @@ const options = ref([
 		label: 'SA',
 	},
 ]);
-const handleQuery = async (): void => {
+const handleQuery = async (): Promise<void> => {
 	loading.value = true;
 	if (queryParams.value.site === '全部') {
 		queryParams.value.site = null;
@@ -163,12 +160,12 @@ const exportPo = async (id: any, type: any) => {
 			ElMessage.success('导出成功');
 		});
 	} else if (type === 3) {
-		await exportPoFulfillingOrders({ id }, id, false).then((res) => {
+		await exportPoFulfillingOrders({ id }, id, 'false').then((res) => {
 			other.downloadfile(res);
 			ElMessage.success('导出成功');
 		});
 	} else if (type === 4) {
-		await exportPoFulfillingOrders({ id }, id, true).then((res) => {
+		await exportPoFulfillingOrders({ id }, id, 'true').then((res) => {
 			other.downloadfile(res);
 			ElMessage.success('导出成功');
 		});
@@ -197,8 +194,8 @@ const showModal = (id: any, isImport: number) => {
 	orderFulfillmentId.value = id;
 	dataList.value = dataListPos.value;
 	if (isImport === 0) {
-		let list = [];
-		dataListPos.value.map((item) => {
+		let list:any = [];
+		dataListPos.value.map((item:any) => {
 			list.push(item);
 			if (item.prop === 'swaQuantityConfirmed') {
 				list.push({ label: '实际可发货数量', prop: 'confirmQuantity' });
@@ -213,13 +210,7 @@ const showModal = (id: any, isImport: number) => {
 	visible.value = true;
 	ifClose.value = true;
 };
-const showModal1 = (id: any) => {
-	orderFulfillmentId.value = id;
-	dataList.value = dataListNewPos.value;
-	pointerface.value = getConfirmedNewPOsPage;
-	visible1.value = true;
-	ifClose.value = true;
-};
+
 
 //关闭弹窗
 const close = () => {
@@ -567,7 +558,7 @@ onMounted(() => {
 					</template>
 				</el-dialog>
 			</div>
-			<el-table :data="tableData" style="height: 100%" v-loading="loading" tooltip-effect="light" row-key="id" @selection-change="(selection: any) => selectChange(selection)">
+			<el-table :data="tableData" style="height: 100%" v-loading="loading" tooltip-effect="light" row-key="id">
 				<el-table-column prop="fileName" label="文件名" align="center" show-overflow-tooltip="" />
 				<el-table-column prop="batchId" label="批次号" align="center" />
 				<el-table-column prop="site" label="站点" align="center" />
@@ -586,7 +577,6 @@ onMounted(() => {
 							<template #dropdown>
 								<el-dropdown-menu>
 									<el-dropdown-item @click="showModal(scope.row.id, scope.row.isImport)">POs PANEL</el-dropdown-item>
-									<!-- <el-dropdown-item @click="showModal1(scope.row.id)">Confirmed New POs</el-dropdown-item> -->
 								</el-dropdown-menu>
 							</template>
 						</el-dropdown>

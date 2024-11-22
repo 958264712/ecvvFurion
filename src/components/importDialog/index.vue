@@ -12,13 +12,14 @@
 		},
 	]">
 			<el-select v-if="item.type === 'select'" v-model="ImportParams[item?.select]" size="large"
-				style="width: 300px" @focus="(val) => blurItem(val)" @blur="(val) => blurItem(val)"
-				@change="(val) => item?.change(val)">
+				style="width: 300px" @focus="(val: any) => blurItem(val)" @blur="(val: any) => blurItem(val)"
+				@change="(val: any) => item?.change(val)">
 				<el-option v-for="optionItem in item?.selectList" :value="optionItem.value" :label="optionItem.label"
 					:disabled="optionItem?.disabled ?? false"></el-option>
 			</el-select>
 			<el-date-picker v-else-if="item.type === 'datePicker'" style="width: 300px" size="large"
 				v-model="ImportParams.Time" :type="item?.dateType" placeholder="请选择" />
+
 		</el-form-item>
 		<el-form-item>
 			<el-button style="width: 65px; height: 32px; margin-left: 150px; margin-right: 20px" type="info"
@@ -60,7 +61,7 @@ const close = () => {
 	emit('close', false);
 };
 
-const blurItem = (val) => {
+const blurItem = (val: any) => {
 	if (props.type === 'inventoryManagement') {
 		if (ImportParams.value.value2 !== '金蝶云采购申请单' && val.target.value === '全部(UAE、SA)' && ImportParams.value.value1 === '全部(UAE、SA)') {
 			ImportParams.value.value2 = '';
@@ -85,9 +86,9 @@ const blurItem = (val) => {
 const Imports = useDebounce((file: any) => {
 	ImportParams.value.TimeQuantum = props?.weeks ?? '';
 	const dateObject = new Date(ImportParams.value?.Time ?? null);
-	const options = { year: 'numeric', month: 'long' };
+	const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long' };
 	const formattedDate = new Intl.DateTimeFormat('en-US', options).format(dateObject);
-	let obj = {};
+	let obj: any = {};
 	// 格式化日期
 	ImportsSalesloading.value = true;
 	ifdisabled.value = true;

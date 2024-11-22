@@ -10,7 +10,6 @@ import { SKUOperationPage, SKUOperationUpdate, SKUOperationExport } from '/@/api
 import tabDragColum from '/@/components/tabDragColum/index.vue';
 import { clearEmptyDataByAny } from '/@/utils/constHelper';
 import regexHelper from '/@/utils/regexHelper'; 
-import { el } from 'element-plus/es/locale';
 
 const { clearCharactersByRegex } = regexHelper();
 const router = useRouter();
@@ -22,8 +21,8 @@ const selectedRowKeys = ref<any>([]);
 const selectedRowErp = ref<any>('');
 const disabledList = ref<any>([]);
 const editDialogRef = ref();
-const editCostpeice_BatchTitle = ref('批量修改');
-const activeName = ref('ALL');
+const editCostpeice_BatchTitle = ref<string>('批量修改');
+const activeName = ref<string>('ALL');
 const loading = ref(false);
 const Exportloading = ref<any>(false);
 const visibleTextarea1 = ref(false);
@@ -335,7 +334,7 @@ const TableData = ref<any>([
 
 const handleData = (list: any) => {
 	if (list?.length) {
-		list.map((item, index) => {
+		list.map((item:any, index:number) => {
 			if (item.dataIndex === TableData.value[index].dataIndex) {
 				TableData.value[index].checked = item.checked;
 				TableData.value[index].fixed = item.fixed;
@@ -345,7 +344,7 @@ const handleData = (list: any) => {
 };
 const handleRemarkData = (list: any) => {
 	if (list?.length) {
-		list.map((item, index) => {
+		list.map((item:any, index:number) => {
 			if (item.dataIndex === TableData.value[index].dataIndex) {
 				TableData.value[index].desc = item.desc;
 				TableData.value[index].remark = item.remark;
@@ -454,7 +453,7 @@ const tabsList = ref([
 	},
 ]);
 const area1 = ref('中文表头');
-const changeArea = (val) => {
+const changeArea = (val:string): void => {
 	area.value = val;
 	if (area.value === 'CN') {
 		area1.value = '中文表头';
@@ -462,21 +461,13 @@ const changeArea = (val) => {
 		area1.value = 'English header';
 	}
 };
-const handleQuery = async (): void => {
+const handleQuery = async (): Promise<void> => {
 	loading.value = true;
 	queryLoading.value = true;
 	queryParams.value.Site = activeName.value;
 	if (activeName.value === 'ALL') {
 		queryParams.value.Site = null;
 	}
-	//if (queryParams.value.ErpSkuList?.length > 0) {
-		// queryParams.value.erpTextArea = '';
-		//queryParams.value.ErpSku = '';
-	//} else {
-		//queryParams.value.ErpSku = erpAndGoodsName.value;
-		//queryParams.value.ErpSkuList = null;
-	//}
-
 	var res = await SKUOperationPage(Object.assign(queryParams.value, tableParams.value));
 	tableData.value = res.data.result?.items ?? [];
 	tableParams.value.total = res.data.result?.total;
@@ -489,7 +480,7 @@ const handleQuery = async (): void => {
 	loading.value = false;
 };
 // 切换站点
-const handleClick = (tab, event): void => {
+const handleClick = (tab:any): void => {
 	activeName.value = tab.props.name;
 };
 
@@ -511,7 +502,7 @@ const selectChange = (selection: any): void => {
 	});
 };
 // 导出选中
-const SelectedExport = async (): void => {
+const SelectedExport = async (): Promise<void> => {
 	Exportloading.value = true;
 	await SKUOperationExport(Object.assign({ type: 1, area: area.value, ids: selectedRowKeys.value, isImages: false, site: activeName.value === 'ALL' ? null : activeName.value })).then((res) => {
 		other.downloadfile(res);
@@ -521,7 +512,7 @@ const SelectedExport = async (): void => {
 	});
 };
 // 导出所有
-const AllExport = async (): void => {
+const AllExport = async (): Promise<void> => {
 	if (activeName.value === 'ALL') {
 		queryParams.value.Site = null;
 	}
@@ -546,9 +537,9 @@ const batchModify = (): void => {
 	editDialogRef.value.openDialog();
 };
 // 修改与批量修改
-const disabledfun = async (val: any): void => {
-	if (disabledList.value.some((item) => item === val.row.id)) {
-		const index = disabledList.value.findIndex((item) => item === val.row.id);
+const disabledfun = async (val: any): Promise<void> => {
+	if (disabledList.value.some((item:any) => item === val.row.id)) {
+		const index = disabledList.value.findIndex((item:any) => item === val.row.id);
 		disabledList.value.splice(index, 1);
 	} else {
 		disabledList.value.push(val.row.id);
@@ -556,8 +547,8 @@ const disabledfun = async (val: any): void => {
 		res.data.result?.type === 'success' ? ElMessage.success('Save Successfully!') : null;
 	}
 };
-const disabledAuto = (scope: any): void => {
-	return disabledList.value.some((item) => item === scope.row.id);
+const disabledAuto = (scope: any): boolean => {
+	return disabledList.value.some((item:any) => item === scope.row.id);
 };
 // 改变页面容量
 const handleSizeChange = (val: number): void => {
@@ -687,7 +678,6 @@ onMounted(() => {
 		<el-card shadow="hover" :body-style="{ paddingBottom: '0' }">
 			<el-form :model="queryParams" ref="queryForm" :inline="true">
 				<el-form-item label="品名/库存SKU">
-					<!-- <el-input v-model="queryParams.ErpSku" clearable="" placeholder="请输入品号/库存SKU" /> -->
 					<el-popover :visible="visibleTextarea1" placement="bottom" :width="250">
 						<el-scrollbar height="150px" style="border: 1px solid var(--el-border-color)">
 							<el-input v-model="queryParams.erpTextArea" style="width: 215px"
@@ -702,7 +692,7 @@ onMounted(() => {
 						</div>
 						<template #reference>
 							<el-input v-model="erpAndGoodsName" clearable="" placeholder="请输入,点击展开可输多个"
-								@clear="clearErp" @blur="clearObj">
+								@clear="clearErp" >
 								<template #suffix>
 									<el-icon class="el-input__icon">
 										<ArrowDownBold @click="visibleTextarea1 = !visibleTextarea1"
@@ -717,25 +707,25 @@ onMounted(() => {
 				<el-form-item label="采购国">
 					<el-select clearable="" v-model="queryParams.PurchasingCountry" placeholder="全部">
 						<el-option v-for="(item, index) in buyer" :key="index" :value="item.value"
-							:label="item.label" />
+							:label="item.value" />
 					</el-select>
 				</el-form-item>
 				<el-form-item label="产品是否淘汰">
 					<el-select clearable="" v-model="queryParams.ItemStatus" placeholder="请选择">
 						<el-option v-for="(item, index) in ifoutProduct" :key="index" :value="item.value"
-							:label="item.label" />
+							:label="item.value" />
 					</el-select>
 				</el-form-item>
 				<el-form-item label="库存周转状态">
 					<el-select clearable="" v-model="queryParams.StockTurnover" placeholder="请选择">
 						<el-option v-for="(item, index) in stockStatus" :key="index" :value="item.value"
-							:label="item.label" />
+							:label="item.value" />
 					</el-select>
 				</el-form-item>
 				<el-form-item label="周销量趋势">
 					<el-select clearable="" v-model="queryParams.WeekTrend" placeholder="请选择">
 						<el-option v-for="(item, index) in weekSales" :key="index" :value="item.value"
-							:label="item.label" />
+							:label="item.value" />
 					</el-select>
 				</el-form-item>
 				<!-- <el-form-item label="月销量趋势">
@@ -762,7 +752,7 @@ onMounted(() => {
 					<el-button type="primary" @click="batchModify" style="margin-right: 0px"
 						:disabled="!selectedRowKeys?.length"> 批量修改 </el-button>
 					<el-button type="primary" @click="handleErpList" style="margin-right: 10px"
-						:disabled="(activeName !== 'UAE' || activeName !== 'SA') && !selectedRowErp?.length"> 查询ASIN详情
+						:disabled="(activeName !== 'UAE' && activeName !== 'SA') || !selectedRowErp?.length"> 查询ASIN详情
 					</el-button>
 					<el-dropdown style="margin-right: 20px">
 						<el-button type="primary" :loading="Exportloading"> 导出 </el-button>
@@ -779,7 +769,7 @@ onMounted(() => {
 						<el-radio-button label="English header" value="English header" @change="changeArea('EN')" />
 					</el-radio-group>
 				</div>
-				<tabDragColum :data="TableData" :name="`stockSkuOperationsData`" :area="area"
+				<tabDragColum :data="TableData" :tagInfo="true" :name="`stockSkuOperationsData`" :area="area"
 					@handleData="handleData" @handleRemarkData="handleRemarkData"/>
 			</div>
 			<el-tabs v-model="activeName" type="card" style="height: 85%" @tab-click="handleClick">
@@ -847,7 +837,7 @@ onMounted(() => {
 								<template #default="scope">
 									<el-select v-model="scope.row.itemStatus" :disabled="disabledAuto(scope)">
 										<el-option v-for="(item, index) in ifoutProduct" :key="index"
-											:value="item.value" :label="item.label" />
+											:value="item.value" :label="item.value" />
 									</el-select>
 								</template>
 							</el-table-column>
@@ -891,7 +881,7 @@ onMounted(() => {
 						<el-table-column label="操作" width="140" align="center" fixed="right">
 							<template #default="scope">
 								<el-button size="small" text type="primary"
-									@click="disabledfun(scope)">{{ disabledList.some((item) => item === scope.row.id) ? '编辑' : '保存' }}</el-button>
+									@click="disabledfun(scope)">{{ disabledList.some((item:any) => item === scope.row.id) ? '编辑' : '保存' }}</el-button>
 							</template>
 						</el-table-column>
 					</el-table>

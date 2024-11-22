@@ -125,7 +125,7 @@
 					</el-radio-group>
 					<el-button type="primary" style="margin-left: 20px" :loading="exportDataLoading" @click="exportDataDialog">导出记录</el-button>
 				</div>
-				<tabDragColum :data="TableData" :name="`newasinmanagementData`" :area="area" @handleData="handleData" @handleRemarkData="handleRemarkData" />
+				<tabDragColum :data="TableData" :tagInfo="true" :name="`newasinmanagementData`" :area="area" @handleData="handleData" @handleRemarkData="handleRemarkData" />
 			</div>
 			<el-tabs v-model="selectcountry" type="card" style="height: 85%" @tab-click="handleClick">
 				<el-tab-pane :label="item.label" :name="item.name" style="height: 100%" v-for="item in tabsList">
@@ -381,7 +381,6 @@ import down from '/@/assets/down.png';
 import up from '/@/assets/up.png';
 import regexHelper from '/@/utils/regexHelper';
 import { clearEmptyDataByAny } from '/@/utils/constHelper';
-import { el } from 'element-plus/es/locale';
 
 const { clearCharactersByRegex } = regexHelper();
 const loading = ref(false);
@@ -392,7 +391,6 @@ const exportTableLoading = ref(false);
 const tableData = ref<any>([]);
 const exportData = ref<any>([]);
 const selectedRows = ref<any>([]);
-const dialogFormVisible = ref(false);
 const exportVisible = ref(false);
 const ifClose = ref(false);
 const visibleTextarea1 = ref(false);
@@ -400,17 +398,16 @@ const isWatch = ref(true);
 const visibleTextarea2 = ref(false);
 const erpAndGoodsName = ref('');
 const aSIN = ref('');
-const Typevalue = ref<any>('UAE');
 const timer = ref<any>();
 
 let IsEdit = ref<any>(false);
 const queryParams = ref<any>({ country: 'UAE' });
 
-const tableParams = ref({
+const tableParams = ref<any>({
 	page: 1,
 	pageSize: 50,
 });
-const tableParams1 = ref({
+const tableParams1 = ref<any>({
 	page: 1,
 	pageSize: 20,
 });
@@ -426,7 +423,7 @@ const tabsList = ref([
 ]);
 const area = ref('CN');
 const area1 = ref('中文表头');
-const changeArea = (val) => {
+const changeArea = (val:string) => {
 	area.value = val;
 	if (area.value === 'CN') {
 		area1.value = '中文表头';
@@ -911,7 +908,7 @@ const TableData = ref<any>([
 const handleData = (list: any) => {
 	if (list?.length) {
 		// TableData.value = list;
-		list.map((item, index) => {
+		list.map((item:any, index:number) => {
 			if (item.dataIndex === TableData.value[index].dataIndex) {
 				TableData.value[index].checked = item.checked;
 				TableData.value[index].fixed = item.fixed;
@@ -921,7 +918,7 @@ const handleData = (list: any) => {
 };
 const handleRemarkData = (list: any) => {
 	if (list?.length) {
-		list.map((item, index) => {
+		list.map((item:any, index:number) => {
 			if (item.dataIndex === TableData.value[index].dataIndex) {
 				TableData.value[index].desc = item.desc;
 				TableData.value[index].remark = item.remark;
@@ -929,19 +926,19 @@ const handleRemarkData = (list: any) => {
 		});
 	}
 };
-const splitRank = (row, column) => {
+const splitRank = (row:any, column:any) => {
 	if (column.property) {
 		let list = [];
 		if (row[column.property]) {
 			list = row[column.property].split('#');
 		}
 		let content = `<div>`;
-		let hArr = [];
-		list.map((item, index) => {
+		let hArr:any = [];
+		list.map((item:any, index:number) => {
 			let iArr = item.split('\n');
 			if (iArr?.length > 2) {
-				let arr = [];
-				iArr.map((item, index) => {
+				let arr:any = [];
+				iArr.map((item:any, index:number) => {
 					let str = '';
 					if (index !== iArr?.length - 1) {
 						if (index % 2 === 0) {
@@ -974,8 +971,8 @@ const splitRank = (row, column) => {
 					}
 				});
 			} else {
-				let arr = [];
-				iArr.map((item, index) => {
+				let arr:any = [];
+				iArr.map((item:any, index:number) => {
 					let str = '<div>';
 					if (index % 2 === 0 && item?.length) {
 						if (column.property === 'rankOne' && !(row.rankOneNumber === 0 && row.backRankOneNumber === 0)) {
@@ -1010,7 +1007,7 @@ const splitRank = (row, column) => {
 };
 const selectcountry = ref<string>('UAE');
 // 切换站点
-const handleClick = (tab, event): void => {
+const handleClick = (tab:any, event:any): void => {
 	selectcountry.value = tab.props.name;
 	queryParams.value.country = tab.props.name;
 	Session.set('queryObj', { ifquery: true });
@@ -1152,15 +1149,15 @@ const handleSizeChange1 = (val: number) => {
 };
 
 // 多行筛选
-const showTextarea = (type, bol) => {
+const showTextarea = (type:number, bol:boolean) => {
 	if (type === 1) {
 		visibleTextarea1.value = !bol;
 	} else {
 		visibleTextarea2.value = !bol;
 	}
 };
-const handleConfirm = (type) => {
-	let str_array = [];
+const handleConfirm = (type:number) => {
+	let str_array:any = [];
 	if (type === 1) {
 		str_array = clearCharactersByRegex(queryParams.value.erpTextArea + '');
 	} else {
@@ -1227,7 +1224,7 @@ const reset = () => {
 	Session.set('queryObj', {});
 	handleQuery();
 };
-const handleSortChange = ({ column, prop, order }) => {
+const handleSortChange = ({ column, prop, order }:any) => {
 	if (order !== null) {
 		if (order === 'descending') {
 			queryParams.value.order = 'Desc';
@@ -1255,8 +1252,6 @@ const handleQuery = async () => {
 		queryParams.value.country = Session.get('queryObj')?.country ?? 'UAE';
 		//监听事件没有执行完就已经触发查询事件，所以直接拿到需要搜索的sku赋值给ErpSkuList
 		queryParams.value.erpSkuList = clearEmptyDataByAny(clearCharactersByRegex(Session.get('queryObj')?.erpAndGoodsName ?? undefined));
-		console.log(queryParams.value.erpSkuList,Session.get('queryObj'));
-		
 		erpAndGoodsName.value = Session.get('queryObj')?.erpAndGoodsName ?? undefined;
 		selectcountry.value = Session.get('queryObj')?.country ?? 'UAE';
 		Session.set('queryObj', {});
