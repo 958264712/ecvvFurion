@@ -3,8 +3,8 @@
 		<el-card shadow="hover" :body-style="{ paddingBottom: '0' }" v-show="props.formList?.length">
 			<el-form :model="queryParams" ref="queryForm" :inline="true">
 				<el-form-item :label="item.label" v-for="item in props.formList">
-					<el-input v-model="queryParams[item.prop]" :placeholder="props?.exportBarCode ? '请输入' + `${item.label}支持多个` :'请输入' + `${item.label}`" v-if="!item?.select" />
-					<el-select v-model="queryParams[item.prop]" :placeholder="'请选择' + `${item.label}`" v-else-if="item?.select">
+					<el-input v-model="queryParams[item.prop]" :placeholder="props?.exportBarCode ? '请输入' + `${item.label}支持多个` : '请输入' + `${item.label}`" v-if="!item?.select" />
+					<el-select v-model="queryParams[item.prop]" :placeholder="'请选择' + `${item.label}`" v-else-if="item?.select" >
 						<el-option v-for="ite in item.options" :label="ite.label" :value="ite.value" />
 					</el-select>
 				</el-form-item>
@@ -62,10 +62,20 @@
 					</el-table-column>
 					<el-table-column v-else-if="item.prop === 'exportHistoryDocx'" align="center" :prop="item.prop" :label="item.label" show-overflow-tooltip="">
 						<template #default="scope">
-							{{scope.row?.exportHistoryDocx == 0 ? 'NO' : 'YES'}}
+							{{ scope.row?.exportHistoryDocx == 0 ? 'NO' : 'YES' }}
 						</template>
 					</el-table-column>
-					<el-table-column v-else-if="item.prop" align="center" :prop="item.prop" :label="item.label" show-overflow-tooltip="" />
+					<el-table-column v-else-if="item.prop === 'operation'" :label="item.label" width="120" align="center" fixed="right">
+						<template #default="scope">
+							<component :is="item.render" v-if="item.render" :scope="scope" :row="scope.row" :column="item" />
+						</template>
+					</el-table-column>
+					<el-table-column v-else-if="item.prop" align="center" :prop="item.prop" :label="item.label" show-overflow-tooltip="" :width="item.width">
+						<template #default="scope">
+							<component :is="item.render" v-if="item.render" :scope="scope" :row="scope.row" :column="item" />
+							<span v-else>{{ scope.row[item.prop] }}</span>
+						</template>
+					</el-table-column>
 				</template>
 			</el-table>
 			<el-pagination
@@ -85,10 +95,10 @@
 
 <script lang="ts" setup>
 import { ref, onMounted, watch } from 'vue';
-import { ElMessageBox, ElMessage } from 'element-plus';
+import { ElMessage } from 'element-plus';
 import moment from 'moment';
 import { service } from '/@/utils/request';
-import other from '/@/utils/other.ts';
+
 /**
  * 和弹窗组件el-dialog配套使用，外部弹窗控制大小，本组件主要用于详情，带查询表格展示，不带弹窗
  * infoDataDialog 配套参数
@@ -96,9 +106,10 @@ import other from '/@/utils/other.ts';
  * @props weeks 页面专属属性判断周月
  * @props idName 传入表格名称
  * @props pointerface 传入表格相应接口
- * @props dataList 传入表格column列表
+ * @props dataList 传入表格column列表 prop为字段名 label为列名 render为特殊列传入组件外部可使用h函数进行渲染
  * @props formList 传入筛选列表
  * @props ifClose 操作弹窗
+ * @props defaultValues 给予默认参数
  * @props exportBarCode 导出条形码  --- new po单特有
  * @props site 接口添加站点  --- new po单特有
  */
@@ -108,16 +119,16 @@ declare type formListType<T = any> = {
 	select?: Boolean;
 	options?: [T];
 }[];
-const props = defineProps(['id', 'weeks', 'idName', 'pointerface', 'dataList', 'formList', 'ifClose', 'exportBarCode','site']);
+const props = defineProps(['id', 'weeks', 'idName', 'pointerface', 'dataList', 'formList', 'ifClose', 'exportBarCode', 'site','defaultValues']);
 const loading = ref(false);
 const exportLoading = ref(false);
-const timer = ref(null);
+const timer = ref<NodeJS.Timeout | null>(null);
 const startTime = ref(0);
 const tableData = ref<any>([]);
-const selectedRows = ref([]);
-const selectedRowKeys = ref([]);
-const queryParams = ref<any>({});
-const tableParams = ref({
+const selectedRows = ref<any>([]);
+const selectedRowKeys = ref<any>([]);
+const queryParams = ref<any>(Object.assign({}, props.defaultValues));
+const tableParams = ref<any>({
 	page: 1,
 	pageSize: 20,
 	total: 0,
@@ -130,11 +141,15 @@ const handleQuery = async () => {
 	if (props.idName === 'BatchId') {
 		queryParams.value.TimeQuantum = props.weeks;
 	}
-	if(props.exportBarCode){
+	if (props.exportBarCode) {
 		queryParams.value.site = props.site;
 	}
 	queryParams.value.checkbox = false;
-	var res = await props.pointerface(Object.assign(queryParams.value, tableParams.value));
+	const params = {
+        ...queryParams.value,
+        ...tableParams.value
+    };
+    var res = await props.pointerface(params);
 	tableData.value = res.data.result?.items ?? [];
 	tableParams.value.total = res.data.result?.total;
 	loading.value = false;
@@ -157,10 +172,10 @@ const exportBarCode = async () => {
 // 轮询
 const inquireData = (fileName: String) => {
 	const reload = () => {
-		clearTimeout(timer.value); // 清除定时器
+		clearTimeout(timer.value as NodeJS.Timeout); // 清除定时器
 		// 超过3分钟则停止轮询
 		if (new Date().getTime() - startTime.value > 3 * 60 * 1000) {
-			clearTimeout(timer.value);
+			clearTimeout(timer.value as NodeJS.Timeout);
 			return;
 		}
 		timer.value = setTimeout(() => {
@@ -178,7 +193,7 @@ const inquireData = (fileName: String) => {
 			window.open(res.data.result, '_blank');
 			exportLoading.value = false;
 			ElMessage.success('Export Success!');
-			handleQuery()
+			handleQuery();
 		}
 	});
 };
@@ -207,7 +222,6 @@ const handleCurrentChange = (val: number) => {
 watch(
 	() => props.id,
 	(val) => {
-		queryParams.value[props.idName] = props.id;
 		handleQuery();
 	}
 );
@@ -216,11 +230,20 @@ watch(
 	() => {
 		if (props.ifClose) {
 			queryParams.value = {};
-			exportLoading.value = false
-		}else{
-			if(props.exportBarCode)return clearTimeout(timer.value);
+			exportLoading.value = false;
+		} else {
+			if (props.exportBarCode) return clearTimeout(timer.value as NodeJS.Timeout);
 		}
 	}
+);
+watch(
+    () => props.defaultValues,
+    (newVal) => {
+        if (newVal) {
+            queryParams.value = { ...newVal };
+        }
+    },
+    { deep: true }
 );
 onMounted(() => {
 	handleQuery();
