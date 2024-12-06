@@ -191,7 +191,7 @@ const platformStoreOptions = ref<any>([]);
 const activeNames = ref('1');
 const selectBox = ref<any>();
 
-const shippingMethodOptions = ref(['海运', '空运', '快递', '小包']);
+const shippingMethodOptions = ref(['海运', '空运', '快递', '小包','海运(KG计费)']);
 const stateOptions = ref(['集货', '截仓', '在途中', '已入仓']);
 const payerOptions = ref(['国内支付', '迪拜支付']);
 const currencyOptions = ref([

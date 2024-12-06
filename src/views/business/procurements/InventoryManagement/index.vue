@@ -323,7 +323,7 @@ const TableData = ref<any>([
 		desc: '',
 	},
 	{
-		titleCN: 'ERP可用库存-UAE仓',
+		titleCN: 'ERP库存数量-UAE仓',
 		dataIndex: 'erpAvailableStockUAE',
 		checked: true,
 		fixed: false,
@@ -331,7 +331,7 @@ const TableData = ref<any>([
 		desc: '',
 	},
 	{
-		titleCN: 'ERP可用库存-SA仓',
+		titleCN: 'ERP库存数量-SA仓',
 		dataIndex: 'erpAvailableStockSA',
 		checked: true,
 		fixed: false,

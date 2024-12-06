@@ -1,16 +1,15 @@
-<script lang="ts" setup name="other_warehouse_receipts">
+<script lang="ts" setup name="other_warehouse_receipts_info">
 import { ref, onMounted, watch, h } from 'vue';
-import { pYYOtherWarehouseReceiptsBacthPage, getAssociatedOutboundOrder, associatedOutboundOrder, getCollectionOrder, associatedCollectionOrder } from '/@/api/modular/main/financial.ts';
+import { pYYOtherWarehouseReceiptsPage, getCollectionOrder, getAssociatedOutboundOrder, associatedOutboundOrder, associatedCollectionOrder } from '/@/api/modular/main/financial.ts';
 import { ElMessage, ElButton } from 'element-plus';
 import { ArrowDownBold, ArrowUpBold } from '@element-plus/icons-vue';
 import moment from 'moment';
-import axios from 'axios';
 import { clearEmptyDataByAny } from '/@/utils/constHelper';
 import regexHelper from '/@/utils/regexHelper';
-import { useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import newInfoData from '/@/components/newInfoDataDialog/index.vue';
 
-const router = useRouter();
+const route = useRoute();
 const { clearCharactersByRegex } = regexHelper();
 const tableData = ref<any>([]);
 const queryParams = ref<any>({ CreatorTime: '' });
@@ -54,20 +53,32 @@ const TableData = ref<any>([
 		fixed: false,
 	},
 	{
-		titleCN: '总数量',
-		dataIndex: 'totalQuantity',
+		titleCN: '库存SKU',
+		dataIndex: 'erpSku',
 		checked: true,
 		fixed: false,
 	},
 	{
-		titleCN: '总金额',
-		dataIndex: 'totalAmount',
+		titleCN: '配货名称',
+		dataIndex: 'distributionName',
 		checked: true,
 		fixed: false,
 	},
 	{
-		titleCN: '含税总金额',
-		dataIndex: 'totalAmountIncludingTax',
+		titleCN: '入库数量',
+		dataIndex: 'inventoryQuantity',
+		checked: true,
+		fixed: false,
+	},
+	{
+		titleCN: '含税单价',
+		dataIndex: 'unitPrice',
+		checked: true,
+		fixed: false,
+	},
+	{
+		titleCN: '含税金额',
+		dataIndex: 'amountIncludingTax',
 		checked: true,
 		fixed: false,
 	},
@@ -84,8 +95,26 @@ const TableData = ref<any>([
 		fixed: false,
 	},
 	{
-		titleCN: '入库备注',
+		titleCN: '入库类别',
+		dataIndex: 'inboundCategory',
+		checked: true,
+		fixed: false,
+	},
+	{
+		titleCN: '入库单备注',
 		dataIndex: 'remarksOnTheWarehouseReceipt',
+		checked: true,
+		fixed: false,
+	},
+	{
+		titleCN: '总数量',
+		dataIndex: 'totalQuantity',
+		checked: true,
+		fixed: false,
+	},
+	{
+		titleCN: '总金额',
+		dataIndex: 'totalAmount',
 		checked: true,
 		fixed: false,
 	},
@@ -103,8 +132,6 @@ const outWarehouseTitle = ref('关联出库单');
 const collectionTitle = ref('关联集货单');
 const outWarehouseId = ref(undefined);
 const collectionId = ref(undefined);
-const outWarehouseEntryNumber = ref('');
-const collectionEntryNumber = ref('');
 const outWarehouseLoading = ref(false);
 const collectionLoading = ref(false);
 const outWarehouseFormList = ref<any>([
@@ -173,7 +200,7 @@ const outWarehouseDataList = ref<any>([
 			return h(
 				ElButton,
 				{
-					onClick: () => outWarehouseMatch(outWarehouseEntryNumber.value, row.deliveryNoteNumber),
+					onClick: () => outWarehouseMatch(route.query.id, row.deliveryNoteNumber),
 					type: 'primary',
 				},
 				'关联'
@@ -209,7 +236,7 @@ const collectionDataList = ref<any>([
 			return h(
 				ElButton,
 				{
-					onClick: () => collectionMatch(collectionEntryNumber.value, row.inWareHouseNo),
+					onClick: () => collectionMatch(route.query.id, row.inWareHouseNo),
 					type: 'primary',
 				},
 				'关联'
@@ -217,74 +244,14 @@ const collectionDataList = ref<any>([
 		},
 	},
 ]);
-
-// 查询
-const handleQuery = async (): Promise<void> => {
-	loading.value = true;
-	queryParams.value.startCreatorTime = queryParams.value.CreatorTime ? moment(queryParams.value.CreatorTime[0]).format('YYYY-MM-DD') : undefined;
-	queryParams.value.endCreatorTime = queryParams.value.CreatorTime ? moment(queryParams.value.CreatorTime[1]).format('YYYY-MM-DD') : undefined;
-	await pYYOtherWarehouseReceiptsBacthPage(Object.assign(queryParams.value, tableParams.value)).then((res) => {
-		tableParams.value.total = res.data.result?.total;
-		tableData.value = res.data.result.items;
-	});
-	loading.value = false;
-};
-// 导入其它入库单
-function Imports(file: any) {
-	loading.value = true;
-	const formData = new FormData();
-	formData.append('file', file.raw);
-	axios.post((import.meta.env.VITE_API_URL as any) + `/api/pYYOtherWarehouseReceipts/import`, formData).then((res) => {
-		if (res.data.code == 200) {
-			ElMessage.success('Import succeeded');
-			handleQuery();
-			loading.value = false;
-		} else {
-			ElMessage.error(res.message); // + res.message
-			loading.value = false;
-		}
-	});
-}
-onMounted(() => {
-	handleQuery();
-});
-
-// 改变页面容量
-const handleSizeChange = (val: number): void => {
-	tableParams.value.pageSize = val;
-	handleQuery();
-};
-// 改变页码序号
-const handleCurrentChange = (val: number): void => {
-	tableParams.value.page = val;
-	handleQuery();
-};
-const clearErp = () => {
-	erpAndGoodsName.value = '';
-	queryParams.value.erpTextArea = '';
-	queryParams.value.erpSkuList = null;
-};
-// 重置
-const reset = () => {
-	queryParams.value = { erpTextArea: '' };
-	erpAndGoodsName.value = '';
-	handleQuery();
-};
-
-// 跳转详情
-const handleRouter = (id: string) => {
-	router.push(`/financial/inventory_query/other_warehouse_receipts_info?id=${id}`);
-};
 const openOutWarehouse = (row: any) => {
 	outWarehouseId.value = row.id;
-	outWarehouseEntryNumber.value = row.warehouseEntryNumber;
-	outWarehouseTitle.value = `关联出库单（入库单：${row.warehouseEntryNumber}）`;
+	outWarehouseTitle.value = `关联出库单（入库单：${route.query.id}）`;
 	outWarehouseOrderRef.value.openDialog();
 };
 const openCollectionOrder = (row: any) => {
 	collectionId.value = row.id;
-	collectionEntryNumber.value = row.warehouseEntryNumber;
-	collectionTitle.value = `关联集货单（入库单：${row.warehouseEntryNumber}）`;
+	collectionTitle.value = `关联集货单（入库单：${route.query.id}）`;
 	collectionOrderRef.value.openDialog();
 };
 const outWarehouseMatch = async (warehouseEntryNumber: any, associatedNumber: string) => {
@@ -312,6 +279,47 @@ const collectionMatch = async (warehouseEntryNumber: any, associatedNumber: stri
 		.finally(() => {
 			collectionLoading.value = false;
 		});
+};
+
+// 查询
+const handleQuery = async (): Promise<void> => {
+	loading.value = true;
+	queryParams.value.StartCreatorTime = queryParams.value.CreatorTime ? moment(queryParams.value.CreatorTime[0]).format('YYYY-MM-DD') : undefined;
+	queryParams.value.EndCreatorTime = queryParams.value.CreatorTime ? moment(queryParams.value.CreatorTime[1]).format('YYYY-MM-DD') : undefined;
+	await pYYOtherWarehouseReceiptsPage(Object.assign(queryParams.value, tableParams.value)).then((res) => {
+		tableData.value.splice(0, tableData.value.length);
+		tableParams.value.total = res.data.result?.total;
+		res.data.result.items.forEach((element: any) => {
+			tableData.value.push(element);
+		});
+	});
+	loading.value = false;
+};
+
+onMounted(() => {
+	handleQuery();
+});
+
+// 改变页面容量
+const handleSizeChange = (val: number): void => {
+	tableParams.value.pageSize = val;
+	handleQuery();
+};
+// 改变页码序号
+const handleCurrentChange = (val: number): void => {
+	tableParams.value.page = val;
+	handleQuery();
+};
+const clearErp = () => {
+	erpAndGoodsName.value = '';
+	queryParams.value.erpTextArea = '';
+	queryParams.value.erpSkuList = null;
+};
+// 重置
+const reset = () => {
+	queryParams.value = { erpTextArea: '' };
+	erpAndGoodsName.value = '';
+	handleQuery();
 };
 const handleConfirm = () => {
 	let str_array = [];
@@ -419,43 +427,14 @@ watch(
 		<el-card class="full-table" shadow="hover" style="margin-top: 8px">
 			<div class="settingf" style="margin-bottom: 5px; display: flex; justify-content: space-between">
 				<div class="flex flex-wrap items-center">
-					<el-upload :on-change="Imports" :multiple="false" action="#" :show-file-list="false" :auto-upload="false" name="file">
-						<el-button :loading="loading" type="primary">导入</el-button>
-					</el-upload>
+					<el-button type="primary" @click="openOutWarehouse">关联出库单</el-button>
+					<el-button type="primary" @click="openCollectionOrder">关联集货单</el-button>
 				</div>
 			</div>
 			<el-table :data="tableData" size="large" style="width: 100%" v-loading="loading" tooltip-effect="light">
 				<template v-for="(item, index) in TableData" :key="index">
-					<el-table-column
-						v-if="item.dataIndex === 'warehouseEntryNumber'"
-						:fixed="item.fixed"
-						:prop="item.dataIndex"
-						:label="area == 'CN' ? item.titleCN : item.titleEN"
-						align="center"
-						min-width="150"
-						show-overflow-tooltip=""
-					>
-						<template #default="scope">
-							<el-link type="primary" @click="handleRouter(scope.row.warehouseEntryNumber)">{{ scope.row.warehouseEntryNumber }}</el-link>
-						</template>
-					</el-table-column>
-					<el-table-column
-						v-else-if="item.checked"
-						:fixed="item.fixed"
-						:prop="item.dataIndex"
-						:label="area == 'CN' ? item.titleCN : item.titleEN"
-						align="center"
-						min-width="120"
-						show-overflow-tooltip=""
-					/>
+					<el-table-column :fixed="item.fixed" :prop="item.dataIndex" :label="area == 'CN' ? item.titleCN : item.titleEN" align="center" min-width="150" show-overflow-tooltip="" />
 				</template>
-				<el-table-column label="操作" width="280" align="center" fixed="right">
-					<template #default="scope">
-						<el-button type="primary" @click="handleRouter(scope.row.warehouseEntryNumber)">详情</el-button>
-						<el-button type="primary" @click="openOutWarehouse(scope.row)">关联出库单</el-button>
-						<el-button type="primary" @click="openCollectionOrder(scope.row)">关联集货单</el-button>
-					</template>
-				</el-table-column>
 			</el-table>
 			<newInfoData
 				:title="outWarehouseTitle"

@@ -10,6 +10,7 @@ import {
 	getNewPoDataExportHistory,
 	newDownLoadPOZip,
 	exportNewPoData,
+	exportNewPoDataShipments
 } from '/@/api/modular/main/aSINBasicData.ts';
 import { service } from '/@/utils/request';
 import infoDataDialog from '/@/components/infoDataDialog/index.vue';
@@ -636,6 +637,9 @@ const multipleExport = (interfaces: any, type: string) => {
 				inquireData(true); // 调用轮询接口,开始进行轮询
 			}
 		}
+	}).catch((err:any) => {
+		cardLoading.value = false;
+		ElMessage.error(err);
 	});
 };
 
@@ -708,6 +712,19 @@ const poListExport = async () => {
 			ElMessage.error(err);
 		});
 };
+const poListShipmentExport = async () => {
+	cardLoading.value = true;
+	await exportNewPoDataShipments({ poIdList: selectedRowKeys.value })
+		.then((res:any) => {
+			cardLoading.value = false;
+			other.downloadfile(res);
+			ElMessage.success('Export Success!');
+		})
+		.catch((err:any) => {
+			cardLoading.value = false;
+			ElMessage.error(err);
+		});
+}
 // 导入newpodata改变数据状态
 const importNewPoData = () => {
 	importDialogRef.value.openDialog();
@@ -796,6 +813,7 @@ handleQuery();
 							<el-dropdown-item @click="multipleExport(newMultipleExportByTemplateListBin, 'listBin')">PO Picking List-Bin</el-dropdown-item>
 							<el-dropdown-item @click="showModal2"> Export History </el-dropdown-item>
 							<el-dropdown-item @click="poListExport" :disabled="selectedRowKeys?.length <= 0"> PO List </el-dropdown-item>
+							<el-dropdown-item @click="poListShipmentExport" :disabled="selectedRowKeys?.length <= 0">PO List 约仓(Shipments)</el-dropdown-item>
 						</el-dropdown-menu>
 					</template>
 				</el-dropdown>

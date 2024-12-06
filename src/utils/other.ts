@@ -179,7 +179,7 @@ export function handleOpenLink(val: RouteItem) {
  * 导出函数
  * @param res 导出data
  */
-export function downloadfile(res: any) {
+export function downloadfile(res: any,fileName?:string) {
 	var blob = new Blob([res.data], { type: 'application/octet-stream;charset=UTF-8' });
 	var contentDisposition = res.headers['content-disposition'];
 	var patt = new RegExp("filename\\*=(UTF-8['']*[''])([^';]+)(?:.*)");
@@ -190,7 +190,7 @@ export function downloadfile(res: any) {
 	var reg = /^["](.*)["]$/g;
 	downloadElement.style.display = 'none';
 	downloadElement.href = href;
-	downloadElement.download = decodeURIComponent(filename.replace(reg, '$1'))  // 下载后文件名
+	downloadElement.download = decodeURIComponent(fileName || filename.replace(reg, '$1'))  // 下载后文件名
 	document.body.appendChild(downloadElement);
 	downloadElement.click(); // 点击下载
 	document.body.removeChild(downloadElement); // 下载完成移除元素
@@ -290,8 +290,8 @@ const other = {
 	handleOpenLink: (val: RouteItem) => {
 		handleOpenLink(val);
 	},
-	downloadfile: (val: any) => {
-		downloadfile(val);
+	downloadfile: (val: any,fileName?:string) => {
+		downloadfile(val,fileName);
 	},
 	handQueue: (val: any) => {
 		handQueue(val);

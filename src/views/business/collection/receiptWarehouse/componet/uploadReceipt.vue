@@ -1,13 +1,26 @@
-﻿<template>
+<template>
 	<el-dialog v-model="isShowDialog" :title="props.title" :width="800" @close="closeDialog" draggable="">
 		<template #header>
 			<div class="my-header">
-				<h3>{{ props.title }}</h3>
+				<div>
+					<span style="color: #fff; font-size: large; font-weight: bold">{{ props.title }}</span>
+					<span style="color: #ec808d; font-size: large; font-weight: bold">1、选择货代入仓号，</span>
+					<span style="color: #fff; font-size: large; font-weight: bold">2、上传收货清单）</span>
+				</div>
 				<span v-if="props.area === 'CN'">下载<el-link style="color: #4d01ab" underline :href="props.tableAddress">默认模版</el-link></span>
 				<span v-else>Download <el-link style="color: #4d01ab" underline :href="props.tableAddress">Default Template</el-link></span>
 			</div>
 		</template>
 		<div class="import">
+			<el-form :model="queryParams" ref="queryForm" :inline="true">
+				<el-form-item label="绑定入仓号">
+                    <div style="border:1px solid #ccc;padding: 2px;min-height: 20px;min-width: 100px;">
+					    <el-tag v-for="tag in queryParams.inWareHouseNos"  :key="tag" closable :disable-transitions="false" @close="handleClose(tag)">
+						    {{ tag }}
+					    </el-tag>
+                    </div>
+				</el-form-item>
+			</el-form>
 			<div style="display: flex" v-if="props.area === 'CN'">
 				<p>上传需要导入表格<strong v-if="props.multiple">（导入成功后，将覆盖原有数据，支持批量导入）</strong></p>
 			</div>
@@ -29,14 +42,19 @@
 						></path>
 					</svg>
 					<span v-if="props.area === 'CN'">支持<span class="blue">点击</span>或<span class="blue">拖拽文件</span>上传,支持.xls、.xlsx文件类型</span>
-					<p v-else>Please <span class="blue">Click</span> or <span class="blue">Drop file here</span> to upload. .xls and .xlsx file are supported<span v-if="props.multiple">, and can be imported in batches</span></p>
+					<p v-else>
+						Please <span class="blue">Click</span> or <span class="blue">Drop file here</span> to upload. .xls and .xlsx file are supported<span v-if="props.multiple"
+							>, and can be imported in batches</span
+						>
+					</p>
 				</div>
 			</el-upload>
 		</div>
 		<template #footer>
 			<div class="my_footer">
-				<el-button @click="customUpload" :disabled="isImport" type="primary" :loading="loading" size="default">Import</el-button>
-				<el-button @click="closeDialog" size="default">Cancel</el-button>
+				<el-button @click="customUpload" :disabled="isImport" type="primary" :loading="loading" size="default">上传</el-button>
+				<el-button @click="closeDialog" size="default">上一步</el-button>
+				<el-button @click="closeDialog" size="default">取消</el-button>
 			</div>
 		</template>
 	</el-dialog>
@@ -46,21 +64,6 @@
 import { ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import { service } from '/@/utils/request';
-
-/**
- * 和弹窗组件el-dialog配套使用，外部弹窗控制大小，本组件主要用于详情，带查询表格展示，不带弹窗
- * new PO importDialog 配套参数
- * @props tableAddress 下载模板链接
- * @props url 传入import接口
- * @props area 传入中英文格式
- * @props ifExcelBol 是否进行格式约束
- * @props multiple 是否导入多个文件
- * @props inquireData 是否需要轮询
- * @emit close 关闭窗口
- * @emit reloadTable 调用外部接口刷新数据列表
- * @emit returnHref 配合轮询返回数据
- * @emit startTimer 配合刷新页面
- */
 
 //父级传递来的参数
 var props = defineProps({
@@ -80,7 +83,7 @@ var props = defineProps({
 		type: String,
 		default: '',
 	},
-	inquireData:{
+	inquireData: {
 		type: Boolean,
 		default: false,
 	},
@@ -99,19 +102,25 @@ var props = defineProps({
 	multiple: {
 		type: Boolean,
 		dafault: false,
-	},
+    },
+    defaultValues: {
+        type: Object,
+        default:{}
+    }
 });
 //父级传递来的函数，用于回调
-const emit = defineEmits(['reloadTable', 'returnHref','startTimer']);
+const emit = defineEmits(['reloadTable', 'returnHref']);
 const loading = ref(false);
 const isImport = ref(true);
 const isShowDialog = ref(false);
 const fileList = ref<any>([]);
 const fileRawList = ref<any>([]);
-const tableParams = ref({
-	Page: 1,
-	pageSize: 1000,
-});
+
+const queryParams = ref<any>(Object.assign({inWareHouseNos: []}, props.defaultValues));
+const handleClose = (tag: string) => {
+	queryParams.value.inWareHouseNos.splice(queryParams.value.inWareHouseNos.indexOf(tag), 1);
+}
+
 const beforeUpload = (rawFile: any) => {
 	const isXLSX = rawFile.raw.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || rawFile.raw.type === 'application/vnd.ms-excel';
 	if (!isXLSX) {
@@ -131,22 +140,26 @@ const Imports = (file: any, fileList: any) => {
 const customUpload = () => {
 	loading.value = true;
 	const ifupload = props.ifExcelBol
-		? fileList.value.every((item:any) => {
+		? fileList.value.every((item: any) => {
 				return beforeUpload(item);
 		  })
 		: true;
-	fileList.value?.forEach((item:any) => {
+	fileList.value?.forEach((item: any) => {
 		fileRawList.value.push(item.raw);
 	});
 	if (ifupload) {
 		const formData = new FormData();
-		fileRawList.value?.forEach((item:any) => {
+		fileRawList.value?.forEach((item: any) => {
 			if (props.multiple) {
 				formData.append('fileList', item);
 			} else {
 				formData.append('file', item);
 			}
-		});		
+        });
+        queryParams.value.inWareHouseNos.forEach((item:any)=>{
+            formData.append('inWareHouseNos[]', item)
+        })
+
 		service({
 			url: props.url,
 			method: 'post',
@@ -154,29 +167,29 @@ const customUpload = () => {
 			headers: {
 				'Content-Type': 'multipart/form-data; boundary=----WebKitFormBoundarynl6gT1BKdPWIejNq',
 			},
-		}).then((res: any) => {
-			loading.value = false;
-			isImport.value = true;
-			fileList.value = [];
-			fileRawList.value = [];
-			if (res.data.code === 200) {
-				ElMessage.success(props.area === 'CN' ? '导入成功，正在生成文件，请稍候' : 'Import successful, generating files, please wait' +( props?.inquireData? ', Please Wait Some Time,Now Downloading ZIP File' : ''));
-				if (props?.inquireData) {
-					emit('returnHref', res.data.result);
-				}
-				//emit('reloadTable');
-				emit('startTimer');
-				closeDialog();
-			} else {
-				ElMessage.error(props.area === 'CN' ? '导入失败' : 'Import Failed！' + res.data.message); 
-			}
-		}).catch(err=>{
-			loading.value = false;
-			isImport.value = true;
-			fileList.value = [];
-			fileRawList.value = [];
-			ElMessage.error(props.area === 'CN' ? '导入失败' : 'Import Failed！' + err.message); 
 		})
+			.then((res: any) => {
+				loading.value = false;
+				isImport.value = true;
+				fileList.value = [];
+				fileRawList.value = [];
+				if (res.data.code === 200) {
+					ElMessage.success(props.area === 'CN' ? '导入成功' : 'Import Successed' + (props?.inquireData ? ', Please Wait Some Time,Now Downloading ZIP File' : ''));
+					if (props?.inquireData) {
+						emit('returnHref', res.data.result);
+					}
+					emit('reloadTable');
+				} else {
+					ElMessage.error(props.area === 'CN' ? '导入失败' : 'Import Failed！' + res.data.message);
+				}
+			})
+			.catch((err) => {
+				loading.value = false;
+				isImport.value = true;
+				fileList.value = [];
+				fileRawList.value = [];
+				ElMessage.error(props.area === 'CN' ? '导入失败' : 'Import Failed！' + err.message);
+			});
 	}
 };
 // 打开弹窗

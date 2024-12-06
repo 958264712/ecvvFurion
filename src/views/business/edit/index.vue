@@ -792,7 +792,7 @@ const errorData = ref<any>([
 ]);
 let visibleediit = ref(false);
 const uploadRef = ref<UploadInstance>();
-let shippingMethodOptions = ref(['海运', '空运', '快递', '小包']);
+let shippingMethodOptions = ref(['海运', '空运', '快递', '小包','海运(KG计费)']);
 let stateOptions = ref(['集货', '截仓', '在途中','部分入仓', '已入仓']);
 let payerOptions = ref(['国内支付', '迪拜支付']);
 let currencyOptions = ref([
@@ -1492,7 +1492,7 @@ let pricefun = (row: any, index = 0) => {
 	//海运
 	//国际物流费用总额= 物流报价*(总方数)
 	row.totalInternationalLogisticsFee =
-		collectionOrderInfo.shippingMethod == '空运'
+		((collectionOrderInfo.shippingMethod == '空运')||collectionOrderInfo.shippingMethod == '海运(KG计费)')
 			? row.volumeWeight > row.totalGrossWeightKG
 				? roundToThreeDecimalPlaces(collectionOrderInfo.logisticsPrice * row.volumeWeight)
 				: roundToThreeDecimalPlaces(collectionOrderInfo.logisticsPrice * row.totalGrossWeightKG)

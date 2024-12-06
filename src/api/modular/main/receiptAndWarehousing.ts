@@ -3,12 +3,20 @@ enum Api {
 	receiptAndWarehousingPage = '/api/receiptAndWarehousing/page',
 	getShipmentDetails = '/api/receiptAndWarehousing/getShipmentDetails',
 	getAssociationList = '/api/receiptAndWarehousing/getAssociationList',
+	getCollOrderList = '/api/receiptAndWarehousing/getCollOrderList',
 	confirmAssociation = '/api/receiptAndWarehousing/confirmAssociation',
 	receiptAndWarehousingUpdate = '/api/receiptAndWarehousing/update',
 	receiptAndWarehousingImport = '/api/receiptAndWarehousing/import',
 	receiptAndWarehousingExport = '/api/receiptAndWarehousing/export',
 }
 
+// 获取集货列表
+export const getCollOrderList = (params?: any) =>
+	request({
+		url: Api.getCollOrderList,
+		method: 'post',
+		data: params,
+	});
 // 获取批次的收货明细
 export const getShipmentDetails = (params?: any) =>
 	request({
@@ -20,8 +28,8 @@ export const getShipmentDetails = (params?: any) =>
 export const getAssociationList = (params?: any) =>
 	request({
 		url: Api.getAssociationList,
-		method: 'get',
-		params: params,
+		method: 'post',
+		data: params,
 	});
 // 分页查询收货入仓页面
 export const receiptAndWarehousingPage = (params?: any) =>

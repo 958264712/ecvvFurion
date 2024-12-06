@@ -51,15 +51,16 @@
 
 <script lang="ts" setup>
 import { onMounted, reactive } from 'vue';
-import { ElMessageBox, ElNotification } from 'element-plus';
+import { ElMessageBox, ElNotification, NotificationParams } from 'element-plus';
 import { throttle } from 'lodash-es';
 import { Local } from '/@/utils/storage';
 
-import { getAPI, clearAccessTokens } from '/@/utils/axios-utils';
-import { SysOnlineUserApi, SysAuthApi } from '/@/api-services/api';
+import { getAPI } from '/@/utils/axios-utils';
+import { SysOnlineUserApi } from '/@/api-services/api';
 import { SysOnlineUser } from '/@/api-services/models';
 
 import { signalR } from './signalR';
+
 
 const state = reactive({
 	loading: false,
@@ -75,7 +76,9 @@ const state = reactive({
 	},
 	onlineUserList: [] as Array<SysOnlineUser>, // 在线用户列表
 	lastUserState: {
-		online: false,
+		message: '',
+		messageType: 0,
+		title: '',
 		realName: '',
 	}, // 最后接收的用户变更状态信息
 });
@@ -87,11 +90,13 @@ onMounted(async () => {
 		state.lastUserState = {
 			message: data.message,
 			messageType: data.messageType,
-			title:data.title
+			title: data.title,
+			realName: data.realName || '',
 		};
-		if(data.title === '连接ID'){
-			Local.set('poReceiveId',data.message)
-		}else if(data.connectionId === Local.get('connectionId')){
+		if (data.title === '连接ID') {
+			Local.set('poReceiveId', data.message);
+		} else if (data.connectionId === Local.get('connectionId')) {
+			Local.set("resset","true");
 			notificationThrottle();
 		}
 	});
@@ -112,10 +117,10 @@ const notificationThrottle = throttle(
 		ElNotification({
 			title: state.lastUserState.title,
 			message: state.lastUserState.message,
-			type: `${state.lastUserState.messageType === 0 ? 'info' :state.lastUserState.messageType === 1 ? 'success' :state.lastUserState.messageType === 2 ? 'warn' :'error'}`,
+			type: `${state.lastUserState.messageType === 0 ? 'info' : state.lastUserState.messageType === 1 ? 'success' : state.lastUserState.messageType === 2 ? 'warning' : 'error'}`,
 			position: 'bottom-right',
-			duration:0,
-		});
+			duration: 0,
+		} as NotificationParams);
 	},
 	3000,
 	{

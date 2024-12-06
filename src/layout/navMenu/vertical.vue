@@ -75,7 +75,8 @@ const getThemeConfig = computed(() => {
 const setParentHighlight = (currentRoute: RouteToFrom) => {
 	const { path, meta } = currentRoute;
 	const pathSplit = meta?.isDynamic ? meta.isDynamicPath!.split('/') : path!.split('/');
-	if (pathSplit.length >= 4 && meta?.isHide) return pathSplit.splice(0, 3).join('/');
+	const parentPath = pathSplit.splice(0, 3).join('/');
+    if (pathSplit.length >= 4 && meta?.isHide) return parentPath;
 	else return path;
 };
 // 打开外部链接

@@ -1,18 +1,25 @@
 <script lang="ts" setup name="receiptWarehouse">
-import { ref, onMounted, reactive, h ,nextTick} from 'vue';
-import { receiptAndWarehousingPage, receiptAndWarehousingUpdate, receiptAndWarehousingExport,getShipmentDetails,getAssociationList,confirmAssociation } from '/@/api/modular/main/receiptAndWarehousing.ts';
-import { ElMessage, ElButton, ElTable, ElLink, ElText } from 'element-plus';
+import { ref, onMounted, reactive, h, nextTick, watch } from 'vue';
+import {
+	receiptAndWarehousingPage,
+	receiptAndWarehousingUpdate,
+	receiptAndWarehousingExport,
+	getShipmentDetails,
+	getAssociationList,
+	confirmAssociation,
+	getCollOrderList,
+} from '/@/api/modular/main/receiptAndWarehousing.ts';
+import { ElMessage, ElButton, ElTable, ElLink, ElText, ElTag } from 'element-plus';
 import other from '/@/utils/other.ts';
 import moment from 'moment';
 import { SysDictDataApi } from '/@/api-services/api';
 import { useRouter } from 'vue-router';
 import { Session } from '/@/utils/storage';
 import { getAPI } from '/@/utils/axios-utils';
-import newPoImportDialog from '/@/components/newPoImportDialog/index.vue';
 import { useDebounce } from '/@/utils/debounce';
 import infoDataDialog from '/@/components/infoDataDialog/index.vue';
-import openBatchDialog from './componet/openBatchDialog.vue';
-
+import openBatchDialog from '/@/components/newInfoDataDialog/index.vue';
+import changeWareHouseNoDialog from './componet/changeWareHouseNo.vue';
 const router = useRouter();
 const singleTableRef = ref<InstanceType<typeof ElTable>>();
 const tableData = ref<any>([]);
@@ -27,23 +34,94 @@ const tableParams = ref({
 	total: 0,
 });
 const defaultValuesParams = ref<any>({
-	state:'在途'
+	state: ['在途中', '部分入仓'],
+	inWareHouseNos: [],
 });
-
-const baseUrl = import.meta.env.VITE_API_URL;
-const importDialogRef = ref();
-const url = ref('/api/receiptAndWarehousing/import');
-const tableAddress = `${baseUrl}/upload/TableAddress/收货箱单号模板.xlsx`;
-
+const infoDefaultValuesParams = ref<any>({
+	inWareHouseNos: [],
+});
+const dialogKey = ref(0);
 const visible = ref(false);
 const visible1 = ref(false);
 const title = ref('');
 const title1 = ref('');
 const fileName = ref<string>('');
+const infoWareHouseNo = ref('');
 const receiptId = ref('');
 const openBatchId = ref('');
 const openBatchDialogRef = ref();
+const infoDataDialogRef = ref();
+const infoFormList = ref<any>([
+	{
+		label: '绑定入仓号',
+		prop: 'inWareHouseNos',
+		select: false,
+		render: ({ queryParams, item }: { queryParams: any; item: any }) => {
+			return h(
+				'div',
+				{
+					style: { border: '1px solid #ccc', padding: '2px', minHeight: '20px', minWidth: '100px', display: 'flex', flexWrap: 'wrap' },
+				},
+				[
+					queryParams[item.prop]?.map((tag: string) =>
+						h(
+							ElTag,
+							{
+								key: tag,
+								closable: true,
+								disableTransitions: false,
+								onClose: () => handleClose(tag),
+							},
+							() => tag
+						)
+					),
+					h(
+						'div',
+						{
+							style: { marginLeft: '8px' },
+						},
+						[h(ElButton, { type: 'primary', onClick: () => openAndEditWareHouseNo() }, '编辑')]
+					),
+				]
+			);
+		},
+	},
+]);
 const formList = ref<any>([
+	{
+		label: '绑定入仓号',
+		prop: 'inWareHouseNos',
+		select: false,
+		render: ({ queryParams, item }: { queryParams: any; item: any }) => {
+			return h(
+				'div',
+				{
+					style: { border: '1px solid #ccc', padding: '2px', minHeight: '20px', minWidth: '100px', display: 'flex', flexWrap: 'wrap' },
+				},
+				[
+					queryParams[item.prop]?.map((tag: string) =>
+						h(
+							ElTag,
+							{
+								key: tag,
+								closable: true,
+								disableTransitions: false,
+								onClose: () => handleClose(tag),
+							},
+							() => tag
+						)
+					),
+					h(
+						'div',
+						{
+							style: { marginLeft: '8px' },
+						},
+						[h(ElButton, { type: 'primary', onClick: () => openAndEditWareHouseNo() }, '编辑')]
+					),
+				]
+			);
+		},
+	},
 	{
 		label: '货代入仓号',
 		prop: 'inWareHouseNo',
@@ -66,14 +144,15 @@ const formList = ref<any>([
 		label: '状态',
 		prop: 'state',
 		select: true,
+		multiple: true,
 		options: [
 			{
 				label: '集货',
 				value: '集货',
 			},
 			{
-				label: '在途',
-				value: '在途',
+				label: '在途中',
+				value: '在途中',
 			},
 			{
 				label: '部分入仓',
@@ -96,22 +175,24 @@ const dataList = ref<any>([
 				return h(
 					ElLink,
 					{
-						onClick: () => openBoxMatch(row.erpsku, row.id, fileName.value),
+						onClick: () => openBoxMatch(row.boxNo, row.id, fileName.value, infoWareHouseNo.value),
 						style: { color: 'blue' },
 					},
 					'关联'
 				);
 			} else if (row.status === '预匹配') {
 				return h('div', [
-					h('div', [h(ElText, { type: 'danger' }, row.documentNo),]),
-					h('div', [h(
-						ElLink,
-						{
-							onClick: () => confirmReceipt(row.id, true),
-							style: { marginLeft: '8px' },
-						},
-						'确定'
-					),])
+					h('div', [h(ElText, { type: 'danger' }, row.documentNo)]),
+					h('div', [
+						h(
+							ElLink,
+							{
+								onClick: () => confirmReceipt(row.id, row.correlationId),
+								style: { marginLeft: '8px' },
+							},
+							'确定'
+						),
+					]),
 				]);
 			} else {
 				return h('span', row.documentNo);
@@ -154,11 +235,11 @@ const dataList = ref<any>([
 	},
 	{
 		label: '已收箱数',
-		prop: 'actualQuantityInBoxes',
+		prop: 'actualBoxesQuantity',
 	},
 	{
 		label: '已收数量',
-		prop: 'actualBoxesQuantity',
+		prop: 'actualQuantityInBoxes',
 	},
 	{
 		label: '操作',
@@ -167,7 +248,7 @@ const dataList = ref<any>([
 			return h(
 				ElButton,
 				{
-					onClick: () => openBoxMatch(row.erpsku, row.id, fileName.value),
+					onClick: () => openBoxMatch(row.boxNo, row.id, fileName.value, infoWareHouseNo.value),
 					type: 'primary',
 					disabled: row.status === '锁定',
 				},
@@ -187,10 +268,8 @@ const dataList1 = ref<any>([
 		prop: 'inWareHouseNo',
 		width: 135,
 		render: ({ row }: { row: any }) => {
-			if (row.isHigh){
-				return h('div', [
-					h(ElText, { type: 'danger' }, row.inWareHouseNo),
-				]);
+			if (row.isHigh) {
+				return h('div', [h(ElText, { type: 'danger' }, row.inWareHouseNo)]);
 			} else {
 				return h('span', row.inWareHouseNo);
 			}
@@ -225,7 +304,7 @@ const dataList1 = ref<any>([
 			return h(
 				ElButton,
 				{
-					onClick: () => confirmReceipt(row.id, row.correlationId),
+					onClick: () => confirmReceipt(openBatchId.value, row.correlationId),
 					type: 'primary',
 				},
 				'确定关联'
@@ -233,6 +312,99 @@ const dataList1 = ref<any>([
 		},
 	},
 ]);
+
+const title2 = ref('选择货代入仓号 （1、绑定货代入仓号，');
+const changeWareHouseNoDialogRef = ref();
+const defaultValuesWareHouseParams = ref<any>({
+	state: ['在途中', '部分入仓'],
+	inWareHouseNos: [],
+	showFooter:true
+});
+const wareHouseformList = ref<any>([
+	{
+		label: '货代入仓号',
+		prop: 'inWareHouseNo',
+	},
+	{
+		label: '目的地',
+		prop: 'destination',
+		select: true,
+		options: destinationList,
+	},
+	{
+		label: '制单日期',
+		prop: 'productionTime',
+		select: false,
+		date: true,
+		type: 'daterange',
+	},
+	{
+		label: '状态',
+		prop: 'state',
+		select: true,
+		multiple: true,
+		options: [
+			{
+				label: '集货',
+				value: '集货',
+			},
+			{
+				label: '在途中',
+				value: '在途中',
+			},
+			{
+				label: '部分入仓',
+				value: '部分入仓',
+			},
+			{
+				label: '已入仓',
+				value: '已入仓',
+			},
+		],
+	},
+]);
+const dataList2 = ref<any>([
+	{
+		label: '制单时间',
+		prop: 'productionTime',
+		width: 120,
+	},
+	{
+		label: '货代入仓号',
+		prop: 'inWareHouseNo',
+		width: 170,
+	},
+	{
+		label: '集货箱数',
+		prop: 'packBoxesQuantity',
+		width: 70,
+	},
+	{
+		label: '已收箱数',
+		prop: 'actualQuantityInBoxes',
+		width: 65,
+	},
+	{
+		label: '目的地',
+		prop: 'destination',
+		width: 65,
+	},
+	{
+		label: '操作',
+		prop: 'operation',
+		render: ({ row }: { row: any }) => {
+			return h(
+				ElButton,
+				{
+					onClick: () => editWareHouseNo(row.inWareHouseNo),
+					type: 'primary',
+				},
+				'选择'
+			);
+		},
+	},
+]);
+
 const loading = ref(false);
 const exportLoading = ref(false);
 const selectedRowKeys = ref<any>([]);
@@ -326,7 +498,6 @@ const handleQuery = async (): Promise<void> => {
 	});
 	loading.value = false;
 };
-
 //重置
 const resetfun = (): void => {
 	Object.keys(queryParams).forEach((key: any) => {
@@ -335,38 +506,82 @@ const resetfun = (): void => {
 	handleQuery();
 };
 
-const importReceiptWarehouse = () => {
-	importDialogRef.value.openDialog();
-};
-
 const handleRouter = (inWareHouseNo: string) => {
 	Session.set('queryObj', { documentNo: inWareHouseNo, ifquery: false });
 	router.push({ path: '/business/collection/packingInformation' });
 };
 
 // 打开收货明细
-const openReceiptInfo = (id: any, name: string) => {
+const openReceiptInfo = (id: any, name: string, inWareHouseNo: string, inWareHouseNos: any) => {
 	fileName.value = name;
 	receiptId.value = id;
-	title.value = `收货明细（收货单号：${id} 文件名称：${name}）`;
+	infoWareHouseNo.value = inWareHouseNo;
+	title.value = `收货明细（货代入仓号：${inWareHouseNo} 文件名称：${name}）`;
+	infoDefaultValuesParams.value.inWareHouseNos = inWareHouseNos;
 	visible.value = true;
 };
 // 打开箱号匹配
-const openBoxMatch = async (sku: string, id: any, name: string) => {
+const openBoxMatch = async (sku: string, id: any, name: string, inWareHouseNo: string) => {
 	openBatchId.value = id;
 	defaultValuesParams.value.erpsku = sku;
+	defaultValuesParams.value.inWareHouseNos = infoDefaultValuesParams.value.inWareHouseNos ? [...infoDefaultValuesParams.value.inWareHouseNos] : [];
+	 watch(
+        () => infoDefaultValuesParams.value.inWareHouseNos,
+		 (newVal) => {
+			 defaultValuesParams.value.inWareHouseNos = newVal ? [...newVal] : [];
+        },
+        { deep: true }
+    );
 	await nextTick();
-	title1.value = `箱号匹配（SKU：${sku} 收货单号：${id} 文件名称：${name}）`;
+	title1.value = `箱号匹配（SKU：${sku} 货代入仓号：${inWareHouseNo} 文件名称：${name}）`;
 	openBatchDialogRef.value.openDialog();
+};
+const openWhareHouseNo = () => {
+	defaultValuesWareHouseParams.value = {
+		state: ['在途中', '部分入仓'],
+		inWareHouseNos: [],
+		showFooter:true
+	}
+	changeWareHouseNoDialogRef.value.openDialog();
+};
+const editWareHouseNo = (inWareHouseNo: string) => {
+	if (!defaultValuesWareHouseParams.value.inWareHouseNos?.includes(inWareHouseNo)) {
+		defaultValuesWareHouseParams.value.inWareHouseNos = defaultValuesWareHouseParams.value.inWareHouseNos === null ? [] : defaultValuesWareHouseParams.value.inWareHouseNos;
+		defaultValuesWareHouseParams.value.inWareHouseNos.push(inWareHouseNo);
+	}
 };
 // 确定关联
 const confirmReceipt = (id: any, correlationId: any) => {
 	confirmAssociation({ id, correlationId }).then((res) => {
 		ElMessage.success('操作成功!');
 		handleQuery();
+		infoDataDialogRef.value.handleQuery();
 	});
 };
-
+// 添加关闭对话框的处理函数
+const handleDialogClose = () => {
+	visible.value = false;
+	dialogKey.value++; // 更新key强制重新渲染
+	if (infoDataDialogRef.value) {
+		infoDataDialogRef.value.resetData?.(); // 如果组件提供了重置方法就调用
+	}
+};
+const handleClose = (tag: string) => {
+	 const index = infoDefaultValuesParams.value.inWareHouseNos.indexOf(tag);
+    if (index > -1) {
+        infoDefaultValuesParams.value.inWareHouseNos.splice(index, 1);
+		// 确保同步更新
+        defaultValuesParams.value.inWareHouseNos = [...infoDefaultValuesParams.value.inWareHouseNos];
+    }
+};
+const openAndEditWareHouseNo = () => {
+	changeWareHouseNoDialogRef.value.openDialog(receiptId.value);
+	defaultValuesWareHouseParams.value = infoDefaultValuesParams.value;
+};
+const handleReturnValues = (arr?: any) => {
+	infoDefaultValuesParams.value.inWareHouseNos = arr ? [...arr] : [];
+    defaultValuesParams.value.inWareHouseNos = [...infoDefaultValuesParams.value.inWareHouseNos];
+};
 onMounted(async () => {
 	const res = await getAPI(SysDictDataApi).apiSysDictDataDataListCodeGet('destination');
 	destinationList.value = res.data.result;
@@ -457,7 +672,7 @@ const exportReceiptWarehouse = useDebounce((row?: any): void => {
 		</el-card>
 		<el-card class="full-table" shadow="hover" style="margin-top: 8px">
 			<div class="importDiv">
-				<el-button type="primary" @click="importReceiptWarehouse()">导入收货箱单号</el-button>
+				<el-button type="primary" @click="openWhareHouseNo()">导入收货箱单号</el-button>
 				<el-button type="primary" :disabled="!selectedRowKeys?.length" :loading="exportLoading" @click="exportReceiptWarehouse()">导出普源云入库单</el-button>
 			</div>
 			<el-table :data="tableData" ref="singleTableRef" size="large" style="width: 100%" highlight-current-row @row-click="(row:any) => currentChange(row)" v-loading="loading" tooltip-effect="light">
@@ -486,7 +701,9 @@ const exportReceiptWarehouse = useDebounce((row?: any): void => {
 						:width="item.width"
 					>
 						<template #default="scope">
-							<el-link :style="{ color: scope.row.unmatchedBoxes === 0 ? 'blue' : 'red' }" @click="openReceiptInfo(scope.row.id, scope.row.fileName)">{{ scope.row.unmatchedBoxes }} </el-link>
+							<el-link :style="{ color: scope.row.unmatchedBoxes === 0 ? 'blue' : 'red' }" @click="openReceiptInfo(scope.row.id, scope.row.fileName, scope.row.inWareHouseNo, scope.row.inWareHouseNos)"
+								>{{ scope.row.unmatchedBoxes }}
+							</el-link>
 						</template>
 					</el-table-column>
 					<el-table-column
@@ -531,15 +748,61 @@ const exportReceiptWarehouse = useDebounce((row?: any): void => {
 				layout="total, sizes, prev, pager, next, jumper"
 			/>
 		</el-card>
-		<newPoImportDialog ref="importDialogRef" title="Import PO Shipment Confirmation" :ifExcelBol="true" :tableAddress="tableAddress" area="EN" :url="url" @reloadTable="handleQuery" />
-		<el-dialog v-model="visible" :title="title" @close="visible = false" width="1000px" draggable>
-			<infoDataDialog :id="receiptId" idName="id" :dataList="dataList" :ifClose="visible" :pointerface="getShipmentDetails" />
+		<changeWareHouseNoDialog
+			ref="changeWareHouseNoDialogRef"
+			:title="title2"
+			:formList="wareHouseformList"
+			:dataList="dataList2"
+			:pointerface="getCollOrderList"
+			:defaultValues="defaultValuesWareHouseParams"
+			@returnValues="handleReturnValues"
+		/>
+		<el-dialog v-model="visible" :title="title" @close="handleDialogClose" width="1000px" draggable>
+			<infoDataDialog
+				ref="infoDataDialogRef"
+				:query="true"
+				:id="receiptId"
+				idName="id"
+				:dataList="dataList"
+				:ifClose="visible"
+				:pointerface="getShipmentDetails"
+				:key="dialogKey"
+				:formList="infoFormList"
+				:defaultValues="infoDefaultValuesParams"
+			/>
 		</el-dialog>
-		<openBatchDialog ref="openBatchDialogRef" :title="title1" idName="id" :id="openBatchId" :dataList="dataList1" :ifClose="visible1" :pointerface="getAssociationList" :formList="formList" :defaultValues="defaultValuesParams" />
+		<openBatchDialog
+			ref="openBatchDialogRef"
+			:title="title1"
+			idName="id"
+			:id="openBatchId"
+			:dataList="dataList1"
+			:ifClose="visible1"
+			:pointerface="getAssociationList"
+			:formList="formList"
+			:defaultValues="defaultValuesParams"
+		/>
 	</div>
 </template>
-<style lang="less" scoped>
+<style lang="scss" scoped>
 :deep(.el-tag--dark) {
 	--el-tag-border-color: none;
+}
+
+// 添加媒体查询以适应小屏幕
+@media screen and (max-height: 768px) {
+	:deep(.el-overlay .el-overlay-dialog .el-dialog) {
+		height:100vh; // 在小屏幕上占据更多空间
+
+		.el-dialog__body {
+			max-height: calc(100% - 100px) !important; // 减小头部和底部空间
+			padding: 8px !important
+		}
+
+		.el-dialog__header,
+		.el-dialog__footer {
+			padding: 10px; // 减小内边距
+		}
+	}
 }
 </style>

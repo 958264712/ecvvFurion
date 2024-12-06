@@ -10,6 +10,11 @@ enum Api {
 	purchaseReceiptFormPage = '/api/purchaseReceiptForm/page',
 	pYYOtherOutboundOrdersPage = '/api/pYYOtherOutboundOrders/page',
 	pYYOtherWarehouseReceiptsPage = '/api/pYYOtherWarehouseReceipts/page',
+	pYYOtherWarehouseReceiptsBacthPage = '/api/pYYOtherWarehouseReceipts/bacthPage',
+	getAssociatedOutboundOrder = '/api/pYYOtherWarehouseReceipts/getAssociatedOutboundOrder',
+	associatedOutboundOrder = '/api/pYYOtherWarehouseReceipts/associatedOutboundOrder',
+	getCollectionOrder = '/api/pYYOtherWarehouseReceipts/getCollectionOrder',
+	associatedCollectionOrder = '/api/pYYOtherWarehouseReceipts/associatedCollectionOrder',
 	pYYPurchaseOrderPage = '/api/pYYPurchaseOrder/page',
 	pYYPurchaseOrderupdate = '/api/pYYPurchaseOrder/update',
 	importPurchaseUnitPrice = '/api/pYYPurchaseOrder/importPurchaseUnitPrice',
@@ -20,6 +25,34 @@ enum Api {
 	inventoryQueryPage = '/api/inventoryQuery/page',
 	inventoryQueryExport = '/api/inventoryQuery/export',
 }
+// 获取关联的出库单列表
+export const getAssociatedOutboundOrder = (params?: any) =>
+	request({
+		url: Api.getAssociatedOutboundOrder,
+		method: 'get',
+		data: params,
+	});
+// 关联出库单
+export const associatedOutboundOrder = (params?: any) =>
+	request({
+		url: Api.associatedOutboundOrder,
+		method: 'post',
+		data: params,
+	});
+// 获取关联的集货单列表
+export const getCollectionOrder = (params?: any) =>
+	request({
+		url: Api.getCollectionOrder,
+		method: 'get',
+		data: params,
+	});
+// 关联集货单
+export const associatedCollectionOrder = (params?: any) =>
+	request({
+		url: Api.associatedCollectionOrder ,
+		method: 'post',
+		data: params,
+	});
 // 库存查询详情
 export const inventoryQueryPage = (params?: any) =>
 	request({
@@ -131,8 +164,14 @@ export const pYYOtherOutboundOrdersPage = (params?: any) =>
 		method: 'post',
 		data: params,
 	});
-
-// 普源云其他入库单查询
+// 普源云其他入库单批量查询
+export const pYYOtherWarehouseReceiptsBacthPage = (params?: any) =>
+	request({
+		url: Api.pYYOtherWarehouseReceiptsBacthPage,
+		method: 'post',
+		data: params,
+	});
+// 普源云其他入库单详情查询
 export const pYYOtherWarehouseReceiptsPage = (params?: any) =>
 	request({
 		url: Api.pYYOtherWarehouseReceiptsPage,

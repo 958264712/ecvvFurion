@@ -3,25 +3,22 @@
 		<el-card shadow="hover" :body-style="{ paddingBottom: '0' }" v-show="props.formList?.length">
 			<el-form :model="queryParams" ref="queryForm" :inline="true">
 				<el-form-item :label="item.label" v-for="item in props.formList">
-					<el-input v-model="queryParams[item.prop]" :placeholder="props?.exportBarCode ? '请输入' + `${item.label}支持多个` : '请输入' + `${item.label}`" v-if="!item?.select" />
-					<el-select v-model="queryParams[item.prop]" :placeholder="'请选择' + `${item.label}`" v-else-if="item?.select" >
-						<el-option v-for="ite in item.options" :label="ite.label" :value="ite.value" />
-					</el-select>
+					<template v-if="!item?.select && !item?.render">
+						<el-input v-model="queryParams[item.prop]" :placeholder="props?.exportBarCode ? '请输入' + `${item.label}支持多个` : '请输入' + `${item.label}`" />
+					</template>
+					<template v-else-if="item?.select && !item?.render">
+						<el-select v-model="queryParams[item.prop]" :placeholder="'请选择' + `${item.label}`" :multiple="item?.multiple">
+							<el-option v-for="ite in item.options" :label="ite.label" :value="ite.value" />
+						</el-select>
+					</template>
+					<template v-else-if="item.render">
+						<component :is="item.render" v-bind="{ queryParams, item }" @update:modelValue="(val:any) => queryParams[item.prop] = val" />
+					</template>
 				</el-form-item>
 				<el-form-item>
-					<el-button-group>
+					<el-button-group v-if="!props?.query">
 						<el-button type="primary" icon="ele-Search" @click="handleQuery"> 查询 </el-button>
-						<el-button
-							icon="ele-Refresh"
-							@click="
-								() => {
-									queryParams = {};
-									handleQuery();
-								}
-							"
-						>
-							重置
-						</el-button>
+						<el-button icon="ele-Refresh" @click="resetData"> 重置 </el-button>
 					</el-button-group>
 					<el-button-group v-if="props?.exportBarCode">
 						<el-button type="primary" :loading="exportLoading" @click="exportBarCode" style="margin: 0 10px"> Export BarCode </el-button>
@@ -119,7 +116,7 @@ declare type formListType<T = any> = {
 	select?: Boolean;
 	options?: [T];
 }[];
-const props = defineProps(['id', 'weeks', 'idName', 'pointerface', 'dataList', 'formList', 'ifClose', 'exportBarCode', 'site','defaultValues']);
+const props = defineProps(['id', 'weeks', 'idName', 'pointerface', 'dataList', 'formList', 'ifClose', 'exportBarCode', 'site', 'defaultValues','query']);
 const loading = ref(false);
 const exportLoading = ref(false);
 const timer = ref<NodeJS.Timeout | null>(null);
@@ -146,15 +143,21 @@ const handleQuery = async () => {
 	}
 	queryParams.value.checkbox = false;
 	const params = {
-        ...queryParams.value,
-        ...tableParams.value
-    };
-    var res = await props.pointerface(params);
+		...queryParams.value,
+		...tableParams.value,
+	};
+	var res = await props.pointerface(params);
 	tableData.value = res.data.result?.items ?? [];
 	tableParams.value.total = res.data.result?.total;
 	loading.value = false;
 };
-
+const resetData = () => {
+	// 清除组件内的所有相关状态
+	tableData.value = [];
+	queryParams.value = Object.assign({}, props.defaultValues);
+	handleQuery();
+	// ... 其他需要重置的数据
+};
 // 导出条形码--new po单特有
 const exportBarCode = async () => {
 	queryParams.value[props.idName] = props.id;
@@ -227,25 +230,26 @@ watch(
 );
 watch(
 	() => props.ifClose,
-	() => {
+	(newVal) => {
 		if (props.ifClose) {
-			queryParams.value = {};
 			exportLoading.value = false;
+			resetData();
 		} else {
 			if (props.exportBarCode) return clearTimeout(timer.value as NodeJS.Timeout);
 		}
 	}
 );
 watch(
-    () => props.defaultValues,
-    (newVal) => {
-        if (newVal) {
-            queryParams.value = { ...newVal };
-        }
-    },
-    { deep: true }
+	() => props.defaultValues,
+	(newVal) => {
+		if (newVal) {
+			queryParams.value = { ...newVal };
+		}
+	},
+	{ deep: true, immediate: true }
 );
 onMounted(() => {
 	handleQuery();
 });
+defineExpose({ handleQuery, resetData });
 </script>

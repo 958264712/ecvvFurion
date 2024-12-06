@@ -31,6 +31,8 @@
 						<el-option label="空运" value="空运" />
 						<el-option label="快递" value="快递" />
 						<el-option label="小包" value="小包" />
+						<el-option label="海运(KG计费)" value="海运(KG计费)" />
+						
 					</el-select>
 				</el-form-item>
 

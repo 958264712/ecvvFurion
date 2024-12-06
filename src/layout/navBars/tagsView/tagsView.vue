@@ -30,7 +30,7 @@
 								}
 							"
 						>
-							<i class="iconfont icon-webicon318 layout-navbars-tagsview-ul-li-iconfont" v-if="isActive(v)"></i>
+							<i class="iconfont icon-webicon318 layout-navbars-tagsview-ul-li-iconfont"  v-if="isActive(v)"></i>
 							<SvgIcon :name="v.meta.icon" v-if="!isActive(v) && getThemeConfig.isTagsviewIcon" class="pr5" />
 							<span>{{ setTagsViewNameI18n(v) }}</span>
 							<template v-if="isActive(v)">
@@ -808,7 +808,7 @@ watch(
 	background: #de2910 !important;
 	inset: 90px auto auto calc(50% - 130px) !important;
 }
-//修改下面的小三角，属性名根据组件的placement位置做相应修改
+/* //修改下面的小三角，属性名根据组件的placement位置做相应修改 */
 .popover .popper__arrow {
 	background: #de2910 !important;
 }

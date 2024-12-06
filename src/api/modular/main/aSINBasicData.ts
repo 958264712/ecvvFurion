@@ -33,7 +33,34 @@ enum Api {
 	getNewPoDataExportHistory = '/api/newPoData/getNewPoDataExportHistory',
 	exprotShipmentConfrmationPage = '/api/exprotShipmentConfrmation/page',
 	exprotShipmentConfrmationDeliveryList = '/api/exprotShipmentConfrmation/exportDeliveryList',
+	exprotShipmentConfrmationDeliveryListOld = '/api/exprotShipmentConfrmation/exportDeliveryListOld',
+	getFileStream = '/api/exprotShipmentConfrmation/getFileStream/',
+	exportNewPoDataShipments = '/api/newPoData/exportShipments',
+	getExportRecordPage = '/api/exprotShipmentConfrmation/getExportRecordPage',
 }
+// 获取导出记录
+export const getExportRecordPage = (params?: any,) =>
+	request({
+		url: Api.getExportRecordPage,
+		method: 'post',
+		data: params,
+	});
+// 导出po list 约仓
+export const exportNewPoDataShipments = (params?: any,) =>
+	request({
+		url: Api.exportNewPoDataShipments,
+		method: 'post',
+		data: params,
+		responseType: 'blob'
+	});
+// 导出po确认单
+export const getFileStream = (params?: any,) =>
+	request({
+		url: Api.getFileStream + params?.id,
+		method: 'post',	
+		data: params,
+		responseType: 'blob'
+	});
 // 根据导入的NewPoData，导出条形码
 export const upLoadNewPoDataDownBarCode = (params?: any,checkbox?:boolean) =>
 	request({
@@ -43,6 +70,14 @@ export const upLoadNewPoDataDownBarCode = (params?: any,checkbox?:boolean) =>
 		headers: {
 			'Content-Type': 'multipart/form-data; boundary=----WebKitFormBoundarynl6gT1BKdPWIejNq',
 		},
+	});
+// 导出出货清单列表大于11月29日之前使用此接口，数据结构发生变化
+export const exprotShipmentConfrmationDeliveryListOld = (params?: any) =>
+	request({
+		url: Api.exprotShipmentConfrmationDeliveryListOld,
+		method: 'post',
+		data: params,
+		responseType: 'blob'
 	});
 // 导出出货清单列表
 export const exprotShipmentConfrmationDeliveryList = (params?: any) =>
