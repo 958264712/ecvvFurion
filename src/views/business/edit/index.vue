@@ -12,7 +12,8 @@
 						<el-button type="primary" size="small" @click="exportBaoguan"> 导出报关件 </el-button>
 						<el-button size="small" @click="exportYanhuo()"> 导出验货单 </el-button>
 						<el-button type="primary" size="small" @click="exportBoxTag()"> 导出外箱标签 </el-button>
-						<el-button type="primary" size="small" @click="exportPackingListNumber()"> 导出箱单号条形码 </el-button>
+						<!-- <el-button type="primary" size="small" @click="exportPackingListNumber()"> 导出箱单号条形码 </el-button> -->
+						<el-button type="primary" size="small" @click="exportProductCode()"> 导出商品条码 </el-button>
 						<!--
 						<el-button type="primary" :loading="loading1" icon="ele-Plus" style="margin-left:20px;"> 导入补录信息
 						</el-button>
@@ -792,8 +793,8 @@ const errorData = ref<any>([
 ]);
 let visibleediit = ref(false);
 const uploadRef = ref<UploadInstance>();
-let shippingMethodOptions = ref(['海运', '空运', '快递', '小包','海运(KG计费)']);
-let stateOptions = ref(['集货', '截仓', '在途中','部分入仓', '已入仓']);
+let shippingMethodOptions = ref(['海运', '空运', '快递', '小包', '海运(KG计费)']);
+let stateOptions = ref(['集货', '截仓', '在途中', '部分入仓', '已入仓']);
 let payerOptions = ref(['国内支付', '迪拜支付']);
 let currencyOptions = ref([
 	{ label: 'RMB 人民币', value: 'RMB' },
@@ -1492,7 +1493,7 @@ let pricefun = (row: any, index = 0) => {
 	//海运
 	//国际物流费用总额= 物流报价*(总方数)
 	row.totalInternationalLogisticsFee =
-		((collectionOrderInfo.shippingMethod == '空运')||collectionOrderInfo.shippingMethod == '海运(KG计费)')
+		collectionOrderInfo.shippingMethod == '空运' || collectionOrderInfo.shippingMethod == '海运(KG计费)'
 			? row.volumeWeight > row.totalGrossWeightKG
 				? roundToThreeDecimalPlaces(collectionOrderInfo.logisticsPrice * row.volumeWeight)
 				: roundToThreeDecimalPlaces(collectionOrderInfo.logisticsPrice * row.totalGrossWeightKG)
@@ -1516,13 +1517,13 @@ let pricefun = (row: any, index = 0) => {
 		row['exportUnitPrice'] = Number(((row['cusPurchasePrice'] * 1.1) / collectionOrderInfo.exchangeRateUSD).toFixed(2));
 	}
 	if (collectionOrderInfo.internationalLogisticsFeePayer == '国内支付') {
-		row['exportUnitPrice'] = Number(((row['cusPurchasePrice'] * 1.1+Number(row.customsDeclarationFee)+ row.singleInternationalLogisticsFee) / collectionOrderInfo.exchangeRateUSD).toFixed(2));
+		row['exportUnitPrice'] = Number(((row['cusPurchasePrice'] * 1.1 + Number(row.customsDeclarationFee) + row.singleInternationalLogisticsFee) / collectionOrderInfo.exchangeRateUSD).toFixed(2));
 	}
 
-	if (collectionOrderInfo.destination == "美国"&&collectionOrderInfo.internationalLogisticsFeePayer == '国内支付') {
+	if (collectionOrderInfo.destination == '美国' && collectionOrderInfo.internationalLogisticsFeePayer == '国内支付') {
 		//【国内支付】：出口单价(USD)=（报关采购价含税(RMB)+报关费/个(RMB)+国际物流运费/报关数量）/美元汇率
-		row['exportUnitPrice']=Number(((row['cusPurchasePrice']  +Number(row.customsDeclarationFee)+ Number(row['singleInternationalLogisticsFee'])) / collectionOrderInfo.exchangeRateUSD).toFixed(2));
-	} 
+		row['exportUnitPrice'] = Number(((row['cusPurchasePrice'] + Number(row.customsDeclarationFee) + Number(row['singleInternationalLogisticsFee'])) / collectionOrderInfo.exchangeRateUSD).toFixed(2));
+	}
 	//出口总价(USD)=出口单价*报关数量
 	row.totalExportPrice = row.exportUnitPrice * row.plannedShipmentQuantity;
 	notResetPrice.value = false;
@@ -1860,6 +1861,49 @@ function exportPackingListNumber() {
 			});
 		});
 }
+//导出商品条码
+const exportProductCode = () => {
+	if (selectedRows.value.length > 1 || selectedRows.value.length == 0) {
+		ElMessage({
+			type: 'error',
+			message: '请选择一个商品',
+		});
+		return;
+	}
+	const productCode = collectionGoodsInfolist.find((item: any) => item.id == selectedRows.value[0])?.internalUniqueID;
+	service({
+		url: `/api/collectionOrderInfo/exportProductBarCode/${id.value}/${productCode}`,
+		method: 'post',
+		data: { orderId: +id.value, productCode },
+		responseType: 'blob',
+	})
+		.then((data) => {
+			downloadfile(data);
+			if (data.statusText == 'OK') {
+				ElNotification({
+					title: '系统提示',
+					message: '导出成功',
+					type: 'success',
+				});
+				ElMessage({
+					type: 'success',
+					message: '导出箱单号条形码成功',
+				});
+				getAppPage();
+			}
+		})
+		.catch((arr) => {
+			ElNotification({
+				title: '系统提示',
+				message: '下载错误：获取文件流错误',
+				type: 'error',
+			});
+			ElMessage({
+				type: 'error',
+				message: '导出失败',
+			});
+		});
+};
 let isCommit = computed(function com() {
 	showCurrency();
 	if (!collectionOrderInfo.documentNo && !(collectionOrderInfo.documentNo === 0)) {

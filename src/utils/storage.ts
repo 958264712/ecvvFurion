@@ -6,6 +6,8 @@ import Cookies from 'js-cookie';
  * @method get 获取永久缓存
  * @method remove 移除永久缓存
  * @method clear 移除全部永久缓存
+ * @method setLocalStorageItemWithExpiry 设置永久缓存并设置过期时间
+ * @method getLocalStorageItemWithExpiry 获取永久缓存并判断是否过期
  */
 export const Local = {
 	// 查看 v2.4.3版本更新日志
@@ -30,6 +32,31 @@ export const Local = {
 	clear() {
 		window.localStorage.clear();
 	},
+	setLocalStorageItemWithExpiry(key: string, value: any, ttl: number) {
+		const now = new Date();
+		// 将数据和过期时间（以毫秒为单位）一起存储
+		const item = {
+			value: value,
+			expiry: now.getTime() + ttl
+		};
+		localStorage.setItem(Local.setKey(key),JSON.stringify(item));
+	},
+	getLocalStorageItemWithExpiry(key: string) {
+		const itemStr = localStorage.getItem(Local.setKey(key));
+		// 如果没有该项，直接返回null
+		if (!itemStr) {
+			return null;
+		}
+		const item = JSON.parse(itemStr);
+		const now = new Date();
+		// 如果该项已经过期，删除它并返回null
+		if (now.getTime() > item.expiry) {
+			localStorage.removeItem(key);
+			return null;
+		}
+		// 如果该项还在有效期内，返回它的值
+		return item.value;
+	}
 };
 
 /**

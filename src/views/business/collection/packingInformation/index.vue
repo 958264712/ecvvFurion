@@ -4,7 +4,7 @@ import { getShipmentDetails, ExportShipmentDetails } from '/@/api/modular/main/c
 import other from '/@/utils/other.ts';
 import moment from 'moment';
 import { Session } from '/@/utils/storage';
-import {SysDictDataApi} from '/@/api-services/api';
+import { SysDictDataApi } from '/@/api-services/api';
 import { getAPI } from '/@/utils/axios-utils';
 
 const tagoptions = ref<any>([]);
@@ -61,12 +61,12 @@ const TableData = ref<any>([
 		checked: true,
 		fixed: false,
 	},
-	 {
-	 	titleCN: '装箱个数',
-	 	dataIndex: 'quantityInBoxes',
-	 	checked: true,
-	 	fixed: false,
-	 },
+	{
+		titleCN: '装箱个数',
+		dataIndex: 'quantityInBoxes',
+		checked: true,
+		fixed: false,
+	},
 	{
 		titleCN: '装箱数',
 		dataIndex: 'packBoxesQuantity',
@@ -212,7 +212,32 @@ const AllExport = async (coltype: number): Promise<void> => {
 			<el-table :data="tableData" size="large" style="width: 100%" @selection-change="(selection: any) => selectChange(selection)" v-loading="loading" tooltip-effect="light" @sort-change="handleSort">
 				<el-table-column type="selection" width="55" />
 				<template v-for="(item, index) in TableData" :key="index">
-					<el-table-column :fixed="item.fixed" :prop="item.dataIndex" :label="area == 'CN' ? item.titleCN : item.titleEN" align="center" min-width="150" />
+					<el-table-column
+						v-if="item.dataIndex === 'actualQuantityInBoxes'"
+						:fixed="item.fixed"
+						:prop="item.dataIndex"
+						show-overflow-tooltip
+						:label="area == 'CN' ? item.titleCN : item.titleEN"
+						align="center"
+						min-width="150"
+					>
+						<template #default="scope">
+							<el-progress
+								:percentage="((scope.row.actualQuantityInBoxes ?? 0) / scope.row.actualShipmentQuantity) * 100"
+								:format="()=>(`${scope.row.actualQuantityInBoxes ?? 0}/${scope.row.actualShipmentQuantity}`)"
+								:text-inside="true"
+								:stroke-width="24"
+								:status="
+									(scope.row.actualQuantityInBoxes ?? 0) / scope.row.actualShipmentQuantity > 1
+										? 'exception'
+										: (scope.row.actualQuantityInBoxes ?? 0) / scope.row.actualShipmentQuantity === 1
+										? 'success'
+										: 'warning'
+								"
+							/>
+						</template>
+					</el-table-column>
+					<el-table-column v-else-if="item.dataIndex" :fixed="item.fixed" :prop="item.dataIndex" :label="area == 'CN' ? item.titleCN : item.titleEN" align="center" min-width="150" />
 				</template>
 			</el-table>
 			<el-pagination

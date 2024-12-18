@@ -4,22 +4,26 @@ import {
 	receiptAndWarehousingPage,
 	receiptAndWarehousingUpdate,
 	receiptAndWarehousingExport,
+	receiptAndWarehousingDelete,
 	getShipmentDetails,
 	getAssociationList,
 	confirmAssociation,
 	getCollOrderList,
+	scanReceiptBoxNo,
 } from '/@/api/modular/main/receiptAndWarehousing.ts';
-import { ElMessage, ElButton, ElTable, ElLink, ElText, ElTag } from 'element-plus';
+import { ElMessage, ElButton, ElTable, ElLink, ElText, ElTag, ElProgress, ElMessageBox, ElInput } from 'element-plus';
 import other from '/@/utils/other.ts';
 import moment from 'moment';
 import { SysDictDataApi } from '/@/api-services/api';
 import { useRouter } from 'vue-router';
-import { Session } from '/@/utils/storage';
+import { Session, Local } from '/@/utils/storage';
 import { getAPI } from '/@/utils/axios-utils';
 import { useDebounce } from '/@/utils/debounce';
 import infoDataDialog from '/@/components/infoDataDialog/index.vue';
 import openBatchDialog from '/@/components/newInfoDataDialog/index.vue';
 import changeWareHouseNoDialog from './componet/changeWareHouseNo.vue';
+import codeReceiptDialog from './componet/codeReceiptDialog.vue';
+
 const router = useRouter();
 const singleTableRef = ref<InstanceType<typeof ElTable>>();
 const tableData = ref<any>([]);
@@ -33,12 +37,18 @@ const tableParams = ref({
 	pageSize: 10,
 	total: 0,
 });
+
+let now = new Date(); // 获取当前日期和时间
+let todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // 获取当天零点
+// 计算时间差（以毫秒为单位）
+const diffMilliseconds = now.getTime() - todayMidnight.getTime();
 const defaultValuesParams = ref<any>({
 	state: ['在途中', '部分入仓'],
 	inWareHouseNos: [],
 });
 const infoDefaultValuesParams = ref<any>({
 	inWareHouseNos: [],
+	itemNos: {},
 });
 const dialogKey = ref(0);
 const visible = ref(false);
@@ -240,6 +250,20 @@ const dataList = ref<any>([
 	{
 		label: '已收数量',
 		prop: 'actualQuantityInBoxes',
+		width: 80,
+		fixed: 'right',
+		render: ({ row }: { row: any }) => {
+			return h(ElProgress, {
+				type: 'line',
+				'text-inside': true,
+				'stroke-width': '24',
+				percentage: (row.actualQuantityInBoxes / row.actualShipmentQuantity) * 100,
+				format: () => {
+					return `${row.actualQuantityInBoxes}/${row.actualShipmentQuantity}`;
+				},
+				status: row.actualQuantityInBoxes / row.actualShipmentQuantity > 1 ? 'exception' : row.actualQuantityInBoxes / row.actualShipmentQuantity === 1 ? 'success' : 'warning',
+			});
+		},
 	},
 	{
 		label: '操作',
@@ -318,7 +342,7 @@ const changeWareHouseNoDialogRef = ref();
 const defaultValuesWareHouseParams = ref<any>({
 	state: ['在途中', '部分入仓'],
 	inWareHouseNos: [],
-	showFooter:true
+	showFooter: true,
 });
 const wareHouseformList = ref<any>([
 	{
@@ -405,6 +429,114 @@ const dataList2 = ref<any>([
 	},
 ]);
 
+const openCodeReceiptDialogRef = ref();
+const codeReceiptDefaultValuesParams = ref<any>({
+	inWareHouseNos: [],
+	tableData: JSON.parse(Local.getLocalStorageItemWithExpiry('codeReceiptTableData')) ?? [],
+});
+const codeReceiptTitle = () => {
+	return h('div', [
+		h('span', { style: { color: '#fff', fontSize: 'large', fontWeight: 'bold' } }, '扫码入库（'),
+		h('span', { style: { color: '#ec808d', fontSize: 'large', fontWeight: 'bold' } }, '1、绑定货代入仓号，'),
+		h('span', { style: { color: '#fff', fontSize: 'large', fontWeight: 'bold' } }, '2、扫码入库）'),
+	]);
+};
+const codeReceiptFooter = () => {
+	return h(
+		'div',
+		{
+			style: {
+				textAlign: 'start !important',
+			},
+		},
+		[
+			h(
+				ElButton,
+				{
+					type: 'primary',
+					size: 'default',
+					onClick: () => {
+						openCodeReceiptDialogRef.value.closeDialog();
+						codeReceiptDefaultValuesParams.value.tableData = [];
+						codeReceiptDefaultValuesParams.value.inWareHouseNos = [];
+						Local.setLocalStorageItemWithExpiry('codeReceiptTableData', JSON.stringify(codeReceiptDefaultValuesParams.value.tableData), 1000 * 60 * 60 * 24 - diffMilliseconds);
+						handleQuery();
+					},
+				},
+				'提交'
+			),
+			h(ElButton, { size: 'default', onClick: () => openCodeReceiptDialogRef.value.closeDialog() }, '取消'),
+		]
+	);
+};
+const codeReceiptFormList = ref<any>([
+	{
+		label: '绑定入仓号',
+		prop: 'inWareHouseNos',
+		select: false,
+		render: ({ queryParams, item }: { queryParams: any; item: any }) => {
+			return h(
+				'div',
+				{
+					style: { border: '1px solid #ccc', padding: '2px', minHeight: '20px', minWidth: '100px', display: 'flex', flexWrap: 'wrap' },
+				},
+				[
+					queryParams[item.prop]?.map((tag: string) =>
+						h(
+							ElTag,
+							{
+								key: tag,
+								closable: true,
+								disableTransitions: false,
+								onClose: () => handleClose(tag, 'codeReceipt'),
+							},
+							() => tag
+						)
+					),
+					h(
+						'div',
+						{
+							style: { marginLeft: '8px' },
+						},
+						[h(ElButton, { type: 'primary', onClick: () => openAndEditWareHouseNo('codeReceipt') }, '编辑')]
+					),
+				]
+			);
+		},
+	},
+	{
+		label: '箱号或SKU',
+		prop: 'boxNo',
+		render: ({ queryParams, item }: { queryParams: any; item: any }) => {
+			return h(ElInput, {
+				modelValue: queryParams[item.prop],
+				placeholder: '请输入箱号或SKU',
+				onKeyup: (e: any) => {
+					if (e.keyCode === 13) {
+						scanReceiptBoxNo({ boxNo: queryParams[item.prop], inWareHouseNos: codeReceiptDefaultValuesParams.value.inWareHouseNos })
+							.then((res: any) => {
+								if (res.data.result) {
+									codeReceiptDefaultValuesParams.value.tableData.unshift(res.data.result);
+									Local.setLocalStorageItemWithExpiry('codeReceiptTableData', JSON.stringify(codeReceiptDefaultValuesParams.value.tableData), 1000 * 60 * 60 * 24 - diffMilliseconds);
+								}
+								if (res.data.result.includes('扫码成功')) {
+									ElMessage.success(res.data.result);
+								} else {
+									ElMessage.error(res.data.result);
+								}
+								queryParams[item.prop] = '';
+							})
+							.catch((err: any) => {
+								ElMessage.error(err.message);
+							});
+					}
+				},
+			});
+		},
+	},
+]);
+const codeReceiptDataList = ref<any>([]);
+
 const loading = ref(false);
 const exportLoading = ref(false);
 const selectedRowKeys = ref<any>([]);
@@ -462,7 +594,7 @@ const TableData = ref<any>([
 		fixed: false,
 	},
 	{
-		titleCN: '未匹配箱数',
+		titleCN: '未匹配条数',
 		dataIndex: 'unmatchedBoxes',
 		width: 120,
 		checked: true,
@@ -517,7 +649,12 @@ const openReceiptInfo = (id: any, name: string, inWareHouseNo: string, inWareHou
 	receiptId.value = id;
 	infoWareHouseNo.value = inWareHouseNo;
 	title.value = `收货明细（货代入仓号：${inWareHouseNo} 文件名称：${name}）`;
-	infoDefaultValuesParams.value.inWareHouseNos = inWareHouseNos;
+	if (infoDefaultValuesParams.value.itemNos.hasOwnProperty(id)) {
+		infoDefaultValuesParams.value.inWareHouseNos = infoDefaultValuesParams.value.itemNos[id];
+	} else {
+		infoDefaultValuesParams.value.itemNos[id] = inWareHouseNos;
+		infoDefaultValuesParams.value.inWareHouseNos = inWareHouseNos;
+	}
 	visible.value = true;
 };
 // 打开箱号匹配
@@ -525,23 +662,29 @@ const openBoxMatch = async (sku: string, id: any, name: string, inWareHouseNo: s
 	openBatchId.value = id;
 	defaultValuesParams.value.erpsku = sku;
 	defaultValuesParams.value.inWareHouseNos = infoDefaultValuesParams.value.inWareHouseNos ? [...infoDefaultValuesParams.value.inWareHouseNos] : [];
-	 watch(
-        () => infoDefaultValuesParams.value.inWareHouseNos,
-		 (newVal) => {
-			 defaultValuesParams.value.inWareHouseNos = newVal ? [...newVal] : [];
-        },
-        { deep: true }
-    );
+	watch(
+		() => infoDefaultValuesParams.value.inWareHouseNos,
+		(newVal) => {
+			defaultValuesParams.value.inWareHouseNos = newVal ? [...newVal] : [];
+		},
+		{ deep: true }
+	);
 	await nextTick();
 	title1.value = `箱号匹配（SKU：${sku} 货代入仓号：${inWareHouseNo} 文件名称：${name}）`;
 	openBatchDialogRef.value.openDialog();
 };
+// 打开扫码收货
+const openCodeReceipt = () => {
+	receiptId.value = '0001';
+	openCodeReceiptDialogRef.value.openDialog();
+};
+// 打开导入收货箱单号
 const openWhareHouseNo = () => {
 	defaultValuesWareHouseParams.value = {
 		state: ['在途中', '部分入仓'],
 		inWareHouseNos: [],
-		showFooter:true
-	}
+		showFooter: true,
+	};
 	changeWareHouseNoDialogRef.value.openDialog();
 };
 const editWareHouseNo = (inWareHouseNo: string) => {
@@ -566,26 +709,46 @@ const handleDialogClose = () => {
 		infoDataDialogRef.value.resetData?.(); // 如果组件提供了重置方法就调用
 	}
 };
-const handleClose = (tag: string) => {
-	 const index = infoDefaultValuesParams.value.inWareHouseNos.indexOf(tag);
-    if (index > -1) {
-        infoDefaultValuesParams.value.inWareHouseNos.splice(index, 1);
+const handleClose = (tag: string, type?: string) => {
+	const index = !type ? infoDefaultValuesParams.value.inWareHouseNos.indexOf(tag) : codeReceiptDefaultValuesParams.value.inWareHouseNos.indexOf(tag);
+	if (index > -1) {
 		// 确保同步更新
-        defaultValuesParams.value.inWareHouseNos = [...infoDefaultValuesParams.value.inWareHouseNos];
-    }
+		infoDefaultValuesParams.value.itemNos[receiptId.value].splice(index, 1);
+		if (!type) {
+			infoDefaultValuesParams.value.inWareHouseNos.splice(index, 1);
+			defaultValuesParams.value.inWareHouseNos = [...infoDefaultValuesParams.value.inWareHouseNos];
+		} else {
+			codeReceiptDefaultValuesParams.value.inWareHouseNos.splice(index, 1);
+		}
+	}
 };
-const openAndEditWareHouseNo = () => {
+const openAndEditWareHouseNo = (type?: string) => {
 	changeWareHouseNoDialogRef.value.openDialog(receiptId.value);
-	defaultValuesWareHouseParams.value = infoDefaultValuesParams.value;
+	if (!type) {
+		defaultValuesWareHouseParams.value = infoDefaultValuesParams.value;
+	} else {
+		defaultValuesWareHouseParams.value = codeReceiptDefaultValuesParams.value;
+	}
 };
-const handleReturnValues = (arr?: any) => {
-	infoDefaultValuesParams.value.inWareHouseNos = arr ? [...arr] : [];
-    defaultValuesParams.value.inWareHouseNos = [...infoDefaultValuesParams.value.inWareHouseNos];
+const handleReturnValues = (arr?: any, id?: any) => {
+	if (+id) {
+		infoDefaultValuesParams.value.itemNos[id] = arr ? [...arr] : [];
+		infoDefaultValuesParams.value.inWareHouseNos = arr ? [...arr] : [];
+	} else {
+		infoDefaultValuesParams.value.inWareHouseNos = arr ? [...arr] : [];
+	}
+	defaultValuesParams.value.inWareHouseNos = [...infoDefaultValuesParams.value.inWareHouseNos];
 };
+
 onMounted(async () => {
 	const res = await getAPI(SysDictDataApi).apiSysDictDataDataListCodeGet('destination');
 	destinationList.value = res.data.result;
 	handleQuery();
+	if (Local.getLocalStorageItemWithExpiry('codeReceiptTableData')) {
+		codeReceiptDefaultValuesParams.value.tableData = JSON.parse(Local.getLocalStorageItemWithExpiry('codeReceiptTableData'));
+	} else {
+		Local.setLocalStorageItemWithExpiry('codeReceiptTableData', JSON.stringify(codeReceiptDefaultValuesParams.value.tableData), 1000 * 60 * 60 * 24 - diffMilliseconds);
+	}
 });
 
 // 改变页面容量
@@ -623,10 +786,22 @@ const disabledfun = async (val: any): Promise<void> => {
 		res.data?.type === 'success' ? ElMessage.success('修改成功!') : null;
 	}
 };
-const disabledAuto = (scope: any): void => {
-	return disabledList.value.some((item: any) => item === scope.row.id);
+const disabledAuto = (scope: any): boolean => {
+	return disabledList.value.some((item: any) => item === scope.row.id) ? true : false;
 };
-
+const deletefun = useDebounce((row?: any): void => {
+	ElMessageBox.confirm(`确定删除此条数据吗?`, '提示', {
+		confirmButtonText: '确定',
+		cancelButtonText: '取消',
+		type: 'warning',
+	})
+		.then(async () => {
+			await receiptAndWarehousingDelete({ id: row.id });
+			handleQuery();
+			ElMessage.success('删除成功');
+		})
+		.catch(() => {});
+}, 500);
 // 导出
 const exportReceiptWarehouse = useDebounce((row?: any): void => {
 	if (row?.id != undefined) {
@@ -649,15 +824,15 @@ const exportReceiptWarehouse = useDebounce((row?: any): void => {
 		<el-card shadow="hover" :body-style="{ paddingBottom: '0' }">
 			<el-form :model="queryParams" :inline="true">
 				<el-form-item label="目的地">
-					<el-select v-model="queryParams.destination" clearable="" placeholder="请选择目的地" @change="handleQuery">
+					<el-select v-model="queryParams.destination" clearable placeholder="请选择目的地" @change="handleQuery">
 						<el-option v-for="item in destinationList" :label="item.value" :value="item.value" />
 					</el-select>
 				</el-form-item>
 				<el-form-item label="箱单号">
-					<el-input v-model="queryParams.boxNo" clearable="" placeholder="请输入箱单号" />
+					<el-input v-model="queryParams.boxNo" clearable placeholder="请输入箱单号" />
 				</el-form-item>
 				<el-form-item label="内部唯一识别码或内部品名">
-					<el-input v-model="queryParams.SKUOrGoodsName" clearable="" placeholder="请输入内部唯一识别码或内部品名" />
+					<el-input v-model="queryParams.SKUOrGoodsName" clearable placeholder="请输入内部唯一识别码或内部品名" />
 				</el-form-item>
 				<el-form-item label="收货日期">
 					<el-date-picker v-model="queryParams.time" type="daterange" start-placeholder="开始时间" end-placeholder="结束时间" />
@@ -672,8 +847,9 @@ const exportReceiptWarehouse = useDebounce((row?: any): void => {
 		</el-card>
 		<el-card class="full-table" shadow="hover" style="margin-top: 8px">
 			<div class="importDiv">
-				<el-button type="primary" @click="openWhareHouseNo()">导入收货箱单号</el-button>
+				<el-button type="primary" @click="openWhareHouseNo">导入收货箱单号</el-button>
 				<el-button type="primary" :disabled="!selectedRowKeys?.length" :loading="exportLoading" @click="exportReceiptWarehouse()">导出普源云入库单</el-button>
+				<el-button type="primary" @click="openCodeReceipt">扫码收货</el-button>
 			</div>
 			<el-table :data="tableData" ref="singleTableRef" size="large" style="width: 100%" highlight-current-row @row-click="(row:any) => currentChange(row)" v-loading="loading" tooltip-effect="light">
 				<el-table-column type="index" width="50" />
@@ -692,7 +868,7 @@ const exportReceiptWarehouse = useDebounce((row?: any): void => {
 						</template>
 					</el-table-column>
 					<el-table-column
-						v-else-if="item.titleCN === '未匹配箱数'"
+						v-else-if="item.dataIndex === 'unmatchedBoxes'"
 						:fixed="item.fixed"
 						:prop="item.dataIndex"
 						:label="area == 'CN' ? item.titleCN : item.titleEN"
@@ -732,7 +908,16 @@ const exportReceiptWarehouse = useDebounce((row?: any): void => {
 				<el-table-column label="操作" align="center">
 					<template #default="scope">
 						<el-button type="primary" text @click="disabledfun(scope)">{{ disabledList.some((item: any) => item === scope.row.id) ? '编辑' : '保存' }}</el-button>
-						<el-button type="primary" text @click="exportReceiptWarehouse(scope.row)">导出普源云入库单</el-button>
+						<el-dropdown>
+							<el-button icon="ele-MoreFilled" size="small" text type="primary" style="padding-left: 12px" />
+							<template #dropdown>
+								<el-dropdown-menu>
+									<el-dropdown-item @click="deletefun(scope.row)">删除</el-dropdown-item>
+									<el-dropdown-item @click="exportReceiptWarehouse(scope)">导出普源云入库单</el-dropdown-item>
+									<el-dropdown-item><el-link type="primary" :href="scope.row.filePath"> 附件下载 </el-link></el-dropdown-item>
+								</el-dropdown-menu>
+							</template>
+						</el-dropdown>
 					</template>
 				</el-table-column>
 			</el-table>
@@ -782,6 +967,15 @@ const exportReceiptWarehouse = useDebounce((row?: any): void => {
 			:formList="formList"
 			:defaultValues="defaultValuesParams"
 		/>
+		<codeReceiptDialog
+			ref="openCodeReceiptDialogRef"
+			:titleRender="codeReceiptTitle"
+			:footerRender="codeReceiptFooter"
+			:dataList="codeReceiptDataList"
+			:query="true"
+			:formList="codeReceiptFormList"
+			:defaultValues="codeReceiptDefaultValuesParams"
+		/>
 	</div>
 </template>
 <style lang="scss" scoped>
@@ -792,11 +986,11 @@ const exportReceiptWarehouse = useDebounce((row?: any): void => {
 // 添加媒体查询以适应小屏幕
 @media screen and (max-height: 768px) {
 	:deep(.el-overlay .el-overlay-dialog .el-dialog) {
-		height:100vh; // 在小屏幕上占据更多空间
+		height: 100vh; // 在小屏幕上占据更多空间
 
 		.el-dialog__body {
 			max-height: calc(100% - 100px) !important; // 减小头部和底部空间
-			padding: 8px !important
+			padding: 8px !important;
 		}
 
 		.el-dialog__header,

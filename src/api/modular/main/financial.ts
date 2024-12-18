@@ -18,6 +18,8 @@ enum Api {
 	pYYPurchaseOrderPage = '/api/pYYPurchaseOrder/page',
 	pYYPurchaseOrderupdate = '/api/pYYPurchaseOrder/update',
 	importPurchaseUnitPrice = '/api/pYYPurchaseOrder/importPurchaseUnitPrice',
+	getAssociatedCollectionGoodInfo = '/api/pYYPurchaseOrder/getAssociatedCollectionGoodInfo',
+	pYYAssociatedCollectionOrder = '/api/pYYPurchaseOrder/associatedCollectionOrder',
 	initialInventoryDataPage = '/api/initialInventoryData/page',
 	getInitialInventoryData = '/api/initialInventoryData/getInitialInventoryData',
 	initialInventorySynchronizeData = '/api/initialInventoryData/synchronizeData',
@@ -25,6 +27,20 @@ enum Api {
 	inventoryQueryPage = '/api/inventoryQuery/page',
 	inventoryQueryExport = '/api/inventoryQuery/export',
 }
+// 普源云关联的集货单列表
+export const getAssociatedCollectionGoodInfo = (params?: any) =>
+	request({
+		url: Api.getAssociatedCollectionGoodInfo,
+		method: 'post',
+		data: params,
+	});
+// 普源云关联集货单
+export const pYYAssociatedCollectionOrder = (params?: any) =>
+	request({
+		url: Api.pYYAssociatedCollectionOrder,
+		method: 'post',
+		data: params,
+	});
 // 获取关联的出库单列表
 export const getAssociatedOutboundOrder = (params?: any) =>
 	request({

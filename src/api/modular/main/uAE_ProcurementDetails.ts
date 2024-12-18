@@ -17,6 +17,7 @@ enum Api {
 	DeleteCN_OperationalProductAttributes = '/api/cN_OperationalProductAttributes/delete',
 	UpdateCN_OperationalProductAttributes = '/api/cN_OperationalProductAttributes/update',
 	PageCN_OperationalProductAttributes = '/api/cN_OperationalProductAttributes/page',
+	getBarCodesDownloadPath = '/api/cN_OperationalProductAttributes/getBarCodesDownloadPath',
 	Import = '/api/CN_OperationalProductAttributes/import',
 	DataImport = '/api/procurementDetails/import',
 	InventoryManagementInfo = '/api/inventoryManagement/getInventoryManagementInfo',
@@ -24,6 +25,13 @@ enum Api {
 	getInterestRate = '/api/procurementDetails/getInterestRate',
 	updateConfig = '/api/procurementDetails/updateConfig'
 }
+// 轮询获取zip地址
+export const getBarCodesDownloadPath = (params?: any) =>
+	request({
+		url: Api.getBarCodesDownloadPath,
+		method: 'get',
+		params: params,
+	});
 
 // 增加UAE采购明细表
 export const addUAE_ProcurementDetails = (params?: any) =>

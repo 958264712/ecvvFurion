@@ -164,7 +164,7 @@ const customUpload = () => {
 				if (props?.inquireData) {
 					emit('returnHref', res.data.result);
 				}
-				//emit('reloadTable');
+				emit('reloadTable');
 				emit('startTimer');
 				closeDialog();
 			} else {

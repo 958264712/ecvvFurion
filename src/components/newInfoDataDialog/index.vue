@@ -3,17 +3,19 @@ import { ref, watch ,nextTick} from 'vue';
 import moment from 'moment';
 
 /**
- * 和弹窗组件el-dialog配套使用，外部弹窗控制大小，本组件主要用于详情，带查询表格展示，不带弹窗
  * openBatchDialog 配套参数
  * @props id 传入文件id
  * @props idName 传入表格名称
  * @props title 传入弹窗标题
+ * @props titleRender 传入弹窗标题渲染组件
+ * @props footerRender 传入弹窗底部渲染组件
  * @props pointerface 传入表格相应接口
  * @props loading 传入表格loading
  * @props dataList 传入表格column列表 prop为字段名 label为列名 render为特殊列传入组件外部可使用h函数进行渲染
  * @props formList 传入筛选列表
  * @props ifClose 操作弹窗
  * @props defaultValues 给予默认参数
+ * @props pagination 是否需要分页
  * @props query 是否需要查询功能
  */
 declare type formListType<T = any> = {
@@ -22,7 +24,7 @@ declare type formListType<T = any> = {
 	select?: Boolean;
 	options?: [T];
 }[];
-const props = defineProps(['id', 'idName', 'title', 'loading','pointerface', 'dataList', 'formList', 'ifClose', 'defaultValues','query']);
+const props = defineProps(['id', 'idName', 'title','titleRender','footerRender','pagination', 'loading','pointerface', 'dataList', 'formList', 'ifClose', 'defaultValues','query']);
 const loading = ref(false);
 const tableData = ref<any>([]);
 const visible = ref(false);
@@ -114,10 +116,16 @@ watch(
 		loading.value = newVal;
 	}
 );
-defineExpose({ openDialog,resetQuery });
+defineExpose({ openDialog,resetQuery,closeDialog });
 </script>
 <template>
-	<el-dialog v-model="visible" :title="props.title" :width="1000" @close="closeDialog" draggable="" >
+	<el-dialog v-model="visible" :width="1000" @close="closeDialog" draggable="" >
+		<template #header>
+			<template v-if="props.title"><span style="font-size: 16px;font-weight: 700; color:#fff">{{ props.title }}</span></template>
+			<template v-else>
+				<component :is="props.titleRender" />
+			</template>
+		</template>
 		<el-card shadow="hover" :body-style="{ paddingBottom: '0' }" v-show="props.formList?.length">
 			<el-form :model="queryParams" ref="queryForm" :inline="true">
 				<el-form-item :label="item.label" v-for="item in props.formList">
@@ -147,7 +155,7 @@ defineExpose({ openDialog,resetQuery });
 						</template>
 					</el-table-column>
 					<el-table-column v-else-if="item.label === '序号'" align="center" type="index" :label="item.label" width="45" />
-					<el-table-column v-else-if="item.prop" align="center" :prop="item.prop" :label="item.label" show-overflow-tooltip="" :width="item.width">
+					<el-table-column v-else-if="item.prop" align="center" :prop="item.prop" :label="item.label" show-overflow-tooltip="" :width="item.width" :fixed="item.fixed">
 						<template #default="scope">
 							<component :is="item.render" v-if="item.render" :scope="scope" :row="scope.row" :column="item" />
 							<span v-else>{{ scope.row[item.prop] }}</span>
@@ -156,6 +164,7 @@ defineExpose({ openDialog,resetQuery });
 				</template>
 			</el-table>
 			<el-pagination
+				v-if="!props.pagination"
 				v-model:currentPage="tableParams.page"
 				v-model:page-size="tableParams.pageSize"
 				:total="tableParams.total"
@@ -167,5 +176,10 @@ defineExpose({ openDialog,resetQuery });
 				layout="total, sizes, prev, pager, next, jumper"
 			/>
 		</el-card>
+		<template #footer>
+			<template v-if="props.footerRender">
+				<component :is="props.footerRender" />
+			</template>
+		</template>
 	</el-dialog>
 </template>

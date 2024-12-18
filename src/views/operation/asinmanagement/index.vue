@@ -334,7 +334,7 @@
 				<el-table :data="exportData" style="height: 100%" v-loading="exportTableLoading" tooltip-effect="light" row-key="id" border="">
 					<el-table-column prop="fileUrl" label="文件地址" align="center" width="280px" show-overflow-tooltip>
 						<template #default="scope">
-							<el-link type="success" :href="scope.row.fileUrl">{{ scope.row.fileUrl === null ? '无文件' : scope.row.fileUrl.split('http://192.168.1.81:5568/ASINData/')[1] }}</el-link>
+							<el-link type="success" :href="scope.row.fileUrl">{{ scope.row.fileUrl === null ? '无文件' : scope.row.fileUrl.split('/ASINData/')[1] }}</el-link>
 						</template>
 					</el-table-column>
 					<el-table-column prop="state" label="状态" width="130px" align="center">
@@ -366,14 +366,10 @@
 
 <script lang="ts" setup name="asinData">
 import { ref, watch, h, onMounted, onUpdated } from 'vue';
-import { ElMessageBox, ElMessage, ElNotification, ElTooltip } from 'element-plus';
-import { auth } from '/@/utils/authFunction';
-//import { formatDate } from '/@/utils/formatTime';
-import { AsinDataPage, GetNotImportedList, ExportEnglish, ExportChinese, GetASINDataExportRecord } from '/@/api/modular/main/ASINManagement.ts';
+import { ElMessage, ElTooltip } from 'element-plus';
+import { AsinDataPage, GetNotImportedList, GetASINDataExportRecord } from '/@/api/modular/main/ASINManagement.ts';
 import { ArrowDownBold, ArrowUpBold, QuestionFilled } from '@element-plus/icons-vue';
 import axios from 'axios';
-import router from '/@/router';
-import other from '/@/utils/other.ts';
 import { Session } from '/@/utils/storage';
 import tabDragColum from '/@/components/tabDragColum/index.vue';
 import { useDebounce } from '/@/utils/debounce';
@@ -889,6 +885,16 @@ const TableData = ref<any>([
 		titleEN: 'Low List Price Alert',
 		dataIndex: 'lowListPriceAlert',
 		width: '120',
+		checked: true,
+		fixed: false,
+		remark: false,
+		desc: '',
+	},
+	{
+		titleCN: '综合问题',
+		titleEN: 'Comprehensive Issuest',
+		dataIndex: 'comprehensiveIssues',
+		width: '150',
 		checked: true,
 		fixed: false,
 		remark: false,

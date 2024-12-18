@@ -251,17 +251,21 @@ handleQuery();
 				<el-table-column type="index" label="序号" align="center" width="55" />
 				<el-table-column prop="exportTask" label="Export Task" align="center" show-overflow-tooltip="" />
 				<el-table-column prop="pos" label="POs" align="center" show-overflow-tooltip="" />
+				<el-table-column prop="numberOfOrders" label="下单数" align="center" show-overflow-tooltip="" />
+				<el-table-column prop="acceptedQuantity" label="接单数" align="center" show-overflow-tooltip="" />
+				<el-table-column prop="shipmentQuantity" label="发货数" align="center" show-overflow-tooltip="" />
+				<el-table-column prop="quantityReceived" label="接收数" align="center" show-overflow-tooltip="" />
 				<el-table-column prop="exprotTimeStart" label="Export Time" align="center" show-overflow-tooltip="" />
 				<el-table-column prop="filePath" label="Export File" align="center" show-overflow-tooltip="">
 					<template #default="scope">
-						<el-link type="success" @click="exportPoConfirmation(scope.row.id, scope.row.pos)">{{ scope.row.pos + '.xls' }}</el-link>
+						<el-link type="success" :disabled="scope.row.isCreateFile === 2" @click="exportPoConfirmation(scope.row.id,scope.row.pos)">{{scope.row.isCreateFile === 2?"文件生成中": scope.row.pos + '.xls' }}</el-link>
 					</template>
 				</el-table-column>
 				<el-table-column prop="account" label="Account" align="center" show-overflow-tooltip="" />
 				<el-table-column prop="name" label="Name" align="center" show-overflow-tooltip="" />
 				<el-table-column label="Action" align="center" show-overflow-tooltip="">
 					<template #default="scope">
-						<el-button type="primary" @click="exportDeliverList(scope.row.id, scope.row.exprotTimeStart)">Export Delivery List</el-button>
+						<el-button type="primary" :disabled="scope.row.isCreateFile === 2" @click="exportDeliverList(scope.row.id,scope.row.exprotTimeStart)">Export Delivery List</el-button>
 					</template>
 				</el-table-column>
 			</el-table>

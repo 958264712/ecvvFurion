@@ -1,18 +1,21 @@
 <script lang="ts" setup name="purchase_order">
-import { ref, onMounted, watch } from 'vue';
-import { pYYPurchaseOrderPage, pYYPurchaseOrderupdate, importPurchaseUnitPrice } from '/@/api/modular/main/financial.ts';
+import { ref, onMounted, watch,h } from 'vue';
+import { pYYPurchaseOrderPage, pYYPurchaseOrderupdate, importPurchaseUnitPrice,getAssociatedCollectionGoodInfo,pYYAssociatedCollectionOrder } from '/@/api/modular/main/financial.ts';
 import { ArrowDownBold, ArrowUpBold } from '@element-plus/icons-vue';
-import { ElMessageBox, ElMessage, ElNotification } from 'element-plus';
+import { ElMessage,ElButton } from 'element-plus';
 import importDialog from '/@/components/importDialog/index.vue';
 import moment from 'moment';
 import axios from 'axios';
 import { clearEmptyDataByAny } from '/@/utils/constHelper';
 import regexHelper from '/@/utils/regexHelper';
+import newInfoData from '/@/components/newInfoDataDialog/index.vue';
+import { getAPI } from '/@/utils/axios-utils';
+import { SysDictDataApi } from '/@/api-services/api';
 
 const { clearCharactersByRegex } = regexHelper();
-const tableData: any[] = ref([]);
+const tableData = ref<any>([]);
 const queryParams = ref<any>({ CreatorTime: '' });
-const tableParams = ref({
+const tableParams = ref<any>({
 	page: 1,
 	pageSize: 50,
 	total: 0,
@@ -24,7 +27,6 @@ const loading = ref(false);
 const loading2 = ref(false);
 const isWatch = ref(true);
 const visibleTextarea1 = ref(false);
-const selectExport = ref([]);
 const erpAndGoodsName = ref('');
 const warehouse = ref<any>([
 	{ value: 'EG Warehouse X1', lable: 'EG Warehouse X1' },
@@ -70,6 +72,24 @@ const TableData = ref<any>([
 	{
 		titleCN: '采购总金额',
 		dataIndex: 'purchaseTotalAmount',
+		checked: true,
+		fixed: false,
+	},
+	{
+		titleCN: '采购数量',
+		dataIndex: 'purchaseQuantity',
+		checked: true,
+		fixed: false,
+	},
+	{
+		titleCN: '采购单价',
+		dataIndex: 'purchaseUnitPrice',
+		checked: true,
+		fixed: false,
+	},
+	{
+		titleCN: '采购金额',
+		dataIndex: 'purchaseAmount',
 		checked: true,
 		fixed: false,
 	},
@@ -242,24 +262,6 @@ const TableData = ref<any>([
 		fixed: false,
 	},
 	{
-		titleCN: '采购数量',
-		dataIndex: 'purchaseQuantity',
-		checked: true,
-		fixed: false,
-	},
-	{
-		titleCN: '采购单价',
-		dataIndex: 'purchaseUnitPrice',
-		checked: true,
-		fixed: false,
-	},
-	{
-		titleCN: '采购金额',
-		dataIndex: 'purchaseAmount',
-		checked: true,
-		fixed: false,
-	},
-	{
 		titleCN: '未到货数量',
 		dataIndex: 'undeliveredQuantity',
 		checked: true,
@@ -390,8 +392,112 @@ const importFormList = ref<any>([
 		dateType: 'month',
 	},
 ]);
+
+const collectionOrderRef = ref<any>();
+const collectionTitle = ref('关联集货单');
+const collectionId = ref(undefined);
+const collectionLoading = ref(false);
+const destinationList = ref<any>([]);
+const collectionFormList = ref<any>([
+	{
+		label: '货代入仓号',
+		prop: 'inWareHouseNo',
+	},
+	{
+		label: '集货单号',
+		prop: 'documentNo',
+	},
+	{
+		label: 'ERP SKU',
+		prop: 'erpsku',
+	},
+	{
+		label: '状态',
+		prop: 'state',
+		select: true,
+		multiple: true,
+		options: [
+			{
+				label: '集货',
+				value: '集货',
+			},
+			{
+				label: '在途中',
+				value: '在途中',
+			},
+			{
+				label: '部分入仓',
+				value: '部分入仓',
+			},
+			{
+				label: '已入仓',
+				value: '已入仓',
+			},
+		],
+	},
+	{
+		label:'目的地',
+		prop:'destination',
+		select:true,
+		options:destinationList,
+	}
+]);
+const collectionDataList = ref<any>([
+	{
+		label: '目的地',
+		prop: 'destination',
+	},
+	{
+		label: '货代入仓号',
+		prop: 'inWareHouseNo',
+	},
+	{
+		label: 'SKU',
+		prop: 'erpsku',
+	},
+	{
+		label: 'FOB供货价',
+		prop: 'fobSupplyPrice',
+	},
+	{
+		label: '制单时间',
+		prop: 'productionTime',
+	},
+	{
+		label: '操作',
+		prop: 'operation',
+		render: ({ row }: { row: any }) => {
+			return h(
+				ElButton,
+				{
+					onClick: () => collectionMatch(collectionId.value, row.correlationId),
+					type: 'primary',
+				},
+				'关联'
+			);
+		},
+	},
+]);
+const openCollectionOrder = (row: any) => {
+	collectionId.value = row.id;
+	collectionTitle.value = `关联集货单（id：${row.id}）`;
+	collectionOrderRef.value.openDialog();
+};
+const collectionMatch = async (id: any, correlationId: any) => {
+	collectionLoading.value = true;
+	await pYYAssociatedCollectionOrder({ id, correlationId })
+		.then((res) => {
+			ElMessage.success('关联成功');
+		})
+		.catch((err) => {
+			ElMessage.error(err.message);
+		})
+		.finally(() => {
+			collectionLoading.value = false;
+		});
+};
 // 查询
-const handleQuery = async (): void => {
+const handleQuery = async (): Promise<void> => {
 	loading.value = true;
 	queryParams.value.StartCreatorTime = queryParams.value.CreatorTime ?  moment(queryParams.value.CreatorTime[0]).format('YYYY-MM-DD') : undefined;
 	queryParams.value.EndCreatorTime = queryParams.value.CreatorTime ?  moment(queryParams.value.CreatorTime[1]).format('YYYY-MM-DD') : undefined;
@@ -474,17 +580,13 @@ const handleConfirm = () => {
 	}
 	visibleTextarea1.value = false;
 };
-onMounted(() => {
+onMounted(async () => {
+	const res = await getAPI(SysDictDataApi).apiSysDictDataDataListCodeGet('destination');
+	destinationList.value = res.data.result
 	handleQuery();
 });
 
-// 获取keys
-const selectChange = (selection: any) => {
-	selectExport.value.splice(0, selectExport.value.length);
-	selection.map((item: any) => {
-		selectExport.value.push(item.id);
-	});
-};
+
 // 改变页面容量
 const handleSizeChange = (val: number): void => {
 	tableParams.value.pageSize = val;
@@ -611,14 +713,15 @@ watch(
 					</el-dialog>
 				</div>
 			</div>
-			<el-table :data="tableData" size="large" style="width: 100%" @selection-change="(selection: any) => selectChange(selection)" v-loading="loading" tooltip-effect="light">
-				<el-table-column width="85" align="center" fixed="left" show-overflow-tooltip="">
+			<el-table :data="tableData" size="large" style="width: 100%"  v-loading="loading" tooltip-effect="light">
+				<el-table-column width="155" align="center" fixed="left" show-overflow-tooltip="">
 					<template #header>
 						<el-button style="background-color: transparent; border: none; color: #df1515" icon="ele-Setting"></el-button>
 					</template>
 					<template #default="scope">
-						<el-button v-if="scope.row.IsEdit" icon="ele-Document" size="small" text="" type="primary" @click="update(scope.row)"></el-button>
-						<el-button v-if="!scope.row.IsEdit" icon="ele-Edit" size="small" text="" type="primary" @click="openEdit(scope.row)"></el-button>
+						<el-button v-if="scope.row.IsEdit" icon="ele-Document" size="small" text type="primary" @click="update(scope.row)"></el-button>
+						<el-button v-if="!scope.row.IsEdit" icon="ele-Edit" size="small" text type="primary" @click="openEdit(scope.row)"></el-button>
+						<el-button type="primary" @click="openCollectionOrder(scope.row)">关联集货单</el-button>
 					</template>
 				</el-table-column>
 				<template v-for="(item, index) in TableData" :key="index">
@@ -642,6 +745,16 @@ watch(
 					<el-table-column v-else :fixed="item.fixed" :prop="item.dataIndex" :label="area == 'CN' ? item.titleCN : item.titleEN" align="center" min-width="150" show-overflow-tooltip="" />
 				</template>
 			</el-table>
+			<newInfoData
+				:title="collectionTitle"
+				idName="id"
+				:loading="collectionLoading"
+				:id="collectionId"
+				:formList="collectionFormList"
+				ref="collectionOrderRef"
+				:dataList="collectionDataList"
+				:pointerface="getAssociatedCollectionGoodInfo"
+			/>
 			<el-pagination
 				v-model:currentPage="tableParams.page"
 				v-model:page-size="tableParams.pageSize"

@@ -180,6 +180,26 @@ const tabelList = ref<any>([
 		dataIndex: 'invoicedStatus',
 	},
 	{
+		titleCN: '下单数',
+		titleEN: 'Number Of Orders',
+		dataIndex: 'numberOfOrders',
+	},
+	{
+		titleCN: '接单数',
+		titleEN: 'Accepted Quantity',
+		dataIndex: 'acceptedQuantity',
+	},
+	{
+		titleCN: '发货数',
+		titleEN: 'Shipment Quantity',
+		dataIndex: 'shipmentQuantity',
+	},
+	{
+		titleCN: '接收数',
+		titleEN: 'Quantity Received',
+		dataIndex: 'quantityReceived',
+	},
+	{
 		titleCN: 'Export Status By PO Xlsx',
 		titleEN: 'Export Status By PO Xlsx',
 		dataIndex: 'exportStatusByXlsx',

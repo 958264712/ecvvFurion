@@ -14,6 +14,7 @@ const emit = defineEmits(['returnValues']);
 const loading = ref(false);
 const tableData = ref<any>([]);
 const visible = ref(false);
+const cid = ref<any>('');
 const queryParams = ref<any>({showFooter:true,...props.defaultValues});
 const tableParams = ref<any>({
 	page: 1,
@@ -40,6 +41,7 @@ const handleQuery = async () => {
 const openDialog = (id?: any) => {
 	nextTick(() => {
 		if (id) {
+			cid.value = id;
 			queryParams.value.showFooter = false;
 		} else {
 			queryParams.value = Object.assign({}, props.defaultValues);
@@ -66,7 +68,7 @@ const resetQuery = () => {
 const closeDialog = () => {
 	visible.value = false;
 	loading.value = false;
-	emit('returnValues', queryParams.value.inWareHouseNos);
+	emit('returnValues', queryParams.value.inWareHouseNos,cid.value);
 };
 // 改变页面容量
 const handleSizeChange = (val: number) => {

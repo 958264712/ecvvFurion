@@ -8,8 +8,23 @@ enum Api {
 	receiptAndWarehousingUpdate = '/api/receiptAndWarehousing/update',
 	receiptAndWarehousingImport = '/api/receiptAndWarehousing/import',
 	receiptAndWarehousingExport = '/api/receiptAndWarehousing/export',
+	receiptAndWarehousingDelete = '/api/receiptAndWarehousing/delete/',
+	scanReceiptBoxNo = '/api/receiptAndWarehousing/scanReceiptBoxNo',
 }
-
+// 扫码收货
+export const scanReceiptBoxNo = (params?: any) =>
+	request({
+		url: Api.scanReceiptBoxNo,
+		method: 'post',
+		data: params,
+	});
+// 删除数据
+export const receiptAndWarehousingDelete = (params?: any) =>
+	request({
+		url: Api.receiptAndWarehousingDelete + params?.id,
+		method: 'post',
+		data: params,
+	});
 // 获取集货列表
 export const getCollOrderList = (params?: any) =>
 	request({

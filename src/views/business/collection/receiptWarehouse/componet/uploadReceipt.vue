@@ -116,7 +116,7 @@ const isShowDialog = ref(false);
 const fileList = ref<any>([]);
 const fileRawList = ref<any>([]);
 
-const queryParams = ref<any>(Object.assign({inWareHouseNos: []}, props.defaultValues));
+const queryParams = ref<any>({ ...props.defaultValues });
 const handleClose = (tag: string) => {
 	queryParams.value.inWareHouseNos.splice(queryParams.value.inWareHouseNos.indexOf(tag), 1);
 }
@@ -194,6 +194,11 @@ const customUpload = () => {
 };
 // 打开弹窗
 const openDialog = (row: any) => {
+	if(Array.isArray(props.defaultValues.inWareHouseNos) && props.defaultValues.inWareHouseNos.length === 0) {
+		queryParams.value.inWareHouseNos = props.defaultValues.inWareHouseNos
+	} else {
+		queryParams.value.inWareHouseNos = props.defaultValues.inWareHouseNos
+	}
 	isShowDialog.value = true;
 };
 

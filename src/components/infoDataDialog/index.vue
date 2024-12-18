@@ -67,7 +67,7 @@
 							<component :is="item.render" v-if="item.render" :scope="scope" :row="scope.row" :column="item" />
 						</template>
 					</el-table-column>
-					<el-table-column v-else-if="item.prop" align="center" :prop="item.prop" :label="item.label" show-overflow-tooltip="" :width="item.width">
+					<el-table-column v-else-if="item.prop" align="center" :prop="item.prop" :label="item.label" show-overflow-tooltip="" :width="item.width" :fixed="item.fixed">
 						<template #default="scope">
 							<component :is="item.render" v-if="item.render" :scope="scope" :row="scope.row" :column="item" />
 							<span v-else>{{ scope.row[item.prop] }}</span>
