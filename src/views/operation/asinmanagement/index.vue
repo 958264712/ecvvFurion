@@ -891,6 +891,16 @@ const TableData = ref<any>([
 		desc: '',
 	},
 	{
+		titleCN: 'Parent ASIN',
+		titleEN: 'Parent ASIN',
+		dataIndex: 'parentASIN',
+		width: '100',
+		checked: true,
+		fixed: false,
+		remark: false,
+		desc: '',
+	},
+	{
 		titleCN: '综合问题',
 		titleEN: 'Comprehensive Issuest',
 		dataIndex: 'comprehensiveIssues',

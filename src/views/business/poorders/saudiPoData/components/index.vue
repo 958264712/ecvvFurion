@@ -1,5 +1,5 @@
 ﻿<script lang="ts" setup name="new_saudiPoData">
-import { ref } from 'vue';
+import { ref, computed, h } from 'vue';
 import { ElMessage } from 'element-plus';
 import {
 	newSaudiPage,
@@ -10,7 +10,8 @@ import {
 	getNewPoDataExportHistory,
 	newDownLoadPOZip,
 	exportNewPoData,
-	exportNewPoDataShipments
+	exportNewPoDataShipments,
+	updateAppointmentID
 } from '/@/api/modular/main/aSINBasicData.ts';
 import { service } from '/@/utils/request';
 import infoDataDialog from '/@/components/infoDataDialog/index.vue';
@@ -20,34 +21,34 @@ import other from '/@/utils/other.ts';
 import moment from 'moment';
 
 interface PoParamsType {
-  orderDate?: string;
-  type?: string;
-  state?: string;
-  type1?: string;
-  po?: string;
-  vendor?: string;
-  shipToLocation?: string;
-  invoicedStatus?: number;
-  time?: any;
-  checkbox?: boolean;
-  orderDateStartTime?: string;
-  orderDateEndTime?: string;
-  contractedWarehouseTimeStartTime?: string;
-  contractedWarehouseTimeEndTime?: string;
-  latestDateStartTime?: string;
-  latestDateEndTime?: string;
-  windowStart?: string;
-  windowEnd?: string;
-  bookTimeStart?: string;
-  bookTimeEnd?: string;
-  actualDateStart?: string;
-  actualDateEnd?: string;
-  descStr?: string;
-  field?: string;
+	orderDate?: string;
+	type?: string;
+	state?: string;
+	type1?: string;
+	po?: string;
+	vendor?: string;
+	shipToLocation?: string;
+	invoicedStatus?: number;
+	time?: any;
+	checkbox?: boolean;
+	orderDateStartTime?: string;
+	orderDateEndTime?: string;
+	contractedWarehouseTimeStartTime?: string;
+	contractedWarehouseTimeEndTime?: string;
+	latestDateStartTime?: string;
+	latestDateEndTime?: string;
+	windowStart?: string;
+	windowEnd?: string;
+	bookTimeStart?: string;
+	bookTimeEnd?: string;
+	actualDateStart?: string;
+	actualDateEnd?: string;
+	descStr?: string;
+	field?: string;
 }
 interface PoRowType {
-  id?: number;
-  po?: string; 
+	id?: number;
+	po?: string;
 }
 
 const timer = ref<any>();
@@ -58,18 +59,22 @@ const ifClose1 = ref(false);
 const cardLoading = ref(false);
 const tableData = ref<any>([]);
 
-const baseUrl = import.meta.env.VITE_API_URL
+const baseUrl = import.meta.env.VITE_API_URL;
 const importDialogRef = ref();
+const importCarrierDialogRef = ref();
 const exportDialogRef = ref();
 const url = ref('/api/newPoData/upLoadNewPoData');
+const carrierUrl = ref('/api/newPoData/importNewPoDataScheduled');
 const exportUrl = ref('/api/newPoData/upLoadNewPoDataDownBarCode');
+const carrierTableAddress = `${baseUrl}/upload/TableAddress/约仓信息更新.xlsx`;
 const tableAddress = `${baseUrl}/upload/TableAddress/PO履单系统批量上传模版.xlsx`;
 const exportTableAddress = `https://sa1api.ecvv.com/upload/TableAddress/条码批量.xlsx`;
 
 const queryParams = ref<PoParamsType>({
 	orderDate: 'CreationDate',
-	type: 'Vendor',
 	state: '全部',
+	vendor: undefined,
+	shipToLocation: undefined,
 });
 const tableParams = ref({
 	page: 1,
@@ -89,6 +94,14 @@ const disabledList = ref<any>([]);
 const selectedRows = ref<PoRowType[]>([]);
 const selectedRowKeys = ref<number[]>([]);
 const formList = ref<any>([]);
+
+const shipToLocationOptionList = ref<any>([]);
+const vendorOptionList = ref<any>([]);
+
+// 批量修改
+const batchVisible = ref(false);
+const batchEditQueryParams = ref<any>({});
+const batchEditData = ref<any>([]);
 
 const formList1 = ref<any>([
 	{
@@ -127,12 +140,7 @@ const tabelList = ref<any>([
 		titleCN: 'PO',
 		titleEN: 'PO',
 		dataIndex: 'po',
-		width: 130,
-	},
-	{
-		titleCN: 'Vendor',
-		titleEN: 'Vendor',
-		dataIndex: 'vendor',
+		width: 95,
 	},
 	{
 		titleCN: 'ShipToLocation',
@@ -140,19 +148,33 @@ const tabelList = ref<any>([
 		dataIndex: 'shipToLocation',
 	},
 	{
-		titleCN: 'Creation Date',
-		titleEN: 'Creation Date',
-		dataIndex: 'creationDate',
+		titleCN: 'Appointment ID',
+		titleEN: 'Appointment ID',
+		dataIndex: 'appointmentID',
+		width: 130,
 	},
 	{
 		titleCN: 'OrderDate',
 		titleEN: 'OrderDate',
 		dataIndex: 'orderDate',
+		width: 95,
+	},
+	{
+		titleCN: 'ASIN Count',
+		titleEN: 'ASIN Count',
+		dataIndex: 'asinCount',
+		width: 100,
+	},
+	{
+		titleCN: '下单数',
+		titleEN: 'Number Of Orders',
+		dataIndex: 'numberOfOrders',
 	},
 	{
 		titleCN: 'Remind Booking Date',
 		titleEN: 'RWAppointmentDate',
 		dataIndex: 'rwAppointmentDate',
+		width: 165,
 	},
 	{
 		titleCN: 'Status',
@@ -160,17 +182,25 @@ const tabelList = ref<any>([
 		dataIndex: 'state',
 	},
 	{
-		titleCN: 'Actual Booking Date',
+		titleCN: '‌Amazon Status',
+		titleEN: '‌Amazon Status',
+		dataIndex: 'amazonStatus',
+		width: 120,
+	},
+	{
+		titleCN: 'Scheduled Time',
 		titleEN: 'contractedWarehouseTime',
 		dataIndex: 'contractedWarehouseTime',
+		width: 150,
 	},
 	{
 		titleCN: 'Fulfillment Deadline',
 		titleEN: 'latestDate',
 		dataIndex: 'latestDate',
+		width: 150,
 	},
 	{
-		titleCN: 'Actual Fulfillment Date',
+		titleCN: 'Arrival Time',
 		titleEN: 'actualDate',
 		dataIndex: 'actualDate',
 	},
@@ -179,11 +209,7 @@ const tabelList = ref<any>([
 		titleEN: 'Invoiced Status',
 		dataIndex: 'invoicedStatus',
 	},
-	{
-		titleCN: '下单数',
-		titleEN: 'Number Of Orders',
-		dataIndex: 'numberOfOrders',
-	},
+	
 	{
 		titleCN: '接单数',
 		titleEN: 'Accepted Quantity',
@@ -209,28 +235,59 @@ const tabelList = ref<any>([
 		titleEN: 'Export Status By BarCode Docx',
 		dataIndex: 'exportStatusByDocx',
 	},
+
 	{
-		titleCN: 'ASIN Count',
-		titleEN: 'ASIN Count',
-		dataIndex: 'asinCount',
+		titleCN: 'Vendor',
+		titleEN: 'Vendor',
+		dataIndex: 'vendor',
+	},
+	{
+		titleCN: 'Creation Date',
+		titleEN: 'Creation Date',
+		dataIndex: 'creationDate',
+		width: 150,
 	},
 ]);
 const optionList = ref<any>([
 	{
 		label: '待约仓',
-		value: 0,
+		value: '待约仓',
 	},
 	{
-		label: '已约仓',
-		value: 1,
+		label: 'Pending',
+		value: 'Pending',
 	},
 	{
-		label: '已送达',
-		value: 2,
+		label: 'No Preference',
+		value: 'No Preference',
 	},
 	{
-		label: '取消',
-		value: 3,
+		label: 'Pending Schedule',
+		value: 'Pending Schedule',
+	},
+	{
+		label: 'Arrival Scheduled',
+		value: 'Arrival Scheduled',
+	},
+	{
+		label: 'Arrived',
+		value: 'Arrived',
+	},
+	{
+		label: 'Deleted',
+		value: 'Deleted',
+	},
+	{
+		label: 'Cancelled',
+		value: 'Cancelled',
+	},
+	{
+		label: 'Defect',
+		value: 'Defect',
+	},
+	{
+		label: 'Closed',
+		value: 'Closed',
 	},
 ]);
 const statusOptionList = ref<any>([
@@ -243,16 +300,6 @@ const statusOptionList = ref<any>([
 		value: 2,
 	},
 ]);
-const vendorOptionList = ref<any>([
-	{
-		label: 'Vendor',
-		value: 'Vendor',
-	},
-	{
-		label: 'ShipToLocation',
-		value: 'ShipToLocation',
-	},
-]);
 const storeOptionList = ref<any>([
 	{
 		label: '全部',
@@ -260,19 +307,43 @@ const storeOptionList = ref<any>([
 	},
 	{
 		label: '待约仓',
-		value: 0,
+		value: '待约仓',
 	},
 	{
-		label: '已约仓',
-		value: 1,
+		label: 'Pending',
+		value: 'Pending',
 	},
 	{
-		label: '已送达',
-		value: 2,
+		label: 'No Preference',
+		value: 'No Preference',
 	},
 	{
-		label: '取消',
-		value: 3,
+		label: 'Pending Schedule',
+		value: 'Pending Schedule',
+	},
+	{
+		label: 'Arrival Scheduled',
+		value: 'Arrival Scheduled',
+	},
+	{
+		label: 'Arrived',
+		value: 'Arrived',
+	},
+	{
+		label: 'Deleted',
+		value: 'Deleted',
+	},
+	{
+		label: 'Cancelled',
+		value: 'Cancelled',
+	},
+	{
+		label: 'Defect',
+		value: 'Defect',
+	},
+	{
+		label: 'Closed',
+		value: 'Closed',
 	},
 ]);
 const orderDateOptionList = ref<any>([
@@ -289,16 +360,16 @@ const orderDateOptionList = ref<any>([
 		value: 'Remind Booking Date',
 	},
 	{
-		label: 'Actual Booking Date',
-		value: 'Actual Booking Date',
+		label: 'Scheduled Time',
+		value: 'Scheduled Time',
 	},
 	{
 		label: 'Fulfillment Deadline',
 		value: 'Fulfillment Deadline',
 	},
 	{
-		label: 'Actual Fulfillment Date',
-		value: 'Actual Fulfillment Date',
+		label: 'Arrival Time',
+		value: 'Arrival Time',
 	},
 ]);
 const invoicedStatusOptionList = ref<any>([
@@ -493,13 +564,13 @@ const close1 = () => {
 	handleQuery();
 };
 
-const switchOrder = (key:string) => {
+const switchOrder = (key: string) => {
 	switch (key) {
 		case 'orderDate':
 			queryParams.value.orderDateStartTime = queryParams.value.time?.length ? moment(queryParams.value.time[0]).format() : undefined;
 			queryParams.value.orderDateEndTime = queryParams.value.time?.length ? moment(queryParams.value.time[1]).format() : undefined;
 			break;
-		case 'Actual Booking Date':
+		case 'Scheduled Time':
 			queryParams.value.contractedWarehouseTimeStartTime = queryParams.value.time?.length ? moment(queryParams.value.time[0]).format() : undefined;
 			queryParams.value.contractedWarehouseTimeEndTime = queryParams.value.time?.length ? moment(queryParams.value.time[1]).format() : undefined;
 			break;
@@ -515,7 +586,7 @@ const switchOrder = (key:string) => {
 			queryParams.value.bookTimeStart = queryParams.value.time?.length ? moment(queryParams.value.time[0]).format() : undefined;
 			queryParams.value.bookTimeEnd = queryParams.value.time?.length ? moment(queryParams.value.time[1]).format() : undefined;
 			break;
-		case 'Actual Fulfillment Date':
+		case 'Arrival Time':
 			queryParams.value.actualDateStart = queryParams.value.time?.length ? moment(queryParams.value.time[0]).format() : undefined;
 			queryParams.value.actualDateEnd = queryParams.value.time?.length ? moment(queryParams.value.time[1]).format() : undefined;
 			break;
@@ -537,17 +608,16 @@ const submit = () => {
 		visible1.value = false;
 	});
 };
+
+let timeItem = '';
+let num = 0;
 // 查询操作
 const handleQuery = async () => {
 	loading.value = true;
 	tableData.value = [];
-	if (queryParams.value.type === 'Vendor') {
-		queryParams.value.vendor = queryParams.value.type1;
-		queryParams.value.shipToLocation = undefined;
-	} else if (queryParams.value.type === 'ShipToLocation') {
-		queryParams.value.shipToLocation = queryParams.value.type1;
-		queryParams.value.vendor = undefined;
-	}
+	timeItem = '';
+	num = 0;
+
 	if (queryParams.value.state === '全部') {
 		queryParams.value.state = undefined;
 	}
@@ -565,32 +635,63 @@ const handleQuery = async () => {
 				undefined;
 		switchOrder(queryParams.value.orderDate);
 	}
-	var res = await newSaudiPage(Object.assign(queryParams.value, tableParams.value));
-	tableData.value = res.data.result?.items ?? [];
-	tableParams.value.total = res.data.result?.total;
-	res.data.result?.items.map((item:any) => {
-		disabledList.value.push(item.id);
-	});
-	loading.value = false;
+	await newSaudiPage(Object.assign(queryParams.value, tableParams.value))
+		.then((res) => {
+			loading.value = false;
+			tableParams.value.total = res.data.result?.total;
+			tableData.value = res.data.result?.items.map((item: any) => {
+				disabledList.value.push(item.id);
+				if (!vendorOptionList.value.some((i: any) => i.value === item.vendor)) {
+					vendorOptionList.value.push({
+						label: item.vendor,
+						value: item.vendor,
+					});
+				}
+				if (!shipToLocationOptionList.value.some((i: any) => i.value === item.shipToLocation)) {
+					shipToLocationOptionList.value.push({
+						label: item.shipToLocation,
+						value: item.shipToLocation,
+					});
+				}
+				if (item?.contractedWarehouseTime) {
+					item.contractedWarehouseTime = item.contractedWarehouseTime + ' AST';
+				}
+				if (item?.actualDate) {
+					item.actualDate = item.actualDate + ' AST';
+				}
+				return item;
+			});
+		})
+		.catch(() => {
+			loading.value = false;
+		});
 };
 // 修改状态等内容
-const openEdit = async (id: any, row:any): Promise<void> => {
-	if (disabledList.value.some((item:any) => item === id)) {
-		const index = disabledList.value.findIndex((item:any) => item === id);
+const openEdit = async (id: any, row: any): Promise<void> => {
+	timeItem = '';
+	num = 0;
+	if (disabledList.value.some((item: any) => item === id)) {
+		const index = disabledList.value.findIndex((item: any) => item === id);
 		disabledList.value.splice(index, 1);
 	} else {
 		if (id > 0) {
-			let obj:any = {};
+			let obj: any = {};
 			if (row.invoicedStatus >= 0) {
 				obj.invoicedStatus = row.invoicedStatus;
 			}
-			if (row.contractedWarehouseTime) {
-				obj.contractedWarehouseTime = moment(row.contractedWarehouseTime).format();
+			if (row.contractedWarehouseTime?.includes('AST')) {
+				obj.contractedWarehouseTime = row.contractedWarehouseTime.split('AST')[0].trim();
+			} else if (row.contractedWarehouseTime) {
+				obj.contractedWarehouseTime = row.contractedWarehouseTime;
+				row.contractedWarehouseTime = row.contractedWarehouseTime + ' AST';
 			}
-			if (row.actualDate) {
-				obj.actualDate = moment(row.actualDate).format();
+			if (row.actualDate?.includes('AST')) {
+				obj.actualDate = row.actualDate.split('AST')[0].trim();
+			} else if (row.actualDate) {
+				obj.actualDate = row.actualDate;
+				row.actualDate = row.actualDate + ' AST';
 			}
-			if (row.state >= 0) {
+			if (row.state?.length > 0) {
 				obj.state = row.state;
 			}
 			obj.id = row.id;
@@ -613,7 +714,7 @@ const openEdit = async (id: any, row:any): Promise<void> => {
 	}
 };
 const disabledAuto = (scope: any): void => {
-	return disabledList.value.some((item:any) => item === scope.row.id);
+	return disabledList.value.some((item: any) => item === scope.row.id);
 };
 // 排序
 const sortChange = (data: { column: any; prop: string; order: any }) => {
@@ -643,24 +744,26 @@ const multipleExport = (interfaces: any, type: string) => {
 		data.push(selectedRows.value[i]?.id);
 	}
 	cardLoading.value = true;
-	interfaces(Object.assign({ poList: data, Site: 'SA' }, queryParams.value)).then((res: any) => {
-		if (res.data.code !== 200) {
-			cardLoading.value = false;
-			ElMessage.error(res.message);
-			return;
-		} else {
-			ElMessage.success('Table generated, waiting for compression');
-			startTime.value = new Date().getTime(); // 获取触发轮询时的时间
-			if (type === 'listBin') {
-				inquireData(false, res.data.result); // 调用轮询接口,开始进行轮询
+	interfaces(Object.assign({ poList: data, Site: 'SA' }, queryParams.value))
+		.then((res: any) => {
+			if (res.data.code !== 200) {
+				cardLoading.value = false;
+				ElMessage.error(res.message);
+				return;
 			} else {
-				inquireData(true); // 调用轮询接口,开始进行轮询
+				ElMessage.success('Table generated, waiting for compression');
+				startTime.value = new Date().getTime(); // 获取触发轮询时的时间
+				if (type === 'listBin') {
+					inquireData(false, res.data.result); // 调用轮询接口,开始进行轮询
+				} else {
+					inquireData(true); // 调用轮询接口,开始进行轮询
+				}
 			}
-		}
-	}).catch((err:any) => {
-		cardLoading.value = false;
-		ElMessage.error(err);
-	});
+		})
+		.catch((err: any) => {
+			cardLoading.value = false;
+			ElMessage.error(err);
+		});
 };
 
 const inquireData = (bol: boolean, fileName = '') => {
@@ -735,40 +838,123 @@ const poListExport = async () => {
 const poListShipmentExport = async () => {
 	cardLoading.value = true;
 	await exportNewPoDataShipments({ poIdList: selectedRowKeys.value })
-		.then((res:any) => {
+		.then((res: any) => {
 			cardLoading.value = false;
 			other.downloadfile(res);
 			ElMessage.success('Export Success!');
 		})
-		.catch((err:any) => {
+		.catch((err: any) => {
 			cardLoading.value = false;
-			ElMessage.error(err);
+			ElMessage.error('请选择同一个ShipToLocation约仓');
 		});
-}
+};
 // 导入newpodata改变数据状态
 const importNewPoData = () => {
 	importDialogRef.value.openDialog();
 };
+const importCarrierData = () => {
+	importCarrierDialogRef.value.openDialog();
+};
 const exportNewPoDataBtn = () => {
-	exportUrl.value = '/api/newPoData/upLoadNewPoDataDownBarCode/' + (queryParams.value.checkbox ? true :false)
+	exportUrl.value = '/api/newPoData/upLoadNewPoDataDownBarCode/' + (queryParams.value.checkbox ? true : false);
 	exportDialogRef.value.openDialog();
-}
-const returnHref = (str:string) => {
+};
+const returnHref = (str: string) => {
 	startTime.value = new Date().getTime(); // 获取触发轮询时的时间
 	inquireData(false, str);
-}
+};
+
+let dicArr = {} as any;
+let colorTextArr = ['blue', 'fuchsia', 'blueviolet', 'midnightblue', 'darkgreen', 'teal', 'red', 'orange', 'mediumvioletred', 'turquoise', 'deeppink', 'yellow'];
+let colorIndex = 0;
+const getTextColor = (scope: any): string => {
+	//在字典里找是否存在当前shipToLocation所属的颜色，有则返回，没有则添加
+	if (dicArr[scope.row.shipToLocation]) {
+		return dicArr[scope.row.shipToLocation];
+	} else {
+		var tempColor = colorTextArr[colorIndex];
+		dicArr[scope.row.shipToLocation] = tempColor;
+		colorIndex = colorIndex + 1;
+		return tempColor;
+	}
+};
+
+const returnColor = (scope: any) => {
+	if (scope.row.status === 'CLOSED' || scope.row.status === 'CANCELLED') return 'red';
+	return '';
+};
+
+// 批量编辑
+const openBatchEdit = () => {
+	batchEditData.value = [];
+	selectedRows.value.forEach((item: any) => {
+		if(!batchEditData.value.includes(item.po)){
+			batchEditData.value.push(item.po)
+		}
+	})
+	batchVisible.value = true;
+};
+const closeBatchEdit = () => {
+	batchEditQueryParams.value = {};
+	batchEditData.value = [];
+	batchVisible.value = false;
+};
+const batchSubmit = async () => {
+	let pOs:any = []
+	batchEditData.value.forEach((item: any) => {
+		if(!pOs.some((item:any)=>item === item)){
+			pOs.push(item)
+		}
+	})
+	await updateAppointmentID({pOs,appointmentID:batchEditQueryParams.value.appointmentId}).then((res:any)=>{
+		if(res.data.code === 200){
+			ElMessage.success('Edit successfully');
+			handleQuery();
+			closeBatchEdit()
+		}else{
+			ElMessage.error('Edit failed');
+		}
+	})
+};
 
 // 获取keys
 const selectChange = (selection: PoRowType[]) => {
+	timeItem = '';
+	num = 0;
 	selectedRowKeys.value = [];
 	selectedRows.value = [];
 	selectedRows.value = selection;
 	selection.map((item: PoRowType) => {
-		 if (item.id !== undefined) {
-        	selectedRowKeys.value.push(item.id);
+		if (item.id !== undefined) {
+			selectedRowKeys.value.push(item.id);
 		}
 	});
 };
+
+const tableRowClassName = computed(() => {
+	return ({ rowIndex }: { rowIndex: number }) => {
+		let color = [
+			'var(--el-color-danger-light-8)',
+			'var(--el-color-success-light-7)',
+			'var(--el-color-warning-light-7)',
+			'var(--el-color-primary-light-9)',
+			'var(--el-color-success-light-9)',
+			'var(--el-color-info-light-7)',
+		];
+		let timeIndex = tableData?.value[rowIndex]?.contractedWarehouseTime + ' AST' ?? null;
+		if (timeItem !== timeIndex) {
+			timeItem = timeIndex;
+			if (rowIndex === 0) return { background: color[num] };
+			num++;
+			if (num === 6) {
+				num = 0;
+			}
+			return { background: color[num] };
+		} else {
+			return { background: color[num] };
+		}
+	};
+});
 
 handleQuery();
 </script>
@@ -779,11 +965,15 @@ handleQuery();
 				<el-form-item label="PO">
 					<el-input v-model="queryParams.po" clearable="" placeholder="请输入PO" />
 				</el-form-item>
-				<el-form-item>
-					<el-select v-model="queryParams.type" style="width: 90px" placeholder="vendor">
+				<el-form-item label="Vendor">
+					<el-select v-model="queryParams.vendor" placeholder="vendor" multiple>
 						<el-option v-for="i in vendorOptionList" :value="i.value" :label="i.label" />
 					</el-select>
-					<el-input v-model="queryParams.type1" style="width: 150px" clearable="" placeholder="Please enter" />
+				</el-form-item>
+				<el-form-item label="ShipToLocation">
+					<el-select v-model="queryParams.shipToLocation" placeholder="shipToLocation" multiple>
+						<el-option v-for="i in shipToLocationOptionList" :value="i.value" :label="i.label" />
+					</el-select>
 				</el-form-item>
 				<el-form-item>
 					<el-select v-model="queryParams.orderDate" style="width: 90px" placeholder="orderDate">
@@ -837,12 +1027,15 @@ handleQuery();
 						</el-dropdown-menu>
 					</template>
 				</el-dropdown>
-				<el-button type="primary" @click="importNewPoData" >import NewPodata</el-button>
-				<el-button type="primary" @click="exportNewPoDataBtn" >Export Asin BarCode</el-button>
+				<el-button type="primary" @click="importNewPoData">import NewPodata</el-button>
+				<el-button type="primary" @click="importCarrierData">import Carrier Appointmer</el-button>
+				<el-button type="primary" @click="openBatchEdit" :disabled="selectedRowKeys?.length <= 0">Batch Edit</el-button>
+				<el-button type="primary" @click="exportNewPoDataBtn">Export Asin BarCode</el-button>
 				<el-checkbox value="Made in China" label="Made in China" v-model="queryParams.checkbox" style="margin-left: 10px" />
 			</div>
 			<el-table
 				:data="tableData"
+				:row-style="tableRowClassName"
 				style="width: 100%"
 				v-loading="loading"
 				tooltip-effect="light"
@@ -852,53 +1045,54 @@ handleQuery();
 				border=""
 				@selection-change="(selection: any) => selectChange(selection)"
 			>
-				<el-table-column type="selection" width="55" />
+				<el-table-column type="selection" width="40" />
 				<template v-for="item in tabelList">
-					<el-table-column v-if="item.dataIndex === 'shipToLocation'" width="135px" :prop="item.dataIndex" :label="item.titleCN" align="center" show-overflow-tooltip="">
+					<el-table-column v-if="item.dataIndex === 'shipToLocation'" width="125px" class-name="red" :prop="item.dataIndex" :label="item.titleCN" align="center" show-overflow-tooltip="">
 						<template #default="scope">
-							{{ scope.row.shipToLocation.substring(0, 4) }}
+							<p :style="{ background: getTextColor(scope), color: '#FFF', margin: '10px' }">{{ scope.row.shipToLocation.substring(0, 4) }}</p>
 						</template>
 					</el-table-column>
-					<el-table-column v-else-if="item.dataIndex === 'state'" sortable :prop="item.dataIndex" width="100" :label="item.titleCN" align="center" show-overflow-tooltip="">
+					<el-table-column v-else-if="item.dataIndex === 'state'" sortable :prop="item.dataIndex" width="150" :label="item.titleCN" align="center" show-overflow-tooltip="">
 						<template #default="scope">
-							<el-select v-model="scope.row.state" :disabled="disabledAuto(scope)">
+							<el-select v-model="scope.row.state" :disabled="disabledAuto(scope)" :style="{ color: returnColor(scope) }">
 								<el-option v-for="i in optionList" :value="i.value" :label="i.label" />
 							</el-select>
 						</template>
 					</el-table-column>
-					<el-table-column v-else-if="item.dataIndex === 'contractedWarehouseTime'" sortable :prop="item.dataIndex" :label="item.titleCN" align="center" width="190">
+					<el-table-column v-else-if="item.dataIndex === 'contractedWarehouseTime'" sortable :prop="item.dataIndex" :label="item.titleCN" align="center" width="175">
 						<template #default="scope">
-							<el-date-picker  v-model="scope.row.contractedWarehouseTime" style="width: 126px;" format="MM/DD/YYYY HH:mm" type="datetime" :disabled="disabledAuto(scope)" />
+							<el-input v-model="scope.row.contractedWarehouseTime" :style="{ color: returnColor(scope), width: '150px' }" :disabled="disabledAuto(scope)" />
 						</template>
 					</el-table-column>
-					<el-table-column v-else-if="item.dataIndex === 'actualDate'" :prop="item.dataIndex" sortable :label="item.titleCN" align="center" width="190">
+					<el-table-column v-else-if="item.dataIndex === 'actualDate'" :prop="item.dataIndex" sortable :label="item.titleCN" align="center" width="175">
 						<template #default="scope">
-							<el-date-picker v-model="scope.row.actualDate" style="width: 96px" format="YYYY-MM-DD" type="date" :disabled="disabledAuto(scope)" />
+							<el-input v-model="scope.row.actualDate" :style="{ color: returnColor(scope), width: '150px' }" :disabled="disabledAuto(scope)" />
 						</template>
 					</el-table-column>
 					<el-table-column v-else-if="item.dataIndex === 'invoicedStatus'" :prop="item.dataIndex" sortable :label="item.titleCN" align="center" width="145" show-overflow-tooltip="">
 						<template #default="scope">
-							<el-select v-model="scope.row.invoicedStatus" :disabled="disabledAuto(scope)">
+							<el-select v-model="scope.row.invoicedStatus" :disabled="disabledAuto(scope)" :style="{ color: returnColor(scope) }">
 								<el-option v-for="i in statusOptionList" :value="i.value" :label="i.label" />
 							</el-select>
 						</template>
 					</el-table-column>
-					<el-table-column v-else-if="item.dataIndex === 'orderDate'" width="150" :prop="item.dataIndex" :label="item.titleCN" align="center" show-overflow-tooltip="" sortable />
-					<el-table-column v-else-if="item.dataIndex === 'creationDate'" width="150px" :prop="item.dataIndex" :label="item.titleCN" align="center" show-overflow-tooltip="" sortable />
-					<el-table-column v-else-if="item.dataIndex === 'rwAppointmentDate'" width="190" :prop="item.dataIndex" :label="item.titleCN" align="center" show-overflow-tooltip="" sortable />
-					<el-table-column v-else-if="item.dataIndex === 'latestDate'" width="180" :prop="item.dataIndex" :label="item.titleCN" align="center" show-overflow-tooltip="" sortable />
 					<el-table-column v-else-if="item.dataIndex === 'exportStatusByXlsx'" width="200" :prop="item.dataIndex" :label="item.titleCN" align="center" show-overflow-tooltip="">
 						<template #default="scope">
-							{{ scope.row.exportStatusByXlsx === 0 ? 'NO' : 'YES' }}
+							<p :style="{ color: returnColor(scope) }">{{ scope.row.exportStatusByXlsx === 0 ? 'NO' : 'YES' }}</p>
 						</template>
 					</el-table-column>
 					<el-table-column v-else-if="item.dataIndex === 'exportStatusByDocx'" width="230" :prop="item.dataIndex" :label="item.titleCN" align="center" show-overflow-tooltip="">
 						<template #default="scope">
-							{{ scope.row.exportStatusByDocx === 0 ? 'NO' : scope.row.exportStatusByDocx === 1 ? 'YES' : 'Partial Export' }}
+							<p :style="{ color: returnColor(scope) }">
+								{{ scope.row.exportStatusByDocx === 0 ? 'NO' : scope.row.exportStatusByDocx === 1 ? 'YES' : 'Partial Export' }}
+							</p>
 						</template>
 					</el-table-column>
-					<el-table-column v-else-if="item.dataIndex === 'asinCount'" width="100" :prop="item.dataIndex" :label="item.titleCN" align="center" show-overflow-tooltip="" />
-					<el-table-column v-else-if="item.dataIndex" :prop="item.dataIndex" :label="item.titleCN" align="center" show-overflow-tooltip="" :width="item.width" />
+					<el-table-column v-else-if="item.dataIndex" :prop="item.dataIndex" :label="item.titleCN" align="center" show-overflow-tooltip="" :width="item.width">
+						<template #default="scope">
+							<p :style="{ color: returnColor(scope) }">{{ scope.row[item.dataIndex] }}</p>
+						</template>
+					</el-table-column>
 				</template>
 				<el-table-column label="Operation" width="250" align="center" fixed="right" show-overflow-tooltip="">
 					<template #default="scope">
@@ -935,18 +1129,46 @@ handleQuery();
 			<el-dialog v-model="visible" title="Confirmed New POs Info" @close="close1" width="1000px">
 				<infoDataDialog :id="showId" idName="id" :dataList="dataList1" :pointerface="getConfirmedNewPOsPage" :formList="formList1" site="SA" :ifClose="ifClose1" :exportBarCode="true" />
 			</el-dialog>
+			<importDialog ref="importDialogRef" title="PO Pick List lmport" excelName="PO Pick List " :ifExcelBol="true" :tableAddress="tableAddress" area="EN" :url="url" @reloadTable="handleQuery" />
 			<importDialog
-				ref="importDialogRef"
-				title="PO Pick List lmport"
-				excelName="PO Pick List "
+				ref="importCarrierDialogRef"
+				title="Import Booking Time Status"
+				excelName="Booking Time Status "
 				:ifExcelBol="true"
-				:tableAddress="tableAddress"
+				:tableAddress="carrierTableAddress"
 				area="EN"
-				:url="url"
+				:url="carrierUrl"
 				@reloadTable="handleQuery"
 			/>
-			<exportDialog ref="exportDialogRef" :inquireData="true"  title="Import PO Export ASIN BarCode" :ifExcelBol="true" :tableAddress="exportTableAddress" area="EN" :url="exportUrl" @reloadTable="handleQuery" @returnHref="returnHref"/>
+			<exportDialog
+				ref="exportDialogRef"
+				:inquireData="true"
+				title="Import PO Export ASIN BarCode"
+				:ifExcelBol="true"
+				:tableAddress="exportTableAddress"
+				area="EN"
+				:url="exportUrl"
+				@reloadTable="handleQuery"
+				@returnHref="returnHref"
+			/>
 		</el-card>
+		<el-dialog v-model="batchVisible" title="Batch Edit" :width="500" @close="closeBatchEdit" draggable="">
+			<el-card class="full-table" shadow="hover" style="margin-top: 8px; ">
+				<el-form :model="batchEditQueryParams" ref="queryForm" :inline="true">
+					<el-form-item label="PO">
+						<el-tag v-for="item in batchEditData" :key="item" >{{ item }}</el-tag>
+					</el-form-item>	
+					<el-form-item label="Appointment ID">
+						<el-input v-model="batchEditQueryParams.appointmentId" />
+					</el-form-item>	
+					<el-form-item>
+					</el-form-item>
+				</el-form>
+			</el-card>
+			<template #footer> 
+				<el-button type="primary" @click="batchSubmit"> 确定 </el-button>
+			</template>
+		</el-dialog>
 	</div>
 </template>
 <style lang="less" scoped>
@@ -975,22 +1197,29 @@ handleQuery();
 		width: 100%;
 	}
 	.el-input.is-disabled .el-input__wrapper {
-    background-color: transparent !important;
-    // 如果需要保持文字可见度
-    .el-input__inner {
-      -webkit-text-fill-color: inherit;
-      color: inherit;
-    }
-  }
+		background-color: transparent !important;
+		// 如果需要保持文字可见度
+		.el-input__inner {
+			-webkit-text-fill-color: inherit;
+			color: inherit;
+		}
+	}
 }
 // 添加以下样式来处理日期选择器的禁用状态
-:deep(.el-date-editor.is-disabled) {
-  .el-input__wrapper {
-    background-color: transparent !important;
-    .el-input__inner {
-      -webkit-text-fill-color: inherit;
-      color: inherit;
-    }
-  }
+// :deep(.el-date-editor.is-disabled) {
+// 	.el-input__wrapper {
+// 		background-color: transparent !important;
+// 		.el-input__inner {
+// 			-webkit-text-fill-color: inherit;
+// 			color: inherit;
+// 		}
+// 	}
+// }
+
+:deep(.el-table__body tr:hover > td) {
+	background-color: rgba(0, 0, 0, 0) !important;
+}
+:deep(.el-table__body tr:hover > .el-table-fixed-column--right) {
+	background-color: #fff !important;
 }
 </style>

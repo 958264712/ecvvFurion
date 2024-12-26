@@ -17,6 +17,7 @@ import moment from 'moment';
  * @props defaultValues 给予默认参数
  * @props pagination 是否需要分页
  * @props query 是否需要查询功能
+ * @props width 传入弹窗宽度
  */
 declare type formListType<T = any> = {
 	label: String;
@@ -24,7 +25,7 @@ declare type formListType<T = any> = {
 	select?: Boolean;
 	options?: [T];
 }[];
-const props = defineProps(['id', 'idName', 'title','titleRender','footerRender','pagination', 'loading','pointerface', 'dataList', 'formList', 'ifClose', 'defaultValues','query']);
+const props = defineProps(['id', 'idName', 'title','width','titleRender','footerRender','pagination', 'loading','pointerface', 'dataList', 'formList', 'ifClose', 'defaultValues','query']);
 const loading = ref(false);
 const tableData = ref<any>([]);
 const visible = ref(false);
@@ -57,10 +58,11 @@ const handleQuery = async () => {
         ...queryParams.value,
         ...tableParams.value
     };
-    
-    var res = await props.pointerface(params);
-	tableData.value = res.data.result?.items ?? [];
-	tableParams.value.total = res.data.result?.total;
+	if (props.pointerface) {
+		var res = await props.pointerface(params);
+		tableData.value = res.data.result?.items ?? [];
+		tableParams.value.total = res.data.result?.total;
+	}
 	loading.value = false;
 };
 
@@ -119,7 +121,7 @@ watch(
 defineExpose({ openDialog,resetQuery,closeDialog });
 </script>
 <template>
-	<el-dialog v-model="visible" :width="1000" @close="closeDialog" draggable="" >
+	<el-dialog v-model="visible" :width="props.width ? props.width : 1000" @close="closeDialog" draggable="" >
 		<template #header>
 			<template v-if="props.title"><span style="font-size: 16px;font-weight: 700; color:#fff">{{ props.title }}</span></template>
 			<template v-else>

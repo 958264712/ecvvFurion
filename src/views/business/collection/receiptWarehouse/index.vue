@@ -511,26 +511,35 @@ const codeReceiptFormList = ref<any>([
 			return h(ElInput, {
 				modelValue: queryParams[item.prop],
 				placeholder: '请输入箱号或SKU',
-				onKeyup: (e: any) => {
-					if (e.keyCode === 13) {
-						scanReceiptBoxNo({ boxNo: queryParams[item.prop], inWareHouseNos: codeReceiptDefaultValuesParams.value.inWareHouseNos })
-							.then((res: any) => {
-								if (res.data.result) {
-									codeReceiptDefaultValuesParams.value.tableData.unshift(res.data.result);
-									Local.setLocalStorageItemWithExpiry('codeReceiptTableData', JSON.stringify(codeReceiptDefaultValuesParams.value.tableData), 1000 * 60 * 60 * 24 - diffMilliseconds);
-								}
-								if (res.data.result.includes('扫码成功')) {
-									ElMessage.success(res.data.result);
-								} else {
-									ElMessage.error(res.data.result);
-								}
-								queryParams[item.prop] = '';
-							})
-							.catch((err: any) => {
-								ElMessage.error(err.message);
-							});
-					}
+				onChange: () => {
+					scanReceiptBoxNo({ boxNo: queryParams[item.prop], inWareHouseNos: codeReceiptDefaultValuesParams.value.inWareHouseNos })
+						.then((res: any) => {
+							if (res.data.result) {
+								codeReceiptDefaultValuesParams.value.tableData.unshift(res.data.result);
+								Local.setLocalStorageItemWithExpiry('codeReceiptTableData', JSON.stringify(codeReceiptDefaultValuesParams.value.tableData), 1000 * 60 * 60 * 24 - diffMilliseconds);
+							}
+							if (res.data.result.includes('扫码成功')) {
+								ElMessage.success(res.data.result);
+							} else {
+								ElMessage.error(res.data.result);
+							}
+							queryParams[item.prop] = '';
+						})
+						.catch((err: any) => {
+							ElMessage.error(err.message);
+						});
 				},
+			});
+		},
+	},
+	{
+		label: '',
+		prop: 'site',
+		render: ({ queryParams, item }: { queryParams: any; item: any }) => {
+			return h(ElInput, {
+				style: { display: 'none' },
+				modelValue: queryParams[item.prop],
+				placeholder: '修改elinput enter bug',
 			});
 		},
 	},

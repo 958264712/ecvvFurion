@@ -37,7 +37,15 @@ enum Api {
 	getFileStream = '/api/exprotShipmentConfrmation/getFileStream/',
 	exportNewPoDataShipments = '/api/newPoData/exportShipments',
 	getExportRecordPage = '/api/exprotShipmentConfrmation/getExportRecordPage',
+	updateAppointmentID = '/api/newPoData/updateAppointmentID',
 }
+// 批量修改appointmentID
+export const updateAppointmentID = (params?: any,) =>
+	request({
+		url: Api.updateAppointmentID,
+		method: 'post',
+		data: params,
+	});
 // 获取导出记录
 export const getExportRecordPage = (params?: any,) =>
 	request({
