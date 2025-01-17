@@ -29,23 +29,13 @@
 						</el-button>
 					</el-button-group>
 				</el-form-item>
-				<!-- <el-form-item>
-					<el-button type="primary" icon="ele-Plus" @click="openAddCostpeice_Batch" v-auth="'costpeice_Batch:add'"> 新增 </el-button>
-				</el-form-item> -->
 			</el-form>
 		</el-card>
 		<el-card class="full-table" shadow="hover" style="margin-top: 8px">
-			<el-form-item><el-button @click="opendialog" type="primary"> 导入 </el-button></el-form-item>
-			<el-dialog v-model="dialogFormVisible" title="CostpriceBatch导入" width="600px" center>
-				<importDialog
-					:type="importType"
-					text="选择站点，点击'确定'后，选择需要导入的文件，将导入该数据"
-					:formList="importFormList"
-					:importsInterface="Import"
-					@close="importClose"
-					@importQuery="importQuery"
-				/>
-			</el-dialog>
+			<div>
+				<el-button @click="opendialog" type="primary"> 导入 </el-button>
+				<el-button @click="exportdialog" type="primary"> 导出 </el-button>
+			</div>
 			<el-table :data="tableData" style="width: 100%" v-loading="loading" tooltip-effect="light" row-key="id" border="">
 				<el-table-column type="index" label="序号" width="55" align="center" />
 				<el-table-column prop="site" align="center" label="站点" />
@@ -56,8 +46,6 @@
 				<el-table-column label="操作" width="140" align="center" fixed="right" v-if="auth('costpeice_Batch:edit') || auth('costpeice_Batch:delete')">
 					<template #default="scope">
 						<el-button icon="ele-Document" size="small" text="" type="primary" @click="showModal(scope.row.id)"> 详情 </el-button>
-						<!-- <el-button icon="ele-Edit" size="small" text="" type="primary" @click="openEditCostpeice_Batch(scope.row)" v-auth="'costpeice_Batch:edit'"> 编辑 </el-button>
-						<el-button icon="ele-Delete" size="small" text="" type="primary" @click="delCostpeice_Batch(scope.row)" v-auth="'costpeice_Batch:delete'"> 删除 </el-button> -->
 					</template>
 				</el-table-column>
 			</el-table>
@@ -72,30 +60,82 @@
 				@current-change="handleCurrentChange"
 				layout="total, sizes, prev, pager, next, jumper"
 			/>
-			<!-- <editDialog ref="editDialogRef" :title="editCostpeice_BatchTitle" @reloadTable="handleQuery" /> -->
 		</el-card>
 		<el-dialog v-model="visible" title="Costpeice List" @close="close" width="1000px">
-			<!-- <costprice :id="costpriceBatchId"></costprice> -->
 			<InfoDataDialog :id="costpriceBatchId" idName="costpriceBatchId" :dataList="dataList" :ifClose="ifClose" :pointerface="pageCostpeice" :formList="formList" />
+		</el-dialog>
+		<el-dialog v-model="dialogFormVisible" title="CostpriceBatch导入" width="600px" center>
+			<importDialog
+				:type="importType"
+				text="选择站点，点击'确定'后，选择需要导入的文件，将导入该数据"
+				:formList="importFormList"
+				:importsInterface="Import"
+				@close="importClose"
+				@importQuery="importQuery"
+			/>
+		</el-dialog>
+		<el-dialog v-model="exportVisible" title="导出Cost Price" width="600px" @close="exportClose" draggable>
+			<el-form :model="exportParams" ref="exportForm">
+				<el-form-item label="站点">
+					<el-radio-group v-model="exportParams.site">
+						<el-radio label="所有" :value="null"/>
+						<el-radio label="UAE" value="UAE"/>
+						<el-radio label="SA" value="SA"/>
+					</el-radio-group>
+				</el-form-item>
+				<el-form-item label="日期">
+					<el-date-picker type="daterange" v-model="exportParams.time"  start-placeholder="Start date" end-placeholder="End date" style="width:200px !important;flex-grow:0"/>
+				</el-form-item>
+				<el-form-item label="范围">
+					<el-radio-group v-model="exportParams.hasChanges">
+						<el-radio label="所有" :value="null"/>
+						<el-radio label="有变化" :value="1"/>
+					</el-radio-group>
+				</el-form-item>
+			</el-form>
+			<template #footer>
+				<div style="text-align:start !important">
+					<el-button type="primary" size="default" :loading="exportLoading" @click="exportConfirm">确定</el-button>
+					<el-button size="default" @click="exportClose">取消</el-button>
+				</div>
+			</template>
 		</el-dialog>
 	</div>
 </template>
 
 <script lang="ts" setup="" name="costpeice_Batch">
 import { ref } from 'vue';
-import { ElMessageBox, ElMessage } from 'element-plus';
 import { auth } from '/@/utils/authFunction';
-//import { formatDate } from '/@/utils/formatTime';
-// /@/views/OperationManagement/asinmanagement/costpeice_Batch
-// import editDialog from './component/editDialog.vue';
-import costprice from './component/costprice.vue';
-import { pageCostpeice_Batch, deleteCostpeice_Batch, Import } from '/@/api/operation/costprice_Batch';
+import {ElMessage} from 'element-plus'
+import { pageCostpeice_Batch, exportCostPrice,getExportCostPriceFileStream, Import } from '/@/api/operation/costprice_Batch';
 import { pageCostpeice } from '/@/api/operation/costprice';
 import { getDictDataList } from '/@/api/system/admin';
 import importDialog from '/@/components/importDialog/index.vue';
 import InfoDataDialog from '/@/components/infoDataDialog/index.vue';
+import moment from 'moment'
 
 const ifClose = ref(false);
+const timer = ref<NodeJS.Timeout | null>(null);
+const startTime = ref(0);
+const exportVisible = ref(false);
+const exportLoading = ref(false)
+const exportParams = ref<any>({
+	site:'所有',
+	hasChanges:'有变化',
+	time:[new Date().setTime(new Date().getTime()-3600 * 1000 * 24 * 30),new Date()]
+});
+const exportForm = ref();
+const exportdialog = () => {
+	exportVisible.value = true;
+};
+const exportClose = () => {
+	exportParams.value = {
+	site:'所有',
+	hasChanges:'有变化',
+	time:[new Date().setTime(new Date().getTime()-3600 * 1000 * 24 * 30),new Date()]
+	};
+	exportVisible.value = false;
+};
 //打开弹窗
 function showModal(id: any) {
 	costpriceBatchId.value = id;
@@ -179,10 +219,8 @@ const options = ref([
 	},
 ]);
 
-const importloading = ref(false);
 const getsiteData = ref<any>([]);
 const dialogFormVisible = ref(false);
-const editDialogRef = ref();
 const loading = ref(false);
 const tableData = ref<any>([]);
 const queryParams = ref<any>({});
@@ -191,7 +229,6 @@ const tableParams = ref({
 	pageSize: 10,
 	total: 0,
 });
-const editCostpeice_BatchTitle = ref('');
 const importType = ref('costprice_batch');
 const importFormList = ref<any>([
 	{
@@ -208,33 +245,74 @@ const importClose = (bol: boolean) => {
 const importQuery = () => {
 	handleQuery();
 };
-// 导入
-// const Imports = (file: any) => {
-// 	if (site.value == '') {
-// 		ElMessage.warning('请选择站点');
-// 		return;
-// 	}
-// 	importloading.value = true;
-// 	const formData = new FormData();
-// 	formData.append('file', file.raw);
-// 	formData.append('site', site.value);
-// 	Import(formData)
-// 		.then((res: any) => {
-// 			importloading.value = false;
-// 			if (res.data.code == 200) {
-// 				ElMessage.success('导入成功');
-// 				dialogFormVisible.value = false;
-// 				handleQuery();
-// 			} else {
-// 				importloading.value = false;
-// 				ElMessage.error(res.message); // + res.message
-// 			}
-// 		})
-// 		.catch(() => {
-// 			importloading.value = false;
-// 			dialogFormVisible.value = false;
-// 		});
-// };
+const inquireData = (id: any) => {
+	const reload = () => {
+		clearTimeout(timer.value as NodeJS.Timeout); // 清除定时器
+		// 超过3分钟则停止轮询
+		if (new Date().getTime() - startTime.value > 10 * 60 * 1000) {
+			clearTimeout(timer.value as NodeJS.Timeout);
+			return;
+		}
+		timer.value = setTimeout(() => {
+			inquireData(id); // 调用轮询
+		}, 3000);
+	};
+	getExportCostPriceFileStream({id}).then((res: any) => {
+		if (res.data.result === '') {
+			// 没成功,调用轮询
+			reload();
+		} else {
+			window.open(res.data.result, '_blank');
+			exportLoading.value = false;
+			exportVisible.value = false;
+			ElMessage.success('Export Success!');
+			handleQuery();
+		}
+	}).catch(err => {
+		exportLoading.value = false;
+		ElMessage.error(err);
+	})
+};
+// 导出
+const exportConfirm = async () => {
+	exportLoading.value = true
+	if (exportParams.value.time?.length) {
+		exportParams.value.startDate = moment(exportParams.value.time[0]).format('YYYY-MM-DD')
+		exportParams.value.endDate = moment(exportParams.value.time[1]).format('YYYY-MM-DD')
+	}else{
+		ElMessage.error('请选择日期')
+		return
+	}
+	if (exportParams.value.site === '所有') {
+		exportParams.value.site = null
+	}
+	if (exportParams.value.hasChanges === '所有') {
+		exportParams.value.hasChanges = null
+	} else {
+		exportParams.value.hasChanges = 1
+	}
+	await exportCostPrice(Object.assign(exportParams.value)).then((res:any) => {
+		if (res.data.code !== 200) {
+			exportLoading.value = false;
+			ElMessage.error(res.message);
+			return;
+		} else {
+			inquireData(res.data.result); // 调用轮询接口,开始进行轮询
+			startTime.value = new Date().getTime();
+		}
+	}).catch(err => {
+		exportLoading.value = false;
+		ElMessage.error(err);
+	})
+	if (exportParams.value.site === null) {
+		exportParams.value.site = '所有'
+	}
+	if (exportParams.value.hasChanges === null) {
+		exportParams.value.hasChanges = '所有'
+	} else {
+		exportParams.value.hasChanges = '有变化'
+	}
+}
 
 const opendialog = () => {
 	dialogFormVisible.value = true;
@@ -251,32 +329,6 @@ const handleQuery = async () => {
 	getsiteData.value = await dictTypeDataList('zhandian');
 };
 
-// 打开新增页面
-const openAddCostpeice_Batch = () => {
-	editCostpeice_BatchTitle.value = '添加Costpeice';
-	editDialogRef.value.openDialog({});
-};
-
-// 打开编辑页面
-const openEditCostpeice_Batch = (row: any) => {
-	editCostpeice_BatchTitle.value = '编辑Costpeice';
-	editDialogRef.value.openDialog(row);
-};
-
-// 删除
-const delCostpeice_Batch = (row: any) => {
-	ElMessageBox.confirm(`确定要删除吗?`, '提示', {
-		confirmButtonText: '确定',
-		cancelButtonText: '取消',
-		type: 'warning',
-	})
-		.then(async () => {
-			await deleteCostpeice_Batch(row);
-			handleQuery();
-			ElMessage.success('删除成功');
-		})
-		.catch(() => {});
-};
 
 // 改变页面容量
 const handleSizeChange = (val: number) => {
@@ -296,3 +348,8 @@ const dictTypeDataList = async (val: any) => {
 };
 handleQuery();
 </script>
+<style lang="less" scoped>
+	:deep(.el-radio){
+		margin-right:12px;
+	}
+</style>

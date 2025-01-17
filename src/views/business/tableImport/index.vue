@@ -148,11 +148,12 @@ enum ImportMethod {
 	ProcurementDetails = '/api/procurementDetails/import', //ProcurementDetails
 	AmazonProductPricebase = '/api/amazonProductPricebase/import', //AmazonProductPricebase
 	AmazonProPricebaseSA = '/api/amazonProPricebaseSA/import', //AmazonProPricebaseSA
-	inventoryManagement = '/api/inventoryManagement/Imports/金蝶云采购申请单/UAE',//金蝶云采购申请单
+	//inventoryManagement = '/api/inventoryManagement/Imports/金蝶云采购申请单/UAE',//金蝶云采购申请单
 	inventoryManagementamazonUAE = '/api/inventoryManagement/Imports/amazon-orders-Dropship/UAE',//amazon-orders-Dropship
 	inventoryManagementamazonSA = '/api/inventoryManagement/Imports/amazon-orders-Dropship/SA',//amazon-orders-Dropship
 	inventoryManagementInventoryUAE = '/api/inventoryManagement/Imports/Inventory_Sourcing_Retail/UAE',//Inventory_Sourcing_Retail
 	inventoryManagementInventorySA = '/api/inventoryManagement/Imports/Inventory_Sourcing_Retail/SA',//Inventory_Sourcing_Retail
+	inventoryManagement = '/api/inventoryManagement/Imports/普源云采购单/SA',//普源云采购单
 }
 
 //根据id判断url
@@ -181,6 +182,7 @@ const switchImportMethod = (id: any) => {
 		case 15396189812421:
 			return ImportMethod.AmazonProductPricebase;
 		case 16313837384517:
+		case 19721617692997:
 			return ImportMethod.inventoryManagement;
 		case 19099450199493:
 			return ImportMethod.inventoryManagementamazonUAE;

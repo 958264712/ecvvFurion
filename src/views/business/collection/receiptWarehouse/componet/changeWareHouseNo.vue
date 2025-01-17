@@ -127,7 +127,7 @@ defineExpose({ openDialog, resetQuery });
 				<el-col :span="16">
 					<el-table :data="tableData" style="width: 100%; height: 320px" v-loading="loading" tooltip-effect="light" row-key="id" border="">
 						<template v-for="item in props.dataList">
-							<el-table-column v-if="item.prop === 'operation'" :label="item.label" width="120" align="center" fixed="right">
+							<el-table-column v-if="item.prop === 'operation'" :label="item.label" :width="item.width" align="center" fixed="right">
 								<template #default="scope">
 									<component :is="item.render" v-if="item.render" :scope="scope" :row="scope.row" :column="item" />
 								</template>

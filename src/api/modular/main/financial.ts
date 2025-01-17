@@ -26,6 +26,7 @@ enum Api {
 	importInitialInventoryData = '/api/initialInventoryData/import',
 	inventoryQueryPage = '/api/inventoryQuery/page',
 	inventoryQueryExport = '/api/inventoryQuery/export',
+	initialInventoryExport = '/api/initialInventoryData/Export',
 }
 // 普源云关联的集货单列表
 export const getAssociatedCollectionGoodInfo = (params?: any) =>
@@ -65,7 +66,7 @@ export const getCollectionOrder = (params?: any) =>
 // 关联集货单
 export const associatedCollectionOrder = (params?: any) =>
 	request({
-		url: Api.associatedCollectionOrder ,
+		url: Api.associatedCollectionOrder,
 		method: 'post',
 		data: params,
 	});
@@ -85,9 +86,9 @@ export const inventoryQueryExport = (params?: any) =>
 		responseType: 'blob',
 	});
 // 同步期初库存数据
-export const initialInventorySynchronizeData = (params?: any,time?:string) =>
+export const initialInventorySynchronizeData = (params?: any, time?: string) =>
 	request({
-		url: Api.initialInventorySynchronizeData+'/'+time,
+		url: Api.initialInventorySynchronizeData + '/' + time,
 		method: 'post',
 		data: params,
 	});
@@ -105,6 +106,14 @@ export const getInitialInventoryData = (params?: any) =>
 		url: Api.getInitialInventoryData,
 		method: 'get',
 		data: params,
+	});
+// 导出期初库存数据
+export const initialInventoryExport = (params?: any) =>
+	request({
+		url: Api.initialInventoryExport + "/" + params.batchId,
+		method: 'post',
+		data: params,
+		responseType: 'blob',
 	});
 // 期初库存数据
 export const initialInventoryDataPage = (params?: any) =>

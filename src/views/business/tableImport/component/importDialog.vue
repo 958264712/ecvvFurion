@@ -68,18 +68,16 @@ var props = defineProps({
 });
 //父级传递来的函数，用于回调
 const emit = defineEmits(['reloadTable']);
-const ruleFormRef = ref<FormInstance>();
+const ruleFormRef = ref<any>();
 const loading = ref(false);
 const isShowDialog = ref(false);
-//自行添加其他规则
-const rules = ref<FormRules>({});
 
 //导入
 const Imports = (file: any) => {
 	loading.value = true;
 	const formData = new FormData();
 	formData.append('file', file.raw);
-	formData.append('table', '金蝶云采购申请单');
+	formData.append('table', props.excelName);
 	console.log(props);
 	
 	service({
@@ -105,17 +103,10 @@ const openDialog = (row: any) => {
 };
 
 // 关闭弹窗
-const closeDialog = (ruleFormRef: FormInstance | undefined) => {
+const closeDialog = (ruleFormRef: any) => {
 	if (!ruleFormRef) return;
 	ruleFormRef.resetFields();
 	emit('reloadTable');
-	isShowDialog.value = false;
-};
-
-// 取消
-const cancel = (ruleFormRef: FormInstance | undefined) => {
-	if (!ruleFormRef) return;
-	ruleFormRef.resetFields();
 	isShowDialog.value = false;
 };
 

@@ -9,12 +9,28 @@ enum Api {
 	receiptAndWarehousingImport = '/api/receiptAndWarehousing/import',
 	receiptAndWarehousingExport = '/api/receiptAndWarehousing/export',
 	receiptAndWarehousingDelete = '/api/receiptAndWarehousing/delete/',
+	receiptDetailDelete = '/api/receiptAndWarehousing/receiptDetailDelete/',
 	scanReceiptBoxNo = '/api/receiptAndWarehousing/scanReceiptBoxNo',
+	updateBoxNumber = '/api/receiptAndWarehousing/updateBoxNumber'
 }
+// 修改数字
+export const updateBoxNumber = (params?: any) =>
+	request({
+		url: Api.updateBoxNumber,
+		method: 'post',
+		data: params,
+	});
 // 扫码收货
 export const scanReceiptBoxNo = (params?: any) =>
 	request({
 		url: Api.scanReceiptBoxNo,
+		method: 'post',
+		data: params,
+	});
+// 删除数据
+export const receiptDetailDelete = (params?: any) =>
+	request({
+		url: Api.receiptDetailDelete + params?.id,
 		method: 'post',
 		data: params,
 	});

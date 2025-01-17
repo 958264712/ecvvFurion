@@ -459,6 +459,22 @@ const TableData = ref<any>([
 		desc: '',
 	},
 	{
+		titleCN: 'UAE AMZ Inventory',
+		dataIndex: 'uaE_AMZ_Inventory',
+		checked: true,
+		fixed: false,
+		remark: false,
+		desc: '',
+	},
+	{
+		titleCN: 'SA AMZ Inventory',
+		dataIndex: 'sA_AMZ_Inventory',
+		checked: true,
+		fixed: false,
+		remark: false,
+		desc: '',
+	},
+	{
 		titleCN: 'UAE综合空运单价(AED)',
 		dataIndex: 'emptyComprehensiveInitialUnitPriceUAE',
 		checked: true,
@@ -532,8 +548,8 @@ const options2 = ref([
 	// 	disabled: false,
 	// },
 	{
-		value: '金蝶云采购申请单',
-		label: '金蝶云采购申请单',
+		value: '普源云采购单',
+		label: '缺货采购数据',
 		disabled: false,
 	},
 ]);
@@ -553,7 +569,7 @@ const importChange = (val: any) => {
 	importsOptionsItem.value = val;
 	if (val === '全部(UAE、SA)') {
 		options2.value.map((item) => {
-			if (item.label !== '金蝶云采购申请单') {
+			if (item.label !== '缺货采购数据') {
 				item.disabled = true;
 			} else {
 				item.disabled = false;
@@ -561,7 +577,7 @@ const importChange = (val: any) => {
 		});
 	} else if (val === 'UAE') {
 		options2.value.map((item) => {
-			if (item.label === 'Sales' || item.label === '金蝶云采购申请单') {
+			if (item.label === 'Sales' || item.label === '缺货采购数据') {
 				item.disabled = true;
 			} else {
 				item.disabled = false;
@@ -569,7 +585,7 @@ const importChange = (val: any) => {
 		});
 	} else {
 		options2.value.map((item) => {
-			if (item.label === '金蝶云采购申请单') {
+			if (item.label === '缺货采购数据') {
 				item.disabled = true;
 			} else {
 				item.disabled = false;

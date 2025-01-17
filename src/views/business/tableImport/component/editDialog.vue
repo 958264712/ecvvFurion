@@ -25,6 +25,11 @@
 							</el-upload>
 						</el-form-item>
 					</el-col>
+					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" >
+						<el-form-item label="备注：" prop="remark">
+							<el-input type="textarea" rows="5" v-model="ruleForm.remark" :placeholder="(ruleForm.tableName?ruleForm.tableName:'') + '上传功能说明'" clearable />
+						</el-form-item>
+					</el-col>
 				</el-row>
 				<!-- <el-row :gutter="35">
 					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">

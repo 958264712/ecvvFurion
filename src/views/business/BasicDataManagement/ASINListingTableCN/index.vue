@@ -58,6 +58,7 @@
 				</el-form-item>
 				<el-form-item :label="area == 'CN' ? '上架平台' : 'Platform'">
 					<el-select v-model="queryParams.addASINAccount" :placeholder="area == 'CN' ? '请选择' : 'Please select'" clearable>
+						<el-option label="EG-SC" value="EG-SC"></el-option>
 						<el-option label="UAE-SC" value="UAE-SC"></el-option>
 						<el-option label="UAE-SHOWAY" value="UAE-SHOWAY"></el-option>
 						<el-option label="SA-DDP AE" value="SA-DDP AE"></el-option>

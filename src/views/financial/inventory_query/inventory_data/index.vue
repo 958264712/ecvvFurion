@@ -1,11 +1,11 @@
 <script lang="ts" setup name="inventory_data">
 import { ref, onMounted, watch } from 'vue';
-import { initialInventoryDataPage,getInitialInventoryData,initialInventorySynchronizeData } from '/@/api/modular/main/financial.ts';
+import { initialInventoryDataPage, getInitialInventoryData, initialInventorySynchronizeData, initialInventoryExport } from '/@/api/modular/main/financial.ts';
 import { ElMessageBox, ElMessage, ElNotification } from 'element-plus';
 import importDialog from './component/importDialog.vue';
 import infoDataDialog from '/@/components/infoDataDialog/index.vue';
 import moment from 'moment'
-
+import other from '/@/utils/other.ts';
 const tableData: any[] = ref([]);
 const queryParams = ref<any>({ WarehouseName: '全部' });
 const tableParams = ref({
@@ -30,7 +30,7 @@ const date = new Date();
 const year = date.getFullYear();
 const month = ref(new Date())
 
-for (let i = year ; i >= 2005; i--) {
+for (let i = year; i >= 2005; i--) {
 	yearList.value.push({ label: `${i}`, value: `${i}` });
 }
 const TableData = ref<any>([
@@ -69,22 +69,22 @@ const formList = ref<formListType>([
 	{
 		label: '仓库名称',
 		prop: 'warehouseName',
-		select:true,
-		options:[
-			{value:'EG Warehouse X1',lable:'EG Warehouse X1'},
-			{value:'埃及不良品仓',lable:'埃及不良品仓'},
-			{value:'EG Warehouse',lable:'EG Warehouse'},
-			{value:'沙特不良品仓',lable:'沙特不良品仓'},
-			{value:'SA Warehouse X1',lable:'SA Warehouse X1'},
-			{value:'SA Warehouse',lable:'SA Warehouse'},
-			{value:'阿曼仓',lable:'阿曼仓'},
-			{value:'UAE Store Warehouse',lable:'UAE Store Warehouse'},
-			{value:'阿联酋不良品仓6Z2',lable:'阿联酋不良品仓6Z2'},
-			{value:'UAE Warehouse No. 2',lable:'UAE Warehouse No. 2'},
-			{value:'UAE Warehouse No. 6',lable:'UAE Warehouse No. 6'},
-			{value:'深圳仓库',lable:'深圳仓库'},
-			{value:'迪拜虚拟仓库',lable:'迪拜虚拟仓库'},
-			{value:'默认仓库',lable:'默认仓库'},
+		select: true,
+		options: [
+			{ value: 'EG Warehouse X1', lable: 'EG Warehouse X1' },
+			{ value: '埃及不良品仓', lable: '埃及不良品仓' },
+			{ value: 'EG Warehouse', lable: 'EG Warehouse' },
+			{ value: '沙特不良品仓', lable: '沙特不良品仓' },
+			{ value: 'SA Warehouse X1', lable: 'SA Warehouse X1' },
+			{ value: 'SA Warehouse', lable: 'SA Warehouse' },
+			{ value: '阿曼仓', lable: '阿曼仓' },
+			{ value: 'UAE Store Warehouse', lable: 'UAE Store Warehouse' },
+			{ value: '阿联酋不良品仓6Z2', lable: '阿联酋不良品仓6Z2' },
+			{ value: 'UAE Warehouse No. 2', lable: 'UAE Warehouse No. 2' },
+			{ value: 'UAE Warehouse No. 6', lable: 'UAE Warehouse No. 6' },
+			{ value: '深圳仓库', lable: '深圳仓库' },
+			{ value: '迪拜虚拟仓库', lable: '迪拜虚拟仓库' },
+			{ value: '默认仓库', lable: '默认仓库' },
 		]
 	},
 	{
@@ -181,21 +181,28 @@ const handleQuery = async (): void => {
 // 同步 获取到系统最近1月的数据，并提示：同步成功
 const Synchronization = async () => {
 	synchronousLoading.value = true
-	await initialInventorySynchronizeData(null,moment(month.value).format('YYYY-MM')).then(res=>{
-		if(res.data.code===200){
+	await initialInventorySynchronizeData(null, moment(month.value).format('YYYY-MM')).then(res => {
+		if (res.data.code === 200) {
 			ElMessage.success('同步成功')
 			synchronousLoading.value = false
 			handleQuery()
-		}else{
+		} else {
 			synchronousLoading.value = false
 		}
-	}).catch(err=>{
+	}).catch(err => {
 		synchronousLoading.value = false
 	})
 }
 const openEditUser = (row: any) => {
 	visible.value = true
 	puyuanyunId.value = row.batchId
+};
+const Export = (row: any) => {
+	ElMessage.success('文件生成中!');
+	initialInventoryExport(Object.assign({ batchId: row.batchId })).then((res) => {
+		other.downloadfile(res);
+		ElMessage.success('导出成功!');
+	});
 };
 const close = () => {
 	ifClose.value = false
@@ -224,22 +231,19 @@ const handleCurrentChange = (val: number): void => {
 				</el-form-item>
 				<el-form-item label="年份">
 					<el-select v-model="queryParams.time" clearable>
-						<el-option v-for="(item, index) in yearList" :key="index" :value="item.value" :label="item.label" />
+						<el-option v-for="(item, index) in yearList" :key="index" :value="item.value"
+							:label="item.label" />
 					</el-select>
 				</el-form-item>
 				<el-form-item>
 					<el-button-group>
-						<el-button  type="primary" icon="ele-Search" @click="handleQuery()" style="width: 70px; margin-right: 2px"> 查询 </el-button>
-						<el-button
-							icon="ele-Refresh"
-							@click="
-								() => {
-									queryParams = { WarehouseName: '全部' };
-									handleQuery();
-								}
-							"
-							style="width: 70px; margin-right: 2px"
-						>
+						<el-button type="primary" icon="ele-Search" @click="handleQuery()"
+							style="width: 70px; margin-right: 2px"> 查询 </el-button>
+						<el-button icon="ele-Refresh" @click="() => {
+							queryParams = { WarehouseName: '全部' };
+							handleQuery();
+						}
+							" style="width: 70px; margin-right: 2px">
 							重置
 						</el-button>
 					</el-button-group>
@@ -249,37 +253,36 @@ const handleCurrentChange = (val: number): void => {
 		<el-card class="full-table" shadow="hover" style="margin-top: 8px">
 			<div class="settingf" style="margin-bottom: 5px; display: flex; justify-content: space-between">
 				<div class="flex flex-wrap items-center">
-					<el-button :loading="loading1" type="primary" @click="openimportDialog" v-auth="'inventory_data:import'">导入</el-button>
-					<el-button :loading="synchronousLoading" type="primary" @click="Synchronization" :disabled="month?.length" style="margin-right:10px;">同步</el-button>
-					<el-date-picker v-model="month" type="month"/>
+					<el-button :loading="loading1" type="primary" @click="openimportDialog"
+						v-auth="'inventory_data:import'">导入</el-button>
+					<el-button :loading="synchronousLoading" type="primary" @click="Synchronization"
+						:disabled="month?.length" style="margin-right:10px;">同步</el-button>
+					<el-date-picker v-model="month" type="month" />
 				</div>
 			</div>
 			<el-table :data="tableData" size="large" style="width: 100%" v-loading="loading" tooltip-effect="light">
 				<el-table-column type="index" label="序号" width="75" align="center" />
 				<template v-for="(item, index) in TableData" :key="index">
-					<el-table-column :fixed="item.fixed" :prop="item.dataIndex" :label="area == 'CN' ? item.titleCN : item.titleEN" align="center" min-width="150" show-overflow-tooltip="" />
+					<el-table-column :fixed="item.fixed" :prop="item.dataIndex"
+						:label="area == 'CN' ? item.titleCN : item.titleEN" align="center" min-width="150"
+						show-overflow-tooltip="" />
 				</template>
 				<el-table-column label="操作" width="200" align="center" fixed="right" show-overflow-tooltip>
 					<template #default="scope">
-						<el-button size="small" text type="primary" @click="openEditUser(scope.row)" > 详情 </el-button>
+						<el-button size="small" text type="primary" @click="openEditUser(scope.row)"> 详情 </el-button>
+						<el-button size="small" text type="primary" @click="Export(scope.row)"> 导出 </el-button>
 					</template>
 				</el-table-column>
 			</el-table>
-			<el-pagination
-				v-model:currentPage="tableParams.page"
-				v-model:page-size="tableParams.pageSize"
-				:total="tableParams.total"
-				:page-sizes="[50, 100, 500, 1000]"
-				small=""
-				background=""
-				@size-change="handleSizeChange"
-				@current-change="handleCurrentChange"
-				layout="total, sizes, prev, pager, next, jumper"
-			/>
-			<importDialog ref="importDialogRef" :excelName="excelName" :tableAddress="tableAddress" :area="area" :url="url" @reloadTable="handleQuery" />
+			<el-pagination v-model:currentPage="tableParams.page" v-model:page-size="tableParams.pageSize"
+				:total="tableParams.total" :page-sizes="[50, 100, 500, 1000]" small="" background=""
+				@size-change="handleSizeChange" @current-change="handleCurrentChange"
+				layout="total, sizes, prev, pager, next, jumper" />
+			<importDialog ref="importDialogRef" :excelName="excelName" :tableAddress="tableAddress" :area="area"
+				:url="url" @reloadTable="handleQuery" />
 			<el-dialog v-model="visible" title="详情" @close="close" width="1000px">
-				<infoDataDialog :id="puyuanyunId" idName="batchId"  :dataList="dataList"
-					:ifClose="ifClose" :pointerface="getInitialInventoryData" :formList="formList" />
+				<infoDataDialog :id="puyuanyunId" idName="batchId" :dataList="dataList" :ifClose="ifClose"
+					:pointerface="getInitialInventoryData" :formList="formList" />
 			</el-dialog>
 		</el-card>
 	</div>

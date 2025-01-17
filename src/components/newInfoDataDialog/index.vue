@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, watch ,nextTick} from 'vue';
+import { ref, watch, nextTick } from 'vue';
 import moment from 'moment';
 
 /**
@@ -25,7 +25,7 @@ declare type formListType<T = any> = {
 	select?: Boolean;
 	options?: [T];
 }[];
-const props = defineProps(['id', 'idName', 'title','width','titleRender','footerRender','pagination', 'loading','pointerface', 'dataList', 'formList', 'ifClose', 'defaultValues','query']);
+const props = defineProps(['id', 'idName', 'title', 'width', 'titleRender', 'footerRender', 'pagination', 'loading', 'pointerface', 'dataList', 'formList', 'ifClose', 'defaultValues', 'query']);
 const loading = ref(false);
 const tableData = ref<any>([]);
 const visible = ref(false);
@@ -38,26 +38,26 @@ const tableParams = ref<any>({
 
 // 查询操作
 const handleQuery = async () => {
-	if(props.idName){
+	if (props.idName) {
 		queryParams.value[props.idName] = props.id;
 	}
-	if (props.formList?.length) { 
+	if (props.formList?.length) {
 		props.formList.forEach((item: any) => {
-			if(item?.date && !item?.render && !item?.select){
+			if (item?.date && !item?.render && !item?.select) {
 				queryParams.value['start' + item.prop] = queryParams.value[item.prop] ? moment(queryParams.value[item.prop][0]).format('YYYY-MM-DD') : undefined;
 				queryParams.value['end' + item.prop] = queryParams.value[item.prop] ? moment(queryParams.value[item.prop][1]).format('YYYY-MM-DD') : undefined;
 			}
 		});
 	}
-	if(props.loading){
+	if (props.loading) {
 		loading.value = props.loading;
-	}else{
+	} else {
 		loading.value = true;
 	}
-    const params = {
-        ...queryParams.value,
-        ...tableParams.value
-    };
+	const params = {
+		...queryParams.value,
+		...tableParams.value,
+	};
 	if (props.pointerface) {
 		var res = await props.pointerface(params);
 		tableData.value = res.data.result?.items ?? [];
@@ -69,8 +69,8 @@ const handleQuery = async () => {
 const openDialog = () => {
 	visible.value = true;
 	nextTick(() => {
-        handleQuery();
-    });
+		handleQuery();
+	});
 };
 const resetQuery = () => {
 	tableData.value = [];
@@ -95,6 +95,12 @@ const handleCurrentChange = (val: number) => {
 	handleQuery();
 };
 
+const updateChange = (val: any, prop: any) => {
+	queryParams[prop] = val;
+	if(props?.defaultValues[prop]){
+		props.defaultValues[prop] = val;
+	}
+};
 watch(
 	() => props.ifClose,
 	() => {
@@ -104,13 +110,13 @@ watch(
 	}
 );
 watch(
-    () => props.defaultValues,
-    (newVal) => {
-        if (newVal) {
-            queryParams.value = { ...newVal };
-        }
-    },
-    { deep: true , immediate: true}
+	() => props.defaultValues,
+	(newVal) => {
+		if (newVal) {
+			queryParams.value = { ...newVal };
+		}
+	},
+	{ deep: true, immediate: true }
 );
 watch(
 	() => props.loading,
@@ -118,12 +124,15 @@ watch(
 		loading.value = newVal;
 	}
 );
-defineExpose({ openDialog,resetQuery,closeDialog });
+
+defineExpose({ openDialog, resetQuery, closeDialog });
 </script>
 <template>
-	<el-dialog v-model="visible" :width="props.width ? props.width : 1000" @close="closeDialog" draggable="" >
+	<el-dialog v-model="visible" :width="props.width ? props.width : 1000" @close="closeDialog" draggable="">
 		<template #header>
-			<template v-if="props.title"><span style="font-size: 16px;font-weight: 700; color:#fff">{{ props.title }}</span></template>
+			<template v-if="props.title"
+				><span style="font-size: 16px; font-weight: 700; color: #fff">{{ props.title }}</span></template
+			>
 			<template v-else>
 				<component :is="props.titleRender" />
 			</template>
@@ -131,13 +140,31 @@ defineExpose({ openDialog,resetQuery,closeDialog });
 		<el-card shadow="hover" :body-style="{ paddingBottom: '0' }" v-show="props.formList?.length">
 			<el-form :model="queryParams" ref="queryForm" :inline="true">
 				<el-form-item :label="item.label" v-for="item in props.formList">
-					<el-input v-model="queryParams[item.prop]" :placeholder="'请输入' + `${item.label}`" v-if="!item?.select && !item?.date && !item?.render" />
-					<el-select v-model="queryParams[item.prop]" :placeholder="'请选择' + `${item.label}`" v-else-if="item?.select && !item?.render" :multiple="item?.multiple">
+					<el-input
+						v-model="queryParams[item.prop]"
+						:placeholder="'请输入' + `${item.label}`"
+						v-if="!item?.select && !item?.date && !item?.render"
+						@update:modelValue="(val: any) => updateChange(val,item.prop)"
+					/>
+					<el-select
+						v-model="queryParams[item.prop]"
+						:placeholder="'请选择' + `${item.label}`"
+						v-else-if="item?.select && !item?.render"
+						:multiple="item?.multiple"
+						@update:modelValue="(val: any) => updateChange(val,item.prop)"
+					>
 						<el-option v-for="ite in item.options" :label="ite.label" :value="ite.value" />
 					</el-select>
-					<el-date-picker v-model="queryParams[item.prop]" :type="item.type" start-placeholder=" 开始时间" end-placeholder="结束时间" v-else-if="item?.date && !item?.render" />
+					<el-date-picker
+						v-model="queryParams[item.prop]"
+						:type="item.type"
+						start-placeholder=" 开始时间"
+						end-placeholder="结束时间"
+						v-else-if="item?.date && !item?.render"
+						@update:modelValue="(val: any) => updateChange(val,item.prop)"
+					/>
 					<template v-else-if="item.render">
-						<component :is="item.render" v-bind="{ queryParams, item }" @update:modelValue="(val:any) => queryParams[item.prop] = val" />
+						<component :is="item.render" v-bind="{ queryParams, item }" @update:modelValue="(val: any) => updateChange(val,item.prop)" />
 					</template>
 				</el-form-item>
 				<el-form-item>
@@ -149,9 +176,9 @@ defineExpose({ openDialog,resetQuery,closeDialog });
 			</el-form>
 		</el-card>
 		<el-card class="full-table" shadow="hover" style="margin-top: 8px; height: 440px">
-			<el-table :data="tableData" style="width: 100%" v-loading="loading" tooltip-effect="light" row-key="id" border="" :loading="props.loading ?props.loading : loading">
+			<el-table :data="tableData" style="width: 100%" v-loading="loading" tooltip-effect="light" row-key="id" border="" :loading="props.loading ? props.loading : loading">
 				<template v-for="item in props.dataList">
-					<el-table-column v-if="item.prop === 'operation'" :label="item.label" width="120" align="center" fixed="right">
+					<el-table-column v-if="item.prop === 'operation'" :label="item.label" :width="item.width" align="center" fixed="right">
 						<template #default="scope">
 							<component :is="item.render" v-if="item.render" :scope="scope" :row="scope.row" :column="item" />
 						</template>

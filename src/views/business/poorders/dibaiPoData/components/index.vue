@@ -1,5 +1,5 @@
 ﻿<script lang="ts" setup name="new_dibaiPoData">
-import { ref, computed } from 'vue';
+import { ref, computed, nextTick } from 'vue';
 import { ElMessage } from 'element-plus';
 import {
 	newPage,
@@ -11,7 +11,7 @@ import {
 	newDownLoadPOZip,
 	exportNewPoData,
 	exportNewPoDataShipments,
-	updateAppointmentID
+	updateAppointmentID,
 } from '/@/api/modular/main/aSINBasicData.ts';
 import { service } from '/@/utils/request';
 import infoDataDialog from '/@/components/infoDataDialog/index.vue';
@@ -78,7 +78,7 @@ const queryParams = ref<PoParamsType>({
 });
 const tableParams = ref({
 	page: 1,
-	pageSize: 10,
+	pageSize: 100,
 	total: 0,
 });
 const pos = ref('');
@@ -157,7 +157,8 @@ const tabelList = ref<any>([
 		titleCN: 'OrderDate',
 		titleEN: 'OrderDate',
 		dataIndex: 'orderDate',
-		width: 95,
+		sortable: true,
+		width: 115,
 	},
 	{
 		titleCN: 'ASIN Count',
@@ -210,7 +211,7 @@ const tabelList = ref<any>([
 		titleEN: 'Invoiced Status',
 		dataIndex: 'invoicedStatus',
 	},
-	
+
 	{
 		titleCN: '接单数',
 		titleEN: 'Accepted Quantity',
@@ -650,10 +651,10 @@ const handleQuery = async () => {
 					});
 				}
 				if (item?.contractedWarehouseTime) {
-					item.contractedWarehouseTime = item.contractedWarehouseTime + ' GST';
+					item.contractedWarehouseTime = moment(item.contractedWarehouseTime).format('YYYY-MM-DD HH:mm') + ' GST';
 				}
 				if (item?.actualDate) {
-					item.actualDate = item.actualDate + ' GST';
+					item.actualDate = moment(item.actualDate).format('YYYY-MM-DD HH:mm') + ' GST';
 				}
 				return item;
 			});
@@ -665,52 +666,46 @@ const handleQuery = async () => {
 const openEdit = async (id: any, row: any): Promise<void> => {
 	timeItem = '';
 	num = 0;
-	if (disabledList.value.some((item: any) => item === id)) {
-		const index = disabledList.value.findIndex((item: any) => item === id);
-		disabledList.value.splice(index, 1);
-	} else {
-		if (id > 0) {
-			let obj: any = {};
-			if (row.invoicedStatus >= 0) {
-				obj.invoicedStatus = row.invoicedStatus;
-			}
-			if (row.contractedWarehouseTime?.includes('GST')) {
-				obj.contractedWarehouseTime = row.contractedWarehouseTime.split('GST')[0].trim();
-			} else if (row.contractedWarehouseTime) {
-				obj.contractedWarehouseTime = row.contractedWarehouseTime;
-				row.contractedWarehouseTime = row.contractedWarehouseTime + ' GST';
-			}
-			if (row.actualDate?.includes('GST')) {
-				obj.actualDate = row.actualDate.split('GST')[0].trim();
-			} else if (row.actualDate) {
-				obj.actualDate = row.actualDate;
-				row.actualDate = row.actualDate + ' GST';
-			}
-			if (row.state?.length > 0) {
-				obj.state = row.state;
-			}
-			obj.id = row.id;
-			newUpdate(Object.assign(obj))
-				.then((res) => {
-					if (res.data.type === 'success') {
-						ElMessage.success('Edit successfully');
-						disabledList.value.push(id);
-						// handleQuery();
-					} else {
-						ElMessage.error('Edit failed ' + res.message);
-					}
-				})
-				.catch(() => {
-					disabledList.value.push(id);
-				});
-		} else {
-			ElMessage.error('This id is null');
+	if (id > 0) {
+		let obj: any = {};
+		if (row.invoicedStatus >= 0) {
+			obj.invoicedStatus = row.invoicedStatus;
 		}
+		if (row.contractedWarehouseTime?.includes('GST')) {
+			obj.contractedWarehouseTime = row.contractedWarehouseTime.split('GST')[0].trim();
+		} else if (row.contractedWarehouseTime) {
+			obj.contractedWarehouseTime = row.contractedWarehouseTime;
+			row.contractedWarehouseTime = row.contractedWarehouseTime + ' GST';
+		}
+		if (row.actualDate?.includes('GST')) {
+			obj.actualDate = row.actualDate.split('GST')[0].trim();
+		} else if (row.actualDate) {
+			obj.actualDate = row.actualDate;
+			row.actualDate = row.actualDate + ' GST';
+		}
+		if (row.state?.length > 0) {
+			obj.state = row.state;
+		}
+		if (row.appointmentID) {
+			obj.appointmentID = row.appointmentID;
+		}
+		obj.id = row.id;
+		newUpdate(Object.assign(obj))
+			.then((res) => {
+				if (res.data.type === 'success') {
+					ElMessage.success('Edit successfully');
+				} else {
+					ElMessage.error('Edit failed ' + res.message);
+				}
+			})
+			.catch(() => {
+				handleQuery();
+			});
+	} else {
+		ElMessage.error('This id is null');
 	}
 };
-const disabledAuto = (scope: any): void => {
-	return disabledList.value.some((item: any) => item === scope.row.id);
-};
+
 // 排序
 const sortChange = (data: { column: any; prop: string; order: any }) => {
 	queryParams.value.descStr = data.order;
@@ -875,18 +870,18 @@ const getTextColor = (scope: any): string => {
 };
 
 const returnColor = (scope: any) => {
-	if (scope.row.status === 'CLOSED' || scope.row.status === 'CANCELLED') return 'red'
-	return ''
+	if (scope.row.status === 'CLOSED' || scope.row.status === 'CANCELLED') return 'red';
+	return '';
 };
 
 // 批量编辑
 const openBatchEdit = () => {
 	batchEditData.value = [];
 	selectedRows.value.forEach((item: any) => {
-		if(!batchEditData.value.includes(item.po)){
-			batchEditData.value.push(item.po)
+		if (!batchEditData.value.includes(item.po)) {
+			batchEditData.value.push(item.po);
 		}
-	})
+	});
 	batchVisible.value = true;
 };
 const closeBatchEdit = () => {
@@ -894,22 +889,9 @@ const closeBatchEdit = () => {
 	batchEditData.value = [];
 	batchVisible.value = false;
 };
-const batchSubmit = async () => {
-	let pOs:any = []
-	batchEditData.value.forEach((item: any) => {
-		if(!pOs.some((item:any)=>item === item)){
-			pOs.push(item)
-		}
-	})
-	await updateAppointmentID({pOs,appointmentID:batchEditQueryParams.value.appointmentId}).then((res:any)=>{
-		if(res.data.code === 200){
-			ElMessage.success('Edit successfully');
-			handleQuery();
-			closeBatchEdit()
-		}else{
-			ElMessage.error('Edit failed');
-		}
-	})
+const batchSubmit = async (po: any, appointmentID: any) => {
+	let pOs: any = [po];
+	await updateAppointmentID({ pOs, appointmentID }).then((res) => {});
 };
 // 获取keys
 const selectChange = (selection: PoRowType[]) => {
@@ -921,6 +903,122 @@ const selectChange = (selection: PoRowType[]) => {
 	selection.map((item: PoRowType) => {
 		if (item.id !== undefined) {
 			selectedRowKeys.value.push(item.id);
+		}
+	});
+};
+
+const move = (e: any, rowIndex: any, cellIndex: number, row: any) => {
+	const key = e.key;
+	const shiftKey = e.shiftKey;
+	if (['Shift+Tab', 'Tab'].includes(shiftKey)) {
+		// e.preventDefault(); // 防止默认行为
+		navigate(shiftKey, rowIndex, cellIndex, row, e);
+	}
+	if (['Enter', 'Shift+Enter', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)) {
+		// e.preventDefault(); // 防止默认行为
+		e.stopPropagation();
+		navigate(key, rowIndex, cellIndex, row, e);
+	}
+};
+
+const focusIndexList = [2, 7, 9, 11, 12];
+const navigate = (key: String, rowIndex: number, cellIndex: number, row: any, e: any) => {
+	let newRow = rowIndex;
+	let newCell = cellIndex;
+	let focusIndex = 0;
+	focusIndexList.forEach((item, index) => {
+		if (item === cellIndex) {
+			focusIndex = index;
+		}
+	});
+	switch (key) {
+		case 'ArrowUp':
+			newRow = Math.max(rowIndex - 1, 0);
+			newCell = cellIndex + 1;
+			break;
+		case 'ArrowDown':
+			newRow = Math.min(rowIndex + 1, tableData.value.length - 1);
+			newCell = cellIndex + 1;
+			break;
+		case 'ArrowLeft':
+			const nullLeft = focusIndexList.every((item) => {
+				item > cellIndex - 1;
+			});
+			if (!nullLeft) {
+				newCell = focusIndexList[focusIndex - 1] + 1;
+			} else {
+				newCell = cellIndex;
+			}
+			break;
+		case 'ArrowRight':
+			const nullRight = focusIndexList.every((item) => {
+				item < cellIndex + 1;
+			});
+			if (!nullRight) {
+				newCell = focusIndexList[focusIndex + 1] + 1;
+			} else {
+				newCell = cellIndex;
+			}
+			break;
+		case 'Tab':
+			const nullTab = focusIndexList.every((item) => {
+				item < cellIndex + 1;
+			});
+			if (!nullTab) {
+				newCell = focusIndexList[focusIndex + 1] + 1;
+			} else {
+				newCell = cellIndex;
+			}
+			break;
+		case 'Shift+Tab':
+			const nullShift = focusIndexList.every((item) => {
+				item > cellIndex - 1;
+			});
+			if (!nullShift) {
+				newCell = focusIndexList[focusIndex - 1] + 1;
+			} else {
+				newCell = cellIndex;
+			}
+			break;
+		case 'Shift+Enter':
+			newRow = Math.max(rowIndex - 1, 0);
+			newCell = cellIndex + 1;
+			break;
+		case 'Enter':
+			newRow = Math.min(rowIndex + 1, tableData.value.length - 1);
+			newCell = cellIndex + 1;
+			break;
+	}
+	if (['ArrowUp', 'ArrowDown', 'Enter'].includes(key as string)) {
+		const isChange = ref(true);
+		tableData.value.forEach((item: any) => {
+			if (item.id === row.id) {
+				if (
+					item.appointmentID === row.appointmentID &&
+					item.state === row.state &&
+					item.contractedWarehouseTime === row.contractedWarehouseTime &&
+					item.actualDate === row.actualDate &&
+					item.invoicedStatus === row.invoicedStatus
+				) {
+					isChange.value = false;
+				}
+			}
+		});
+		if (isChange.value) {
+			openEdit(row.id, row);
+		}
+	}
+	nextTick(() => {
+		const tableBody = document.querySelectorAll('.el-table__body tbody tr');
+		if (newRow >= 0 && newRow < tableBody?.length) {
+			const cell = tableBody[newRow]?.querySelectorAll(`td`)[newCell];
+			const cellElement = cell?.querySelector(`input[tabindex="0"]`) as HTMLElement;
+			if (
+				(cellElement && ((e.target.selectionStart === 0 && ['ArrowLeft'].includes(key as string)) || (e.target.value.length === e.target.selectionEnd && ['ArrowRight'].includes(key as string)))) ||
+				['ArrowUp', 'ArrowDown', 'Enter'].includes(key as string)
+			) {
+				cellElement.focus();
+			}
 		}
 	});
 };
@@ -951,6 +1049,7 @@ const tableRowClassName = computed(() => {
 		}
 	};
 });
+
 handleQuery();
 </script>
 <template>
@@ -1041,15 +1140,20 @@ handleQuery();
 				@selection-change="(selection: any) => selectChange(selection)"
 			>
 				<el-table-column type="selection" width="40" />
-				<template v-for="item in tabelList">
+				<template v-for="(item, index) in tabelList">
 					<el-table-column v-if="item.dataIndex === 'shipToLocation'" width="125px" class-name="red" :prop="item.dataIndex" :label="item.titleCN" align="center" show-overflow-tooltip="">
 						<template #default="scope">
 							<p :style="{ background: getTextColor(scope), color: '#FFF', margin: '10px' }">{{ scope.row.shipToLocation.substring(0, 4) }}</p>
 						</template>
 					</el-table-column>
+					<el-table-column v-else-if="item.dataIndex === 'appointmentID'" :prop="item.dataIndex" sortable :label="item.titleCN" align="center" width="175">
+						<template #default="scope">
+							<el-input v-model="scope.row.appointmentID" @change="openEdit(scope.row.id, scope.row)" @keydown="(e:Event)=>move(e,scope.$index,index,scope.row)" />
+						</template>
+					</el-table-column>
 					<el-table-column v-else-if="item.dataIndex === 'state'" sortable :prop="item.dataIndex" width="150" :label="item.titleCN" align="center" show-overflow-tooltip="">
 						<template #default="scope">
-							<el-select v-model="scope.row.state" :disabled="disabledAuto(scope)" :style="{ color: returnColor(scope) }">
+							<el-select v-model="scope.row.state" @change="openEdit(scope.row.id, scope.row)" tabindex="0" @keydown="(e:Event)=>move(e,scope.$index,index,scope.row)" :style="{ color: returnColor(scope) }">
 								<el-option v-for="i in optionList" :value="i.value" :label="i.label" />
 							</el-select>
 						</template>
@@ -1059,7 +1163,8 @@ handleQuery();
 							<el-input
 								v-model="scope.row.contractedWarehouseTime"
 								:style="{ color: returnColor(scope), width: '150px' }"
-								:disabled="disabledAuto(scope)"
+								@change="openEdit(scope.row.id, scope.row)"
+								@keydown="(e:Event)=>move(e,scope.$index,index,scope.row)"
 							/>
 						</template>
 					</el-table-column>
@@ -1067,14 +1172,21 @@ handleQuery();
 						<template #default="scope">
 							<el-input
 								v-model="scope.row.actualDate"
+								@change="openEdit(scope.row.id, scope.row)"
+								@keydown="(e:Event)=>move(e,scope.$index,index,scope.row)"
 								:style="{ color: returnColor(scope), width: '150px' }"
-								:disabled="disabledAuto(scope)"
 							/>
 						</template>
 					</el-table-column>
 					<el-table-column v-else-if="item.dataIndex === 'invoicedStatus'" :prop="item.dataIndex" sortable :label="item.titleCN" align="center" width="145" show-overflow-tooltip="">
 						<template #default="scope">
-							<el-select v-model="scope.row.invoicedStatus" :disabled="disabledAuto(scope)" :style="{ color: returnColor(scope) }">
+							<el-select
+								v-model="scope.row.invoicedStatus"
+								tabindex="0"
+								@change="openEdit(scope.row.id, scope.row)"
+								@keydown="(e:Event)=>move(e,scope.$index,index,scope.row)"
+								:style="{ color: returnColor(scope) }"
+							>
 								<el-option v-for="i in statusOptionList" :value="i.value" :label="i.label" />
 							</el-select>
 						</template>
@@ -1091,15 +1203,15 @@ handleQuery();
 							</p>
 						</template>
 					</el-table-column>
-					<el-table-column v-else-if="item.dataIndex" :prop="item.dataIndex" :label="item.titleCN" align="center" show-overflow-tooltip="" :width="item.width">
+					<el-table-column v-else-if="item.dataIndex" :prop="item.dataIndex" :sortable="item.sortable" :label="item.titleCN" align="center" show-overflow-tooltip="" :width="item.width">
 						<template #default="scope">
 							<p :style="{ color: returnColor(scope) }">{{ scope.row[item.dataIndex] }}</p>
 						</template>
 					</el-table-column>
 				</template>
-				<el-table-column label="Operation" width="250" align="center" fixed="right" show-overflow-tooltip="">
+				<el-table-column label="Operation" width="180" align="center" fixed="right" show-overflow-tooltip="">
 					<template #default="scope">
-						<el-button size="small" @click="openEdit(scope.row.id, scope.row)"> Edits </el-button>
+						<!-- <el-button size="small" @click="openEdit(scope.row.id, scope.row)"> Edits </el-button> -->
 						<el-button size="small" @click="showModal(scope.row.id)"> Details </el-button>
 						<el-button type="info" size="small" @click="showModal1(scope.row.remark, scope.row.id)"> Remark </el-button>
 					</template>
@@ -1156,19 +1268,18 @@ handleQuery();
 			/>
 		</el-card>
 		<el-dialog v-model="batchVisible" title="Batch Edit" :width="500" @close="closeBatchEdit" draggable="">
-			<el-card class="full-table" shadow="hover" style="margin-top: 8px; ">
+			<el-card class="full-table" shadow="hover" style="margin-top: 8px">
 				<el-form :model="batchEditQueryParams" ref="queryForm" :inline="true">
 					<el-form-item label="PO">
-						<el-tag v-for="item in batchEditData" :key="item" >{{ item }}</el-tag>
-					</el-form-item>	
+						<el-tag v-for="item in batchEditData" :key="item">{{ item }}</el-tag>
+					</el-form-item>
 					<el-form-item label="Appointment ID">
 						<el-input v-model="batchEditQueryParams.appointmentId" />
-					</el-form-item>	
-					<el-form-item>
 					</el-form-item>
+					<el-form-item> </el-form-item>
 				</el-form>
 			</el-card>
-			<template #footer> 
+			<template #footer>
 				<el-button type="primary" @click="batchSubmit"> 确定 </el-button>
 			</template>
 		</el-dialog>
@@ -1225,5 +1336,4 @@ handleQuery();
 :deep(.el-table__body tr:hover > .el-table-fixed-column--right) {
 	background-color: #fff !important;
 }
-
 </style>

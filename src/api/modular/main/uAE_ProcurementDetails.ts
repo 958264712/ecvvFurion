@@ -5,6 +5,7 @@ enum Api {
 	UpdateUAE_ProcurementDetails = '/api/procurementDetails/update',
 	PageUAE_ProcurementDetails = '/api/procurementDetails/page',
 	PageSA_ProcurementDetails = '/api/procurementDetails/sAPage',
+	PageEG_ProcurementDetails = '/api/procurementDetails/eGPage',
 	UAEgetInventorySKUBasicInfo = '/api/procurementDetails/uAEGetInventorySKUBasicInfo',
 	uSAGetInventorySKUBasicInfo = '/api/procurementDetails/uSAGetInventorySKUBasicInfo',
 	eGGetInventorySKUBasicInfo = '/api/procurementDetails/eGGetInventorySKUBasicInfo',
@@ -69,6 +70,13 @@ export const pageUAE_ProcurementDetails = (params?: any) =>
 export const pageSA_ProcurementDetails = (params?: any) =>
 	request({
 		url: Api.PageSA_ProcurementDetails,
+		method: 'post',
+		data: params,
+	});
+// 分页查询UAE采购明细表 -- EG
+export const PageEG_ProcurementDetails = (params?: any) =>
+	request({
+		url: Api.PageEG_ProcurementDetails,
 		method: 'post',
 		data: params,
 	});

@@ -8,7 +8,15 @@ enum Api {
     getConfirmedNewPOsPage = '/api/poFulfillingOrders_Batch/getConfirmedNewPOsPage',
     exportPoFulfillingOrders = '/api/poFulfillingOrders_Batch/exportPoFulfillingOrders',
     exportConfirmedNewPOs = '/api/poFulfillingOrders_Batch/exportConfirmedNewPOs',
+    reMatchPoOrder = '/api/poFulfillingOrders_Batch/reMatchPoOrder/',
 }
+//po履单
+export const reMatchPoOrder = (params?: any) =>
+    request({
+        url: Api.reMatchPoOrder + params?.id,
+        method: 'post',
+        data: params,
+    });
 // 导入ImportFolfillingOrdersNoId
 export const ImportFolfillingOrdersNoId = (params?: any) =>
     request({

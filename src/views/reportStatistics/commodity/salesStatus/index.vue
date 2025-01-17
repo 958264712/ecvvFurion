@@ -1,8 +1,10 @@
 <script lang="ts" setup name="sales_status">
 import { ref } from 'vue';
+import { ElMessage } from 'element-plus'
 import moment from 'moment';
 import tabDragColum from '/@/components/tabDragColum/index.vue';
-import { salesPage } from '/@/api/modular/main/salesStatus.ts';
+import other from '/@/utils/other.ts'
+import { salesPage, salesExport } from '/@/api/modular/main/salesStatus.ts';
 
 const loading = ref(false);
 const tableData = ref<any>([]);
@@ -11,14 +13,29 @@ const radio = ref('日');
 const radio1 = ref('销量');
 const area = ref('CN');
 
+const exportLoading = ref(false)
+const exportData = async () => {
+	exportLoading.value = true
+	await salesExport(Object.assign(queryParams.value)).then((res: any) => {
+		if (res.statusText === 'OK') {
+			other.downloadfile(res)
+			ElMessage.success('导出成功')
+			exportLoading.value = false
+		} else {
+			ElMessage.error('导出失败')
+			exportLoading.value = false
+		}
+	}).catch(err => {
+		ElMessage.error(err)
+		exportLoading.value = false
+	})
+}
+
 const tableParams = ref<any>({
 	page: 1,
 	pageSize: 20,
 });
 
-const disabledDate = (time: Date) => {
-	return time.getTime() > Date.now();
-};
 const handleData = (list: any) => {
 	if (list?.length) {
 		TableData.value = list;
@@ -54,14 +71,14 @@ const TableData = ref<any>([
 		fixed: false,
 	},
 	{
-		titleCN: 'AMZ月销量',
+		titleCN: 'AMZ销量',
 		dataIndex: 'amzMonthlySales',
 		titleEN: 'AMZ Monthly Sales',
 		checked: true,
 		fixed: false,
 	},
 	{
-		titleCN: 'AMZ月销售额',
+		titleCN: 'AMZ销售额',
 		dataIndex: 'amzMonthlySalesAmount',
 		titleEN: 'AMZ Monthly Sales Amount',
 		checked: true,
@@ -194,6 +211,7 @@ handleQuery();
 						<el-radio-button label="库存数量" @change="handleQuery()" />
 						<el-radio-button label="增长率" @change="handleQuery()" />
 					</el-radio-group>
+					<el-button type="primary" :loading="exportLoading" @click="exportData">导出</el-button>
 				</div>
 				<tabDragColum :data="TableData" :name="`salesStatus`" :area="area" @handleData="handleData" />
 			</div>

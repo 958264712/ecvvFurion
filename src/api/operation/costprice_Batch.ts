@@ -4,8 +4,26 @@ enum Api {
 	DeleteCostpeice_Batch = '/api/costprice_Batch/delete',
 	UpdateCostpeice_Batch = '/api/costprice_Batch/update',
 	PageCostpeice_Batch = '/api/costprice_Batch/page',
+	exportCostPrice = '/api/costprice_Batch/exportCostPrice',
+	getExportCostPriceFileStream = '/api/costprice_Batch/getExportCostPriceFileStream/',
 	Import = '/api/costprice_Batch/import/import',
 }
+
+// 发送内容得到id
+export const exportCostPrice = (params?: any) =>
+	request({
+		url: Api.exportCostPrice,
+		method: 'post',
+		data: params,
+	});
+
+// 循环得到链接
+export const getExportCostPriceFileStream = (params?: any) =>
+	request({
+		url: Api.getExportCostPriceFileStream+params?.id,
+		method: 'post',
+		data: params,
+	});
 
 // 增加Costpeice
 export const addCostpeice_Batch = (params?: any) =>

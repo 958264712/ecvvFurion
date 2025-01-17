@@ -11,6 +11,7 @@ import {
 	getPoFulfillingOrdersList,
 	exportPoFulfillingOrders,
 	exportConfirmedNewPOs,
+	reMatchPoOrder
 } from '/@/api/modular/main/poFulfillingOrdersData';
 import InfoDataDialog from '/@/components/infoDataDialog/index.vue';
 
@@ -33,6 +34,7 @@ const ifClose = ref(false);
 const pointerface = ref<any>(null);
 const orderFulfillmentId = ref<number>(0);
 const ifdisabled = ref(true);
+const resetBindSkuLoading = ref(false)
 
 const sites = ref([
 	{
@@ -461,6 +463,21 @@ const dataListNewPos = ref<any>([
 	},
 ]);
 
+const resetBindErpsku = async (id: any) => {
+	resetBindSkuLoading.value = true
+	await reMatchPoOrder({ id }).then((res:any) => {
+		if(res.data.result){
+			ElMessage.success('重新匹配完成')
+			handleQuery()
+		} else {
+			ElMessage.error('重新匹配异常')
+		}
+		resetBindSkuLoading.value = false
+	}).catch(err => {
+		ElMessage.error(err)
+		resetBindSkuLoading.value = false
+	})
+}
 const changeSite = () => {
 	ifdisabled.value = false;
 }
@@ -478,7 +495,7 @@ onMounted(() => {
 			<el-form :model="queryParams" ref="queryForm" :inline="true">
 				<el-form-item label="站点">
 					<el-select clearable="" v-model="queryParams.site" placeholder="全部">
-						<el-option v-for="(item, index) in sites" :key="index" :value="item.value" :label="item.label" />
+						<el-option v-for="(item, index) in sites" :key="index" :value="item.value" :label="item.key" />
 					</el-select>
 				</el-form-item>
 				<el-form-item label="PO">
@@ -489,7 +506,7 @@ onMounted(() => {
 				</el-form-item>
 				<el-form-item label="导出状态">
 					<el-select clearable="" v-model="queryParams.exportStatus" placeholder="全部">
-						<el-option v-for="(item, index) in exportStatus" :key="index" :value="item.value" :label="item.label" />
+						<el-option v-for="(item, index) in exportStatus" :key="index" :value="item.value" :label="item.key" />
 					</el-select>
 				</el-form-item>
 				<el-form-item>
@@ -594,6 +611,7 @@ onMounted(() => {
 										</el-popover>
 									</el-dropdown-item>
 									<el-dropdown-item :disabled="scope.row.isImport === 1" @click="exportPo(scope.row.id, 2)">Export Confirmed New POs</el-dropdown-item>
+									<el-dropdown-item :loading="resetBindSkuLoading" @click="resetBindErpsku(scope.row.id)">重新匹配ERPSKU</el-dropdown-item>
 								</el-dropdown-menu>
 							</template>
 						</el-dropdown>
