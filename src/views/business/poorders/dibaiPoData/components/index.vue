@@ -889,9 +889,17 @@ const closeBatchEdit = () => {
 	batchEditData.value = [];
 	batchVisible.value = false;
 };
-const batchSubmit = async (po: any, appointmentID: any) => {
-	let pOs: any = [po];
-	await updateAppointmentID({ pOs, appointmentID }).then((res) => {});
+const batchSubmit = async () => {
+	let pOs: any = batchEditData.value
+	await updateAppointmentID({ pOs, appointmentId:batchEditQueryParams.value.appointmentId }).then((res: any) => {
+		if (res.data.code === 200) {
+			ElMessage.success('Edit successfully');
+			handleQuery();
+			closeBatchEdit();
+		} else {
+			ElMessage.error('Edit failed');
+		}
+	});
 };
 // 获取keys
 const selectChange = (selection: PoRowType[]) => {
