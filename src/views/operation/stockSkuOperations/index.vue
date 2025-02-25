@@ -5,11 +5,11 @@ import other from '/@/utils/other.ts';
 import { ElMessage } from 'element-plus';
 import { useRouter } from 'vue-router';
 import { Session } from '/@/utils/storage';
-import { ArrowDownBold, ArrowUpBold,QuestionFilled } from '@element-plus/icons-vue';
+import { ArrowDownBold, ArrowUpBold, QuestionFilled } from '@element-plus/icons-vue';
 import { SKUOperationPage, SKUOperationUpdate, SKUOperationExport } from '/@/api/modular/main/sotckSkuOperations';
 import tabDragColum from '/@/components/tabDragColum/index.vue';
 import { clearEmptyDataByAny } from '/@/utils/constHelper';
-import regexHelper from '/@/utils/regexHelper'; 
+import regexHelper from '/@/utils/regexHelper';
 
 const { clearCharactersByRegex } = regexHelper();
 const router = useRouter();
@@ -334,7 +334,7 @@ const TableData = ref<any>([
 
 const handleData = (list: any) => {
 	if (list?.length) {
-		list.map((item:any, index:number) => {
+		list.map((item: any, index: number) => {
 			if (item.dataIndex === TableData.value[index].dataIndex) {
 				TableData.value[index].checked = item.checked;
 				TableData.value[index].fixed = item.fixed;
@@ -344,7 +344,7 @@ const handleData = (list: any) => {
 };
 const handleRemarkData = (list: any) => {
 	if (list?.length) {
-		list.map((item:any, index:number) => {
+		list.map((item: any, index: number) => {
 			if (item.dataIndex === TableData.value[index].dataIndex) {
 				TableData.value[index].desc = item.desc;
 				TableData.value[index].remark = item.remark;
@@ -373,19 +373,23 @@ const buyer = ref([
 const ifoutProduct = ref([
 	{
 		key: 1,
-		value: 'Obsolete',
-	},
-	{
-		key: 2,
-		value: 'Normal',
-	},
-	{
-		key: 3,
 		value: 'New Arrival',
 	},
 	{
-		key: 4,
+		key: 2,
+		value: 'Bestseller',
+	},
+	{
+		key: 3,
 		value: 'Clearance',
+	},
+	{
+		key: 4,
+		value: 'Obsolete',
+	},
+	{
+		key: 5,
+		value: 'Normal',
 	},
 ]);
 const stockStatus = ref([
@@ -453,7 +457,7 @@ const tabsList = ref([
 	},
 ]);
 const area1 = ref('中文表头');
-const changeArea = (val:string): void => {
+const changeArea = (val: string): void => {
 	area.value = val;
 	if (area.value === 'CN') {
 		area1.value = '中文表头';
@@ -480,7 +484,30 @@ const handleQuery = async (): Promise<void> => {
 	loading.value = false;
 };
 // 切换站点
-const handleClick = (tab:any): void => {
+const handleClick = (tab: any): void => {
+	if (tab.props.name === 'SA') {
+		TableData.value.map((item: any, index: number) => {
+			if (item.dataIndex === 'uaeCurrentInventoryQuantity' || item.dataIndex === 'uaeCurrentOutboundQuantity') {
+				item.checked = false;
+			} else {
+				item.checked = true;
+			}
+
+		});
+	} else if (tab.props.name === 'UAE') {
+		TableData.value.map((item: any, index: number) => {
+			if (item.dataIndex === 'saCurrentInventoryQuantity' || item.dataIndex === 'saCurrentOutboundQuantity') {
+				item.checked = false;
+			} else {
+				item.checked = true;
+			}
+		});
+	} else {
+		TableData.value.map((item: any, index: number) => {
+			item.checked = true;
+		});
+	}
+
 	activeName.value = tab.props.name;
 };
 
@@ -517,11 +544,11 @@ const AllExport = async (): Promise<void> => {
 		queryParams.value.Site = null;
 	}
 	//if (queryParams.value.erpSkuList?.length > 0) {
-		// queryParams.value.erpTextArea = '';
-		//queryParams.value.ErpSku = '';
+	// queryParams.value.erpTextArea = '';
+	//queryParams.value.ErpSku = '';
 	//} else {
-		//queryParams.value.ErpSku = erpAndGoodsName.value;
-		//queryParams.value.erpSkuList = null;
+	//queryParams.value.ErpSku = erpAndGoodsName.value;
+	//queryParams.value.erpSkuList = null;
 	//}
 	Exportloading.value = true;
 	await SKUOperationExport(Object.assign(queryParams.value, tableParams.value, { type: 0, isImages: false, area: area.value })).then((res) => {
@@ -538,8 +565,8 @@ const batchModify = (): void => {
 };
 // 修改与批量修改
 const disabledfun = async (val: any): Promise<void> => {
-	if (disabledList.value.some((item:any) => item === val.row.id)) {
-		const index = disabledList.value.findIndex((item:any) => item === val.row.id);
+	if (disabledList.value.some((item: any) => item === val.row.id)) {
+		const index = disabledList.value.findIndex((item: any) => item === val.row.id);
 		disabledList.value.splice(index, 1);
 	} else {
 		disabledList.value.push(val.row.id);
@@ -548,7 +575,7 @@ const disabledfun = async (val: any): Promise<void> => {
 	}
 };
 const disabledAuto = (scope: any): boolean => {
-	return disabledList.value.some((item:any) => item === scope.row.id);
+	return disabledList.value.some((item: any) => item === scope.row.id);
 };
 // 改变页面容量
 const handleSizeChange = (val: number): void => {
@@ -574,7 +601,7 @@ const handleRouter = (storeSku: string, site: string) => {
 
 const handleConfirm = () => {
 	let str_array = [];
-	if(queryParams.value.erpTextArea?.length){
+	if (queryParams.value.erpTextArea?.length) {
 		str_array = clearCharactersByRegex(queryParams.value.erpTextArea + '');
 		let arr = clearEmptyDataByAny(str_array)
 		//queryParams.value.ErpSkuList = arr;
@@ -583,7 +610,7 @@ const handleConfirm = () => {
 	visibleTextarea1.value = false;
 };
 
-const resetQueryConditions =() => {
+const resetQueryConditions = () => {
 	queryParams.value.erpTextArea = '';
 	queryParams.value.erpSkuList = null;
 	erpAndGoodsName.value = '';
@@ -617,22 +644,22 @@ const sortfun = (v: any) => {
 watch(
 	() => erpAndGoodsName.value,
 	() => {
-		if(isWatch.value){
+		if (isWatch.value) {
 			isWatch.value = false;
-			let str_array =  clearCharactersByRegex(erpAndGoodsName.value.trim());
+			let str_array = clearCharactersByRegex(erpAndGoodsName.value.trim());
 			let arr = clearEmptyDataByAny(str_array);
 			if (arr?.length > 0) {
 				//if (arr[0] !== undefined) {
 				queryParams.value.erpSkuList = arr;
 				queryParams.value.erpTextArea = arr;
 				//} else {
-					//queryParams.value.ErpSkuList = null;
+				//queryParams.value.ErpSkuList = null;
 				//}
-			}else{
+			} else {
 				queryParams.value.erpSkuList = null;
 				queryParams.value.erpTextArea = '';
 			}
-		}else{
+		} else {
 			isWatch.value = true;
 		}
 	}
@@ -641,22 +668,22 @@ watch(
 watch(
 	() => queryParams.value.erpTextArea,
 	() => {
-		if(isWatch.value){
+		if (isWatch.value) {
 			isWatch.value = false;
-			let str_array =  clearCharactersByRegex(queryParams.value.erpTextArea.trim());
+			let str_array = clearCharactersByRegex(queryParams.value.erpTextArea.trim());
 			let arr = clearEmptyDataByAny(str_array);
 			if (arr?.length > 0) {
 				//if (arr[0] !== undefined) {
 				queryParams.value.erpSkuList = arr;
 				erpAndGoodsName.value = arr;
 				//} else {
-					//queryParams.value.ErpSkuList = null;
+				//queryParams.value.ErpSkuList = null;
 				//}
-			}else{
+			} else {
 				queryParams.value.erpSkuList = null;
 				erpAndGoodsName.value = '';
 			}
-		}else{
+		} else {
 			isWatch.value = true;
 		}
 	}
@@ -687,12 +714,12 @@ onMounted(() => {
 						<div style="text-align: right; margin-top: 20px">
 							<span style="float: left">{{ queryParams.erpSkuList?.length ?? 0 }}/200</span>
 							<el-button type="info" @click="resetQueryConditions()
-			">重置</el-button>
+								">重置</el-button>
 							<el-button type="primary" @click="handleConfirm()">确定</el-button>
 						</div>
 						<template #reference>
 							<el-input v-model="erpAndGoodsName" clearable="" placeholder="请输入,点击展开可输多个"
-								@clear="clearErp" >
+								@clear="clearErp">
 								<template #suffix>
 									<el-icon class="el-input__icon">
 										<ArrowDownBold @click="visibleTextarea1 = !visibleTextarea1"
@@ -770,17 +797,19 @@ onMounted(() => {
 					</el-radio-group>
 				</div>
 				<tabDragColum :data="TableData" :tagInfo="true" :name="`stockSkuOperationsData`" :area="area"
-					@handleData="handleData" @handleRemarkData="handleRemarkData"/>
+					@handleData="handleData" @handleRemarkData="handleRemarkData" />
 			</div>
 			<el-tabs v-model="activeName" type="card" style="height: 85%" @tab-click="handleClick">
 				<el-tab-pane :label="item.label" :name="item.name" style="height: 100%" v-for="item in tabsList">
 					<el-table :data="tableData" style="height: 100%" v-loading="loading" tooltip-effect="light"
-						row-key="id" @selection-change="(selection: any) => selectChange(selection)" @sort-change="sortfun">
+						row-key="id" @selection-change="(selection: any) => selectChange(selection)"
+						@sort-change="sortfun">
 						<el-table-column type="selection" width="55" />
 						<el-table-column type="index" :label="area == 'CN' ? '序号' : 'NO.'" width="55" align="center" />
 						<template v-for="(item, index) in TableData" :key="index">
-							<el-table-column v-if="item.checked && item.dataIndex === 'site'" :prop="item.dataIndex" show-overflow-tooltip
-								:fixed="item.fixed" :label="area == 'CN' ? item.titleCN : item.titleEN" sortable align="center">
+							<el-table-column v-if="item.checked && item.dataIndex === 'site'" :prop="item.dataIndex"
+								show-overflow-tooltip :fixed="item.fixed"
+								:label="area == 'CN' ? item.titleCN : item.titleEN" sortable align="center">
 								<template #header>
 									<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
 										<div style="display: flex; align-items: center; justify-content: center">
@@ -843,7 +872,7 @@ onMounted(() => {
 							</el-table-column>
 							<el-table-column v-else-if="item.checked && item.dataIndex === 'listCount'"
 								:fixed="item.fixed" :prop="item.dataIndex" show-overflow-tooltip width="110" sortable
-								:label="area == 'CN' ? item.titleCN : item.titleEN" align="center" >
+								:label="area == 'CN' ? item.titleCN : item.titleEN" align="center">
 								<template #header>
 									<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
 										<div style="display: flex; align-items: center; justify-content: center">
@@ -863,7 +892,8 @@ onMounted(() => {
 								</template>
 							</el-table-column>
 							<el-table-column v-else-if="item.checked" :fixed="item.fixed" :prop="item.dataIndex"
-								:label="area == 'CN' ? item.titleCN : item.titleEN" width="120" align="center" sortable show-overflow-tooltip>
+								:label="area == 'CN' ? item.titleCN : item.titleEN" width="120" align="center" sortable
+								show-overflow-tooltip>
 								<template #header>
 									<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
 										<div style="display: flex; align-items: center; justify-content: center">
@@ -876,12 +906,12 @@ onMounted(() => {
 									</el-tooltip>
 									<div v-else>{{ area == 'CN' ? item.titleCN : item.titleEN }}</div>
 								</template>
-						</el-table-column>
+							</el-table-column>
 						</template>
 						<el-table-column label="操作" width="140" align="center" fixed="right">
 							<template #default="scope">
 								<el-button size="small" text type="primary"
-									@click="disabledfun(scope)">{{ disabledList.some((item:any) => item === scope.row.id) ? '编辑' : '保存' }}</el-button>
+									@click="disabledfun(scope)">{{ disabledList.some((item: any) => item === scope.row.id) ? '编辑' : '保存' }}</el-button>
 							</template>
 						</el-table-column>
 					</el-table>
@@ -901,7 +931,7 @@ onMounted(() => {
 	margin-bottom: 10px;
 }
 
-:deep( .el-tabs--card) {
+:deep(.el-tabs--card) {
 	.el-tabs__header {
 		margin: 0;
 	}
@@ -917,11 +947,11 @@ onMounted(() => {
 
 :deep(.cell) {
 	white-space: nowrap;
-	display:flex;
-	align-items:center;
+	display: flex;
+	align-items: center;
 }
 
-:deep( .el-table td.el-table__cell div ){
+:deep(.el-table td.el-table__cell div) {
 	overflow: hidden;
 }
 

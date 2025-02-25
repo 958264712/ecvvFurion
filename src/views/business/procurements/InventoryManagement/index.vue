@@ -513,6 +513,21 @@ const TableData = ref<any>([
 		fixed: false,
 		remark: false,
 		desc: '',
+	},{
+		titleCN: 'UAE状态',
+		dataIndex: 'uaeStatus',
+		checked: true,
+		fixed: false,
+		remark: false,
+		desc: '',
+	},
+	{
+		titleCN: 'SA状态',
+		dataIndex: 'saStatus',
+		checked: true,
+		fixed: false,
+		remark: false,
+		desc: '',
 	},
 ]);
 

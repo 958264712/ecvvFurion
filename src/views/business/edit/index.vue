@@ -1471,10 +1471,10 @@ let pricefun = (row: any, index = 0) => {
 	} else {
 		row.customsDeclarationFee = 0;
 	}
-	//FOB供应价=(IncludingTaxPurchasePrice含税(RMB)*1.1+(国内物流费用RMB/个)+商检费+杂费+报关费)/汇率
+	//FOB供应价=(IncludingTaxPurchasePrice含税(RMB)*1.3+(国内物流费用RMB/个)+商检费+杂费+报关费)/汇率
 	if (row.includingTaxPurchasePrice && collectionOrderInfo.exchangeRate) {
 		row.fobSupplyPrice = roundToThreeDecimalPlaces(
-			(row.includingTaxPurchasePrice * 1.1 + Number(row.domesticLogisticsCost) + Number(row.commodityInspectionFee) + Number(row.incidentalPrice) + Number(row.customsDeclarationFee)) /
+			(row.includingTaxPurchasePrice * 1.3 + Number(row.domesticLogisticsCost) + Number(row.commodityInspectionFee) + Number(row.incidentalPrice) + Number(row.customsDeclarationFee)) /
 				collectionOrderInfo.exchangeRate
 		);
 	}
@@ -1510,14 +1510,14 @@ let pricefun = (row: any, index = 0) => {
 		row.singleInternationalLogisticsFee = roundToThreeDecimalPlaces(row.totalInternationalLogisticsFee / row.actualShipmentQuantity);
 	}
 
-	//中东	//【迪拜支付】出口单价(USD)=（报关采购价含税(RMB)*1.1）/美元汇率
-	//中东	//【国内支付】出口单价(USD)=（报关采购价含税(RMB)*1.1+报关费/个(RMB)+国际物流运费/报关数量）/美元汇率
+	//中东	//【迪拜支付】出口单价(USD)=（报关采购价含税(RMB)*1.3）/美元汇率
+	//中东	//【国内支付】出口单价(USD)=（报关采购价含税(RMB)*1.3+报关费/个(RMB)+国际物流运费/报关数量）/美元汇率
 	//美国//【国内支付】：出口单价(USD)=（报关采购价含税(RMB)+报关费/个(RMB)+国际物流运费/报关数量）/美元汇率
 	if (collectionOrderInfo.internationalLogisticsFeePayer == '迪拜支付') {
-		row['exportUnitPrice'] = Number(((row['cusPurchasePrice'] * 1.1) / collectionOrderInfo.exchangeRateUSD).toFixed(2));
+		row['exportUnitPrice'] = Number(((row['cusPurchasePrice'] * 1.3) / collectionOrderInfo.exchangeRateUSD).toFixed(2));
 	}
 	if (collectionOrderInfo.internationalLogisticsFeePayer == '国内支付') {
-		row['exportUnitPrice'] = Number(((row['cusPurchasePrice'] * 1.1 + Number(row.customsDeclarationFee) + row.singleInternationalLogisticsFee) / collectionOrderInfo.exchangeRateUSD).toFixed(2));
+		row['exportUnitPrice'] = Number(((row['cusPurchasePrice'] * 1.3 + Number(row.customsDeclarationFee) + row.singleInternationalLogisticsFee) / collectionOrderInfo.exchangeRateUSD).toFixed(2));
 	}
 
 	if (collectionOrderInfo.destination == '美国' && collectionOrderInfo.internationalLogisticsFeePayer == '国内支付') {

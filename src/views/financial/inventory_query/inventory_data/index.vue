@@ -3,6 +3,7 @@ import { ref, onMounted, watch } from 'vue';
 import { initialInventoryDataPage, getInitialInventoryData, initialInventorySynchronizeData, initialInventoryExport } from '/@/api/modular/main/financial.ts';
 import { ElMessageBox, ElMessage, ElNotification } from 'element-plus';
 import importDialog from './component/importDialog.vue';
+import importorderDialog from '/@/components/newImportDialog/index.vue';
 import infoDataDialog from '/@/components/infoDataDialog/index.vue';
 import moment from 'moment'
 import other from '/@/utils/other.ts';
@@ -14,7 +15,8 @@ const tableParams = ref({
 	total: 0,
 });
 const importDialogRef = ref();
-const excelName = ref('期初库存数据');
+const importDialogOrderRef = ref();
+const excelName = ref<any>('期初库存数据');
 const url = ref('');
 const puyuanyunId = ref<any>('')
 const tableAddress = ref('');
@@ -165,6 +167,13 @@ const openimportDialog = () => {
 	importDialogRef.value.openDialog();
 	loading1.value = false;
 };
+const openimporttransferOrderDialog = () => {
+	loading1.value = true;
+	url.value = (import.meta.env.VITE_API_URL as any) + `/api/transferOrder/import`;
+	tableAddress.value = (import.meta.env.VITE_API_URL as any) + '/upload/TableAddress/20241204140131_.xls';
+	importDialogOrderRef.value.openDialog();
+	loading1.value = false;
+};
 // 查询
 const handleQuery = async (): void => {
 	loading.value = true;
@@ -258,6 +267,8 @@ const handleCurrentChange = (val: number): void => {
 					<el-button :loading="synchronousLoading" type="primary" @click="Synchronization"
 						:disabled="month?.length" style="margin-right:10px;">同步</el-button>
 					<el-date-picker v-model="month" type="month" />
+					<el-button style="margin-left: 10px;" :loading="loading1" type="primary"
+						@click="openimporttransferOrderDialog" v-auth="'inventory_data:import'">导入调拨单</el-button>
 				</div>
 			</div>
 			<el-table :data="tableData" size="large" style="width: 100%" v-loading="loading" tooltip-effect="light">
@@ -279,6 +290,8 @@ const handleCurrentChange = (val: number): void => {
 				@size-change="handleSizeChange" @current-change="handleCurrentChange"
 				layout="total, sizes, prev, pager, next, jumper" />
 			<importDialog ref="importDialogRef" :excelName="excelName" :tableAddress="tableAddress" :area="area"
+				:url="url" @reloadTable="handleQuery" />
+			<importorderDialog ref="importDialogOrderRef" excelName="调拨单" :tableAddress="tableAddress" :area="area"
 				:url="url" @reloadTable="handleQuery" />
 			<el-dialog v-model="visible" title="详情" @close="close" width="1000px">
 				<infoDataDialog :id="puyuanyunId" idName="batchId" :dataList="dataList" :ifClose="ifClose"

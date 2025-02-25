@@ -249,7 +249,7 @@ const options = [
 ];
 
 
-const tableParams = ref({
+const tableParams = ref<any>({
 	pageNo: 1,
 	pageSize: 20,
 	total: 0,
@@ -297,8 +297,7 @@ function Imports(file: any, ifCover = false) {
 			});
 	})
 }
-function OpendropdownClick(batchId) {
-
+function OpendropdownClick(batchId:any) {
 	axios.get(import.meta.env.VITE_API_URL as any + '/api/dFShippingList/isTrackingID/' + batchId)
 		.then(res => {
 			disableditem.value = res.data.result;
@@ -653,14 +652,14 @@ function openShippingListDetails(row: any) {
 	ShippingListDetailsRef.value.openDialog(row);
 }
 //底色
-function customCellStyle({ row, column, rowIndex, columnIndex }) {
+function customCellStyle({ row }:any) {
 	if (row.exportStatus == '已导出') {
 		return { backgroundColor: '#DDDDDD' };
 	}
 	// 返回一个包含自定义样式的对象
 	return null;
 }
-function customHeaderCellStyle({ column, $index }) {
+function customHeaderCellStyle({x,y}:any){
 	// 返回包含 CSS 样式的对象
 	return {
 		backgroundColor: '#e9e9e9	', // 设置表头背景颜色为蓝色

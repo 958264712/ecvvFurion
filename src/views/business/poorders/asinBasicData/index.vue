@@ -150,7 +150,7 @@ function BatchDelete() {
 			ElMessage.success('删除成功');
 			handleQuery();
 		})
-		.catch(() => {});
+		.catch(() => { });
 }
 // 打开新增页面
 const openAddASINBasicData = () => {
@@ -248,7 +248,7 @@ const delASINBasicData = (row: any) => {
 				IsEdit.value = false;
 			}
 		})
-		.catch(() => {});
+		.catch(() => { });
 };
 const validateASIN = () => {
 	const objectWithIsEditTrue = tableData.value.find((obj: any) => obj.IsEdit === true);
@@ -364,15 +364,11 @@ handleQuery();
 				<el-form-item>
 					<el-button-group>
 						<el-button type="primary" icon="ele-Search" @click="handleQuery"> 查询 </el-button>
-						<el-button
-							icon="ele-Refresh"
-							@click="
-								() => {
-									queryParams = {};
-									handleQuery();
-								}
-							"
-						>
+						<el-button icon="ele-Refresh" @click="() => {
+							queryParams = {};
+							handleQuery();
+						}
+							">
 							重置
 						</el-button>
 					</el-button-group>
@@ -384,60 +380,64 @@ handleQuery();
 				<div class="importDiv">
 					<!-- <el-button type="primary" icon="ele-Plus" @click="openAddASINBasicData"> 新增 </el-button> -->
 					<!-- <el-button type="primary" icon="ele-Plus" @click="openaddASINBasicData()" v-auth="'sysMenu:add'"> 新增 </el-button> -->
-					<el-upload :on-change="Imports" :multiple="false" action="#" :show-file-list="false" :auto-upload="false" name="file">
+					<el-upload :on-change="Imports" :multiple="false" action="#" :show-file-list="false"
+						:auto-upload="false" name="file">
 						<el-button :loading="loading3" type="primary">ASIN基础数据导入</el-button>
 					</el-upload>
 					<el-button @click="Export" :loading="loading1" type="primary">导出全部ASIN</el-button>
-					<el-button @click="BatchDelete" :disabled="displayDel" :loading="loading1" type="primary">批量删除</el-button>
+					<el-button @click="BatchDelete" :disabled="displayDel" :loading="loading1"
+						type="primary">批量删除</el-button>
 					<el-link href="https://sa1api.ecvv.com/ExcelTemplate/ASIN.xlsx"> 下载ASIN上传模板</el-link>
 				</div>
-				<tabDragColum :data="TableData" :name="`asinBasicData`" area="CN" @handleData="handleData" @handleRemarkData="handleRemarkData" />
+				<tabDragColum :data="TableData" :name="`asinBasicData`" area="CN" @handleData="handleData"
+					@handleRemarkData="handleRemarkData" />
 			</div>
 			<div style="margin-top: 5px; display: flex; justify-content: space-between">
 				<el-button-group>
-					<el-button
-						style="width: 80px; height: 27px"
-						:class="{ buttonBackground: area == 'UAE' }"
-						@click="
-							area = 'UAE';
-							switchLanguage();
-						"
-						>UAE</el-button
-					>
-					<el-button
-						style="width: 80px; height: 27px"
-						:class="{ buttonBackground: area == 'SA' }"
-						@click="
-							area = 'SA';
-							switchLanguage();
-						"
-						>SA</el-button
-					>
+					<el-button style="width: 80px; height: 27px" :class="{ buttonBackground: area == 'UAE' }" @click="
+						area = 'UAE';
+					switchLanguage();
+					">UAE</el-button>
+					<el-button style="width: 80px; height: 27px" :class="{ buttonBackground: area == 'SA' }" @click="
+						area = 'SA';
+					switchLanguage();
+					">SA</el-button>
+					<el-button style="width: 80px; height: 27px" :class="{ buttonBackground: area == 'EG' }" @click="
+						area = 'EG';
+					switchLanguage();
+					">EG</el-button>
 				</el-button-group>
 			</div>
-			<el-table :data="tableData" @selection-change="handleSelectionChange" size="lagre" style="width: 100%" v-loading="loading" tooltip-effect="light" row-key="id" border="">
+			<el-table :data="tableData" @selection-change="handleSelectionChange" size="lagre" style="width: 100%"
+				v-loading="loading" tooltip-effect="light" row-key="id" border="">
 				<el-table-column width="140" align="center" fixed="left" show-overflow-tooltip="">
 					<template #header>
-						<el-button style="background-color: transparent; border: none; color: #df1515" icon="ele-Setting"></el-button>
+						<el-button style="background-color: transparent; border: none; color: #df1515"
+							icon="ele-Setting"></el-button>
 					</template>
 					<template #default="scope">
 						<el-tooltip class="box-item" effect="dark" content="新增" placement="bottom">
-							<el-button icon="ele-CirclePlus" size="small" text="" type="primary" @click="AddRow()"></el-button>
+							<el-button icon="ele-CirclePlus" size="small" text="" type="primary"
+								@click="AddRow()"></el-button>
 						</el-tooltip>
 						<el-tooltip class="box-item" effect="dark" content="保存" placement="bottom">
-							<el-button v-if="scope.row.IsEdit" icon="ele-Document" size="small" text="" type="primary" @click="SAVE(scope.row)"></el-button>
+							<el-button v-if="scope.row.IsEdit" icon="ele-Document" size="small" text="" type="primary"
+								@click="SAVE(scope.row)"></el-button>
 						</el-tooltip>
 						<el-tooltip class="box-item" effect="dark" content="编辑" placement="bottom">
-							<el-button v-if="!scope.row.IsEdit" icon="ele-Edit" size="small" text="" type="primary" @click="openEdit(scope.row)"></el-button>
+							<el-button v-if="!scope.row.IsEdit" icon="ele-Edit" size="small" text="" type="primary"
+								@click="openEdit(scope.row)"></el-button>
 						</el-tooltip>
 						<el-tooltip class="box-item" effect="dark" content="删除" placement="bottom">
-							<el-button icon="ele-Delete" size="small" text="" type="primary" @click="delASINBasicData(scope.row)"> </el-button>
+							<el-button icon="ele-Delete" size="small" text="" type="primary"
+								@click="delASINBasicData(scope.row)"> </el-button>
 						</el-tooltip>
 					</template>
 				</el-table-column>
 				<el-table-column type="selection" width="40" />
 				<template v-for="(item, index) in TableData" :key="index">
-					<el-table-column v-if="item.dataIndex == 'asin' && item.checked" :fixed="item.fixed" :prop="item.dataIndex" :label="item.titleCN" align="center"  show-overflow-tooltip>
+					<el-table-column v-if="item.dataIndex == 'asin' && item.checked" :fixed="item.fixed"
+						:prop="item.dataIndex" :label="item.titleCN" align="center" show-overflow-tooltip>
 						<template #header>
 							<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
 								<div style="display: flex; align-items: center; justify-content: center">
@@ -452,12 +452,14 @@ handleQuery();
 						</template>
 						<template #default="scope">
 							<div @dblclick="openEdit(scope.row)">
-								<el-input :class="{ 'sku-input': scope.row.IsASIN }" class="custom-input" v-if="scope.row.IsEdit" type="text" v-model="scope.row.asin" clearable="" />
+								<el-input :class="{ 'sku-input': scope.row.IsASIN }" class="custom-input"
+									v-if="scope.row.IsEdit" type="text" v-model="scope.row.asin" clearable="" />
 								<div v-else>{{ scope.row.asin }}</div>
 							</div>
 						</template>
 					</el-table-column>
-					<el-table-column v-else-if="item.dataIndex == 'storeSKU' && item.checked" :fixed="item.fixed" :prop="item.dataIndex" :label="item.titleCN" align="center"  show-overflow-tooltip>
+					<el-table-column v-else-if="item.dataIndex == 'storeSKU' && item.checked" :fixed="item.fixed"
+						:prop="item.dataIndex" :label="item.titleCN" align="center" show-overflow-tooltip>
 						<template #header>
 							<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
 								<div style="display: flex; align-items: center; justify-content: center">
@@ -472,12 +474,14 @@ handleQuery();
 						</template>
 						<template #default="scope">
 							<div @dblclick="openEdit(scope.row)">
-								<el-input :class="{ 'sku-input': scope.row.IsstoreSKU }" class="custom-input" v-if="scope.row.IsEdit" type="text" v-model="scope.row.storeSKU" clearable="" />
+								<el-input :class="{ 'sku-input': scope.row.IsstoreSKU }" class="custom-input"
+									v-if="scope.row.IsEdit" type="text" v-model="scope.row.storeSKU" clearable="" />
 								<div v-else>{{ scope.row.storeSKU }}</div>
 							</div>
 						</template>
 					</el-table-column>
-					<el-table-column v-else-if="item.dataIndex == 'erpSku' && item.checked" :fixed="item.fixed" :prop="item.dataIndex" :label="item.titleCN" align="center"  show-overflow-tooltip>
+					<el-table-column v-else-if="item.dataIndex == 'erpSku' && item.checked" :fixed="item.fixed"
+						:prop="item.dataIndex" :label="item.titleCN" align="center" show-overflow-tooltip>
 						<template #header>
 							<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
 								<div style="display: flex; align-items: center; justify-content: center">
@@ -492,12 +496,14 @@ handleQuery();
 						</template>
 						<template #default="scope">
 							<div @dblclick="openEdit(scope.row)">
-								<el-input :class="{ 'sku-input': scope.row.IserpSku }" class="custom-input" v-if="scope.row.IsEdit" type="text" v-model="scope.row.erpSku" clearable="" />
+								<el-input :class="{ 'sku-input': scope.row.IserpSku }" class="custom-input"
+									v-if="scope.row.IsEdit" type="text" v-model="scope.row.erpSku" clearable="" />
 								<div v-else>{{ scope.row.erpSku }}</div>
 							</div>
 						</template>
 					</el-table-column>
-					<el-table-column v-else-if="item.dataIndex == 'unit' && item.checked" :fixed="item.fixed" :prop="item.dataIndex" :label="item.titleCN" align="center"  show-overflow-tooltip>
+					<el-table-column v-else-if="item.dataIndex == 'unit' && item.checked" :fixed="item.fixed"
+						:prop="item.dataIndex" :label="item.titleCN" align="center" show-overflow-tooltip>
 						<template #header>
 							<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
 								<div style="display: flex; align-items: center; justify-content: center">
@@ -512,12 +518,14 @@ handleQuery();
 						</template>
 						<template #default="scope">
 							<div @dblclick="openEdit(scope.row)">
-								<el-input :class="{ 'sku-input': scope.row.IsSingleOrderQTY }" class="custom-input" v-if="scope.row.IsEdit" type="text" v-model="scope.row.unit" clearable="" />
+								<el-input :class="{ 'sku-input': scope.row.IsSingleOrderQTY }" class="custom-input"
+									v-if="scope.row.IsEdit" type="text" v-model="scope.row.unit" clearable="" />
 								<div v-else>{{ scope.row.unit }}</div>
 							</div>
 						</template>
 					</el-table-column>
-					<el-table-column v-else-if="item.dataIndex  && item.checked" :fixed="item.fixed" :prop="item.dataIndex" :label="item.titleCN" align="center" width="150" show-overflow-tooltip>
+					<el-table-column v-else-if="item.dataIndex && item.checked" :fixed="item.fixed"
+						:prop="item.dataIndex" :label="item.titleCN" align="center" width="150" show-overflow-tooltip>
 						<template #header>
 							<el-tooltip effect="dark" placement="bottom" v-if="item.remark">
 								<div style="display: flex; align-items: center; justify-content: center">
@@ -537,17 +545,10 @@ handleQuery();
 				<el-table-column prop="saudiBottomPrice_63FV3" align="center" label="SaudiBottomPrice_63FV3" width="190" show-overflow-tooltip="" />
 				<el-table-column prop="saudiBottomPrice_YZ6VH" align="center" label="SaudiBottomPrice_YZ6VH" width="190" show-overflow-tooltip="" /> -->
 			</el-table>
-			<el-pagination
-				v-model:currentPage="tableParams.page"
-				v-model:page-size="tableParams.pageSize"
-				:total="tableParams.total"
-				:page-sizes="[50, 100, 500, 1000]"
-				small=""
-				background=""
-				@size-change="handleSizeChange"
-				@current-change="handleCurrentChange"
-				layout="total, sizes, prev, pager, next, jumper"
-			/>
+			<el-pagination v-model:currentPage="tableParams.page" v-model:page-size="tableParams.pageSize"
+				:total="tableParams.total" :page-sizes="[50, 100, 500, 1000]" small="" background=""
+				@size-change="handleSizeChange" @current-change="handleCurrentChange"
+				layout="total, sizes, prev, pager, next, jumper" />
 			<editDialog ref="editDialogRef" :title="editASINBasicDataTitle" @reloadTable="handleQuery()" />
 		</el-card>
 	</div>
@@ -573,6 +574,7 @@ handleQuery();
 	box-shadow: 0 0 0 1px #e76957 inset;
 	color: white;
 }
+
 :deep(.el-textarea__inner) {
 	box-shadow: initial;
 	padding: 5px;
