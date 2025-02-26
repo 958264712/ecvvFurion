@@ -144,8 +144,6 @@
 							area = 'EG';
 						switchLanguage();
 						">EG</el-button>
-					<el-button style="width: 80px;height: 27px;" :class="{ buttonBackground: area == 'EG' }"
-						v-if="IsAdmin || area == 'EG'" @click="area = 'EG'; switchLanguage()">EG</el-button>
 					<!-- <el-button style="width: 80px;height: 27px;" :class="{ 'buttonBackground': area == 'UAE' }"
 						v-if="IsAdmin || area == 'UAE'" @click="area = 'UAE'; switchLanguage()">UAE Sourcing</el-button>
 					<el-button style="width: 80px;height: 27px;" :class="{ 'buttonBackground': area == 'SA' }"
@@ -399,6 +397,7 @@
 								<el-select :disabled="!scope.row.IsEdit" v-model="scope.row.addASINAccount"
 									@blur="validateASINAccount" :placeholder="area == 'CN' ? '请选择' : 'Please select'"
 									clearable>
+									<el-option label="EG-SC" value="EG-SC"></el-option>
 									<el-option label="UAE-SC" value="UAE-SC"></el-option>
 									<el-option label="UAE-SHOWAY" value="UAE-SHOWAY"></el-option>
 									<el-option label="SA-DDP AE" value="SA-DDP AE"></el-option>

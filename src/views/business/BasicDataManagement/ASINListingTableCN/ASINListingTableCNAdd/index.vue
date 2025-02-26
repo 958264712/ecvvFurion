@@ -5,30 +5,24 @@
 				<el-row>
 					<el-col>
 						<el-form-item label="ASIN" label-width="80" prop="asin">
-							<el-input v-model="queryForm.asin" clearable=""
-								:placeholder="area == 'CN' ? '请输入ASIN' : 'Please enter ASIN'" />
+							<el-input v-model="queryForm.asin" clearable="" :placeholder="area == 'CN' ? '请输入ASIN' : 'Please enter ASIN'" />
 						</el-form-item>
 						<el-form-item label="ErpSku" label-width="80" prop="erpSku">
-							<el-input v-model="queryForm.erpSku" clearable=""
-								:placeholder="area == 'CN' ? '请输入ErpSku' : 'Please enter ErpSku'" />
+							<el-input v-model="queryForm.erpSku" clearable="" :placeholder="area == 'CN' ? '请输入ErpSku' : 'Please enter ErpSku'" />
 						</el-form-item>
 						<el-form-item label="SingleOrderQTY" label-width="80" prop="singleOrderQTY">
-							<el-input v-model="queryForm.singleOrderQTY" clearable=""
-								:placeholder="area == 'CN' ? '请输入SingleOrderQTY' : 'Please enter SingleOrderQTY'" />
+							<el-input v-model="queryForm.singleOrderQTY" clearable="" :placeholder="area == 'CN' ? '请输入SingleOrderQTY' : 'Please enter SingleOrderQTY'" />
 						</el-form-item>
 					</el-col>
 					<el-col>
 						<el-form-item label="Brand" label-width="80">
-							<el-input v-model="queryForm.Brand" clearable=""
-								:placeholder="area == 'CN' ? '请输入Brand' : 'Please enter Brand'" />
+							<el-input v-model="queryForm.Brand" clearable="" :placeholder="area == 'CN' ? '请输入Brand' : 'Please enter Brand'" />
 						</el-form-item>
 						<el-form-item label="EAN-13" label-width="80" prop="EAN">
-							<el-input v-model="queryForm.EAN" clearable=""
-								:placeholder="area == 'CN' ? '请输入EAN-13' : 'Please enter EAN-13'" />
+							<el-input v-model="queryForm.EAN" clearable="" :placeholder="area == 'CN' ? '请输入EAN-13' : 'Please enter EAN-13'" />
 						</el-form-item>
 						<el-form-item label="Creator" label-width="80">
-							<el-input v-model="queryForm.Creator" clearable=""
-								:placeholder="area == 'CN' ? '请输入Creator' : 'Please enter Creator'" />
+							<el-input v-model="queryForm.Creator" clearable="" :placeholder="area == 'CN' ? '请输入Creator' : 'Please enter Creator'" />
 						</el-form-item>
 					</el-col>
 				</el-row>
@@ -37,46 +31,46 @@
 		<el-card class="full-table" shadow="hover" style="margin-top: 8px">
 			<div class="importDiv">
 				<div style="left: left; display: inline">
-					<el-button type="primary" @click="Previous"
-						style="height: 28px; font-size: 14px">{{ area == 'CN' ? '返回' : 'Back' }}</el-button>
+					<el-button type="primary" @click="Previous" style="height: 28px; font-size: 14px">{{ area == 'CN' ? '返回' : 'Back' }}</el-button>
 				</div>
 				<div style="float: right; margin-right: 50px">
-					<el-button type="primary" icon="ele-Refresh" :loading="loading" @click="Reset"
-						style="height: 28px; font-size: 14px">{{ area == 'CN' ? '重置' : 'Reset' }}</el-button>
-					<el-button type="primary" icon="ele-Document" :loading="loading" @click="Saves(ruleFormRef)"
-						style="height: 28px; font-size: 14px">{{ area == 'CN' ? '保存' : 'SAVE' }}</el-button>
+					<el-button type="primary" icon="ele-Refresh" :loading="loading" @click="Reset" style="height: 28px; font-size: 14px">{{ area == 'CN' ? '重置' : 'Reset' }}</el-button>
+					<el-button type="primary" icon="ele-Document" :loading="loading" @click="Saves(ruleFormRef)" style="height: 28px; font-size: 14px">{{ area == 'CN' ? '保存' : 'SAVE' }}</el-button>
 				</div>
 			</div>
-			<el-table ref="scrollContainer" :data="tableData" size="lagre" style="width: 100%" tooltip-effect="light"
-				row-key="id" border="">
+			<el-table ref="scrollContainer" :data="tableData" size="lagre" style="width: 100%" tooltip-effect="light" row-key="id" border="">
 				<el-table-column type="selection" width="40" class="selection" />
-				<el-table-column prop="storeSKU" :label="area == 'CN' ? '店铺SKU' : 'StoreSKU'" align="center"
-					show-overflow-tooltip="">
+				<el-table-column prop="storeSKU" :label="area == 'CN' ? '店铺SKU' : 'StoreSKU'" align="center" show-overflow-tooltip="">
 					<template #default="scope">
-						<el-input class="custom-input" :class="{ 'sku-input': scope.row.IsSku }" type="text"
-							v-model="scope.row.storeSKU" clearable="" @input="handleInpu" />
+						<el-input class="custom-input" :class="{ 'sku-input': scope.row.IsSku }" type="text" v-model="scope.row.storeSKU" clearable="" @input="handleInpu" />
 					</template>
 				</el-table-column>
-				<el-table-column prop="addASINAccount" :label="area == 'CN' ? '上架平台' : 'Platform'" align="center"
-					show-overflow-tooltip="">
+				<el-table-column prop="addASINAccount" :label="area == 'CN' ? '上架平台' : 'Platform'" align="center" show-overflow-tooltip="">
 					<template #default="scope">
-						<el-select class="custom-input" :class="{ 'sku-input': scope.row.IsSku1 }"
-							v-model="scope.row.addASINAccount" @change="handleInpu"
-							:placeholder="area == 'CN' ? '请选择' : 'Please select'" clearable>
-							<el-option label="UAE-SC " value="UAE-SC "></el-option>
-							<el-option label="UAE-SHOWAY " value="UAE-SHOWAY "></el-option>
+						<el-select
+							class="custom-input"
+							:class="{ 'sku-input': scope.row.IsSku1 }"
+							v-model="scope.row.addASINAccount"
+							@change="handleInpu"
+							:placeholder="area == 'CN' ? '请选择' : 'Please select'"
+							clearable
+						>
+							<el-option label="EG-SC" value="EG-SC"></el-option>
+							<el-option label="UAE-SC" value="UAE-SC"></el-option>
+							<el-option label="UAE-SHOWAY" value="UAE-SHOWAY"></el-option>
 							<el-option label="SA-DDP AE" value="SA-DDP AE"></el-option>
+							<el-option label="NOON-KSA" value="NOON-KSA"></el-option>
+							<el-option label="NOON-UAE" value="NOON-UAE"></el-option>
+							<el-option label="NOON-EG" value="NOON-EG"></el-option>
+							<el-option label="VC-EG" value="VC-EG"></el-option>
 							<el-option label="Above All" value="Above All"></el-option>
 						</el-select>
 					</template>
 				</el-table-column>
-				<el-table-column :label="area == 'CN' ? '操作' : 'Operation'" width="160" align="center" fixed="right"
-					show-overflow-tooltip="">
+				<el-table-column :label="area == 'CN' ? '操作' : 'Operation'" width="160" align="center" fixed="right" show-overflow-tooltip="">
 					<template #default="scope">
-						<el-button v-if="!IsLast(scope.row)" icon="ele-DocumentCopy" size="small" text="" type="primary"
-							@click="CopyAdd(scope.row)"> {{ area == 'CN' ? '复制' : 'COPE' }} </el-button>
-						<el-button v-if="!IsLast(scope.row)" icon="ele-Delete" size="small" text="" type="primary"
-							@click="remove(scope.row)"> {{ area == 'CN' ? '删除' : 'DELETE' }} </el-button>
+						<el-button v-if="!IsLast(scope.row)" icon="ele-DocumentCopy" size="small" text="" type="primary" @click="CopyAdd(scope.row)"> {{ area == 'CN' ? '复制' : 'COPE' }} </el-button>
+						<el-button v-if="!IsLast(scope.row)" icon="ele-Delete" size="small" text="" type="primary" @click="remove(scope.row)"> {{ area == 'CN' ? '删除' : 'DELETE' }} </el-button>
 					</template>
 				</el-table-column>
 			</el-table>

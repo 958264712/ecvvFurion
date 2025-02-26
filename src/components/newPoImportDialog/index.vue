@@ -48,15 +48,15 @@ import { ElMessage } from 'element-plus';
 import { service } from '/@/utils/request';
 
 /**
- * 和弹窗组件el-dialog配套使用，外部弹窗控制大小，本组件主要用于详情，带查询表格展示，不带弹窗
+ *
  * new PO importDialog 配套参数
+ * @props title 导入名称 默认为导入
  * @props tableAddress 下载模板链接
  * @props url 传入import接口
  * @props area 传入中英文格式
  * @props ifExcelBol 是否进行格式约束
  * @props multiple 是否导入多个文件
  * @props inquireData 是否需要轮询
- * @emit close 关闭窗口
  * @emit reloadTable 调用外部接口刷新数据列表
  * @emit returnHref 配合轮询返回数据
  * @emit startTimer 配合刷新页面
@@ -87,14 +87,6 @@ var props = defineProps({
 	ifExcelBol: {
 		type: Boolean,
 		default: false,
-	},
-	exportUrl: {
-		type: String,
-		default: '',
-	},
-	errorData: {
-		type: Array,
-		default: [],
 	},
 	multiple: {
 		type: Boolean,

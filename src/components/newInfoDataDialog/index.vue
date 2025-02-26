@@ -3,7 +3,7 @@ import { ref, watch, nextTick } from 'vue';
 import moment from 'moment';
 
 /**
- * openBatchDialog 配套参数
+ * 配套参数
  * @props id 传入文件id
  * @props idName 传入表格名称
  * @props title 传入弹窗标题
@@ -19,12 +19,7 @@ import moment from 'moment';
  * @props query 是否需要查询功能
  * @props width 传入弹窗宽度
  */
-declare type formListType<T = any> = {
-	label: String;
-	porp: String;
-	select?: Boolean;
-	options?: [T];
-}[];
+
 const props = defineProps(['id', 'idName', 'title', 'width', 'titleRender', 'footerRender', 'pagination', 'loading', 'pointerface', 'dataList', 'formList', 'ifClose', 'defaultValues', 'query']);
 const loading = ref(false);
 const tableData = ref<any>([]);

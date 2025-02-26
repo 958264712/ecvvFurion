@@ -185,7 +185,7 @@ for (let i = 1; i <= days; i++) {
 // 日
 
 // 分析周
-const changeWeeks = (data, week, item) => {
+const changeWeeks = (data:any, week:any, item:any) => {
 	switch (week) {
 		case '第一周':
 			data[0] = item;
@@ -206,7 +206,7 @@ const changeWeeks = (data, week, item) => {
 	return data;
 };
 // 分析月
-const changeMonths = (data, month, item) => {
+const changeMonths = (data:any, month:any, item:any) => {
 	switch (month) {
 		case 1:
 			data[0] = item;
@@ -247,7 +247,7 @@ const changeMonths = (data, month, item) => {
 	}
 	return data;
 };
-const dataymxMoney = async (face, echart, unit, type = 1, twoEcharts, twoUnit) => {
+const dataymxMoney = async (face:any, echart:any, unit:any, type = 1, twoEcharts?:any, twoUnit?:any) => {
 	const myChart = echarts.init(echart.value);
 	let data = [0];
 	let data1 = [0];
@@ -260,28 +260,28 @@ const dataymxMoney = async (face, echart, unit, type = 1, twoEcharts, twoUnit) =
 	queryParams.value.Time = year + '-' + month;
 
 	changeBtnNum.value++
-	await face(Object.assign(queryParams.value)).then((res) => {
+	await face(Object.assign(queryParams.value)).then((res:any) => {
 		if (res.data.code === 200 && res.data.type === 'success') {
 			changeBtnQueryNum.value++
 			if (radio.value === '日') {
-				dayList.value.map((e, index) => {
-					res.data.result.thisMonth.map((item) => {
+				dayList.value.map((e:any, index:any) => {
+					res.data.result.thisMonth.map((item:any) => {
 						if (e === item.day) {
 							data[index] = item[unit];
 						}
 					});
-					res.data.result.lastMonth.map((item) => {
+					res.data.result.lastMonth.map((item:any) => {
 						if (e === item.day) {
 							data1[index] = item[unit];
 						}
 					});
 					if (type === 2) {
-						res.data.result.thisMonthAmount.map((item) => {
+						res.data.result.thisMonthAmount.map((item:any) => {
 							if (e === item.day) {
 								twodata[index] = item[twoUnit];
 							}
 						});
-						res.data.result.lastMonthAmount.map((item) => {
+						res.data.result.lastMonthAmount.map((item:any) => {
 							if (e === item.day) {
 								twodata1[index] = item[twoUnit];
 							}
@@ -289,32 +289,32 @@ const dataymxMoney = async (face, echart, unit, type = 1, twoEcharts, twoUnit) =
 					}
 				});
 			} else if (radio.value === '周') {
-				res.data.result.thisMonth.map((item) => {
+				res.data.result.thisMonth.map((item:any) => {
 					changeWeeks(data, item.weeks, item[unit]);
 				});
-				res.data.result.lastMonth.map((item) => {
+				res.data.result.lastMonth.map((item:any) => {
 					changeWeeks(data1, item.weeks, item[unit]);
 				});
 				if (type === 2) {
-					res.data.result.thisMonthAmount.map((item) => {
+					res.data.result.thisMonthAmount.map((item:any) => {
 						changeWeeks(twodata, item.weeks, item[twoUnit]);
 					});
-					res.data.result.lastMonthAmount.map((item) => {
+					res.data.result.lastMonthAmount.map((item:any) => {
 						changeWeeks(twodata1, item.weeks, item[twoUnit]);
 					});
 				}
 			} else if (radio.value === '月') {
-				res.data.result.thisYear?.map((item) => {
+				res.data.result.thisYear?.map((item:any) => {
 					changeMonths(data, item.month, item[unit]);
 				});
-				res.data.result.lastYear?.map((item) => {
+				res.data.result.lastYear?.map((item:any) => {
 					changeMonths(data1, item.month, item[unit]);
 				});
 				if (type === 2) {
-					res.data.result.thisYearAmount?.map((item) => {
+					res.data.result.thisYearAmount?.map((item:any) => {
 						changeMonths(twodata, item.month, item[twoUnit]);
 					});
-					res.data.result.lastYearAmount?.map((item) => {
+					res.data.result.lastYearAmount?.map((item:any) => {
 						changeMonths(twodata1, item.month, item[twoUnit]);
 					});
 				}
@@ -349,7 +349,7 @@ const dataymxMoney = async (face, echart, unit, type = 1, twoEcharts, twoUnit) =
 			axisPointer: {
 				label: {
 					show: true,
-					formatter: function (params) {
+					formatter: function (params:any) {
 						let date = queryParams.value.Time?.split('-');
 						if (radio.value == '日') {
 							params.value = date[0] + '年' + date[1] + '月' + params.value + '日';
@@ -410,7 +410,7 @@ const dataymxMoney = async (face, echart, unit, type = 1, twoEcharts, twoUnit) =
 			axisPointer: {
 				label: {
 					show: true,
-					formatter: function (params) {
+					formatter: function (params:any) {
 						let date = queryParams.value.Time?.split('-');
 						if (radio.value == '日') {
 							params.value = date[0] + '年' + date[1] + '月' + params.value + '日';
@@ -461,7 +461,7 @@ const dataymxMoney = async (face, echart, unit, type = 1, twoEcharts, twoUnit) =
 		myChart.resize();
 	};
 };
-const toNumber = (str) => {
+const toNumber = (str:any) => {
 	// 移除百分号并将字符串转换为浮点数
 	let number = parseFloat(str?.replace('%', '')) / 100;
 	return number;
