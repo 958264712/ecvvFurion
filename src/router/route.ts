@@ -117,6 +117,14 @@ export const staticRoutes: Array<RouteRecordRaw> = [
 		},
 	},
 	{
+		path: '/inventoryRunSales/inventoryDataDiagnosis/details',
+		name: 'inventoryDataDiagnosisDetails',
+		component: () => import('/@/views/inventoryRunSales/inventoryDataDiagnosis/components/details.vue'),
+		meta: {
+			title: '库存数据诊断详情'
+		},
+	},
+	{
 		path: '/visualizingDemo2',
 		name: 'visualizingDemo2',
 		component: () => import('/@/views/visualizing/demo2.vue'),

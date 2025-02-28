@@ -25,7 +25,7 @@
 			</el-form-item>
 		</el-form>
 		<div class="HeadBox" v-if="queryParams.head">
-				<el-card style="width: 200px;margin-right:10px" :body-style="{ height: '125px' }" shadow="always">
+				<el-card style="width: 220px;margin-right:10px" :body-style="{ height: '125px' }" shadow="always">
 					<div class="topdiv">
 						<div class="title" title="大类排名">大类排名</div>
 						<div class="label">
@@ -37,14 +37,14 @@
 							<span :title="queryParams.head.categoryRankWorst"> {{ queryParams.head.categoryRankWorst }} </span>
 						</div>
 						<div class="label">
-							<span>近30天平均：</span>
+							<span>平均：</span>
 							<span :title="queryParams.head.categoryRankAvg"> {{ queryParams.head.categoryRankAvg }} </span>
 						</div>
 					</div>
 				</el-card>
-				<el-card style="width: 200px;margin-right:10px" :body-style="{ height: '125px' }" shadow="always">
+				<el-card style="width: 220px;margin-right:10px" :body-style="{ height: '125px' }" shadow="always">
 					<div class="topdiv">
-						<div class="title" title="大类排名">小类排名</div>
+						<div class="title" title="小类排名">小类排名</div>
 						<div class="label">
 							<span>最好：</span>
 							<span :title="queryParams.head.subclassRankBest">{{ queryParams.head.subclassRankBest }}</span>
@@ -54,14 +54,14 @@
 							<span :title="queryParams.head.subclassRankWorst"> {{ queryParams.head.subclassRankWorst }} </span>
 						</div>
 						<div  class="label">
-							<span>近30天平均：</span>
+							<span>平均：</span>
 							<span :title="queryParams.head.subclassRankAvg"> {{ queryParams.head.subclassRankAvg }} </span>
 						</div>
 					</div>
 				</el-card>
-				<el-card style="width: 200px;margin-right:10px" :body-style="{ height: '125px' }" shadow="always">
+				<el-card style="width: 220px;margin-right:10px" :body-style="{ height: '125px' }" shadow="always">
 					<div class="topdiv">
-						<div class="title" title="大类排名">Boybox价格</div>
+						<div class="title" title="Boybox价格">Boybox价格</div>
 						<div class="label">
 							<span>最好：</span>
 							<span :title="queryParams.head.buyboxPriceBest">{{ queryParams.head.buyboxPriceBest }}</span>
@@ -71,24 +71,24 @@
 							<span :title="queryParams.head.buyboxPriceWorst"> {{ queryParams.head.buyboxPriceWorst }} </span>
 						</div>
 						<div  class="label">
-							<span>近30天平均：</span>
+							<span>平均：</span>
 							<span :title="queryParams.head.buyboxPriceAvg"> {{ queryParams.head.buyboxPriceAvg }} </span>
 						</div>
 					</div>
 				</el-card>
-				<el-card style="width: 200px;margin-right:10px" :body-style="{ height: '125px' }" shadow="always">
+				<el-card style="width: 220px;margin-right:10px" :body-style="{ height: '125px' }" shadow="always">
 					<div class="topdiv">
-						<div class="title" title="大类排名">Boybox价格变更</div>
+						<div class="title" title="Boybox价格变更">Boybox价格变更</div>
 						<div class="label">
-							<span>最好：</span>
+							<span>累计次数：</span>
 							<span :title="queryParams.head.buyboxPriceChangeNumber">{{ queryParams.head.buyboxPriceChangeNumber }}</span>
 						</div>
 						<div class="label">
-							<span>最差：</span>
+							<span>最近变更：</span>
 							<span :title="queryParams.head.buyboxPriceRecentChange"> {{ queryParams.head.buyboxPriceRecentChange }} </span>
 						</div>
 						<div class="label">
-							<span>近30天平均：</span>
+							<span>最近变更时间：</span>
 							<span :title="queryParams.head.buyboxPriceChangeTime"> {{ queryParams.head.buyboxPriceChangeTime }} </span>
 						</div>
 					</div>

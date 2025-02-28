@@ -101,9 +101,8 @@
 </template>
 <script lang="ts" setup="" name="inventoryInfo">
 import * as echarts from 'echarts';
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted} from 'vue';
 import { getInventoryAmountByStockAge, getInventoryAmountByloth, getInventorySurplusByAmount, getInventoryAmountByllonth } from '/@/api/modular/main/inventoryRunSales.ts';
-import { ElMessage } from 'element-plus';
 import { Refresh } from '@element-plus/icons-vue';
 
 const queryParams = ref<any>({ unit: 'AED', site: 'UAE' });
