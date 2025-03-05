@@ -125,6 +125,14 @@ export const staticRoutes: Array<RouteRecordRaw> = [
 		},
 	},
 	{
+		path: '/inventoryRunSales/multiAxisChart',
+		name: 'multiAxisChart',
+		component: () => import('/@/views/inventoryRunSales/multiAxisChart/index.vue'),
+		meta: {
+			title: '销量库存成本综合分析'
+		},
+	},
+	{
 		path: '/visualizingDemo2',
 		name: 'visualizingDemo2',
 		component: () => import('/@/views/visualizing/demo2.vue'),

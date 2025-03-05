@@ -115,7 +115,7 @@ const month = date.getMonth() + 1;
 const d = new Date(year, month, 0);
 const days = d.getDate();
 const dayList = ref<any>([]);
-const queryParams = ref<any>({ unit: 'AED', site: 'UAE', time: [new Date(year, month - 1, 1), new Date(year, month - 1, days)] });
+const queryParams = ref<any>({ unit: 'AED', site: 'UAE', time: [new Date(new Date().setDate(new Date().getDate() - 30)),new Date() ] });
 for (let i = 1; i <= days; i++) {
 	dayList.value.push(i);
 }

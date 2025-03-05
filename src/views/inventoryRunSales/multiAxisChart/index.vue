@@ -4,6 +4,7 @@ import { ref, onMounted } from 'vue';
 import { getSummaryDataGraph } from '/@/api/modular/main/inventoryRunSales.ts';
 import { useRoute } from 'vue-router';
 import moment from 'moment';
+import { NextLoading } from '/@/utils/loading';
 
 const router = useRoute();
 const multiAxisChartRef = ref();
@@ -186,7 +187,6 @@ const getMultiAxisChart = async () => {
 				: {}),
 		})),
     };
-    console.log(chartData.value.metrics);
 	myChart.setOption(option);
 	window.onresize = function () {
 		myChart.resize();
@@ -195,11 +195,12 @@ const getMultiAxisChart = async () => {
 
 onMounted(() => {
 	getMultiAxisChart();
+	NextLoading.done()
 });
 </script>
 
 <template>
-	<el-card>
+	<el-card style="height: 100%;">
 		<h1 style="font-size: 46px">销量库存成本综合分析</h1>
 		<el-card shadow="always" class="bottomdiv">
 			<div style="height: 635px; background: #fff" ref="multiAxisChartRef"></div>

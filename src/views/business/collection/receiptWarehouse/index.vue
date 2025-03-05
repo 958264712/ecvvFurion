@@ -501,7 +501,7 @@ const codeReceiptDefaultValuesParams = ref<any>({
 	tableData: JSON.parse(Local.getLocalStorageItemWithExpiry('codeReceiptTableData')) ?? [],
 });
 const codeReceiptTitle = () => {
-	return h('div', [
+	return h('div',[
 		h('span', { style: { color: '#fff', fontSize: 'large', fontWeight: 'bold' } }, '扫码入库（'),
 		h('span', { style: { color: '#ec808d', fontSize: 'large', fontWeight: 'bold' } }, '1、绑定货代入仓号，'),
 		h('span', { style: { color: '#fff', fontSize: 'large', fontWeight: 'bold' } }, '2、扫码入库）'),

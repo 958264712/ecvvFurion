@@ -284,13 +284,14 @@ const setOldAgeInventory = async () => {
 };
 
 const openHref = (sku: string) => {
-	router.push({
+	const routeData = router.resolve({
 		path: '/inventoryRunSales/multiAxisChart',
 		query: {
 			site: queryParams.value.site,
 			erpSku: sku,
 		},
 	});
+	window.open(routeData.href, '_blank');
 };
 // 改变页面容量
 const handleSkuInventoryAgeDetailsChange = (val: number) => {

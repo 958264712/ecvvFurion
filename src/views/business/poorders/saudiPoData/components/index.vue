@@ -537,6 +537,10 @@ const dataList1 = ref<any>([
 		prop: 'exportHistoryDocx',
 	},
 ]);
+
+const timeColorMap = ref(new Map());
+const currentColorIndex = ref(0);
+
 //打开弹窗
 const showModal = (id: any) => {
 	showId.value = id;
@@ -610,15 +614,12 @@ const submit = () => {
 	});
 };
 
-let timeItem = '';
-let num = 0;
 // 查询操作
 const handleQuery = async () => {
 	loading.value = true;
 	tableData.value = [];
-	timeItem = '';
-	num = 0;
-
+	timeColorMap.value.clear(); 
+	currentColorIndex.value = 0
 	if (queryParams.value.state === '全部') {
 		queryParams.value.state = undefined;
 	}
@@ -669,8 +670,6 @@ const handleQuery = async () => {
 };
 // 修改状态等内容
 const openEdit = async (id: any, row: any): Promise<void> => {
-	timeItem = '';
-	num = 0;
 	if (id > 0) {
 		let obj: any = {};
 		if (row.invoicedStatus >= 0) {
@@ -1025,8 +1024,6 @@ const navigate = (key: String, rowIndex: number, cellIndex: number, row: any, e:
 
 // 获取keys
 const selectChange = (selection: PoRowType[]) => {
-	timeItem = '';
-	num = 0;
 	selectedRowKeys.value = [];
 	selectedRows.value = [];
 	selectedRows.value = selection;
@@ -1039,7 +1036,7 @@ const selectChange = (selection: PoRowType[]) => {
 
 const tableRowClassName = computed(() => {
 	return ({ rowIndex }: { rowIndex: number }) => {
-		let color = [
+		let colors = [
 			'var(--el-color-danger-light-8)',
 			'var(--el-color-success-light-7)',
 			'var(--el-color-warning-light-7)',
@@ -1047,18 +1044,22 @@ const tableRowClassName = computed(() => {
 			'var(--el-color-success-light-9)',
 			'var(--el-color-info-light-7)',
 		];
-		let timeIndex = tableData?.value[rowIndex]?.contractedWarehouseTime + ' AST' ?? null;
-		if (timeItem !== timeIndex) {
-			timeItem = timeIndex;
-			if (rowIndex === 0) return { background: color[num] };
-			num++;
-			if (num === 6) {
-				num = 0;
-			}
-			return { background: color[num] };
-		} else {
-			return { background: color[num] };
+		const timeIndex = tableData?.value[rowIndex]?.contractedWarehouseTime + ' GST';
+		const prevTimeIndex = rowIndex > 0 ? tableData?.value[rowIndex - 1]?.contractedWarehouseTime + ' GST' : null;
+
+		// 如果该时间已经有对应的颜色，直接返回
+		if (timeColorMap.value.has(timeIndex)) {
+			return { background: timeColorMap.value.get(timeIndex) };
 		}
+		
+		// 如果与前一条记录的时间不同，使用新的颜色
+		if (timeIndex !== prevTimeIndex) {
+			currentColorIndex.value = (currentColorIndex.value + 1) % colors.length;
+		}
+		// 为该时间分配颜色
+		const color = colors[currentColorIndex.value];
+		timeColorMap.value.set(timeIndex, color);
+		return { background: color };
 	};
 });
 

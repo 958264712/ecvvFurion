@@ -553,6 +553,22 @@ handleQuery();
 						</div>
 					</template>
 				</el-table-column>
+				<el-table-column prop="UAE状态" label="UAE状态" align="center" sortable show-overflow-tooltip="">
+					<template #default="scope">
+						<div @dblclick="openEdit(scope.row)">
+							<el-input :class="{ 'sku-input': scope.row.IsuaeStatus }" class="custom-input" v-if="scope.row.IsEdit" type="text" v-model="scope.row.uaeStatus" clearable="" />
+							<div v-else>{{ scope.row.uaeStatus }}</div>
+						</div>
+					</template>
+				</el-table-column>
+				<el-table-column prop="SA状态" label="SA状态" align="center" sortable show-overflow-tooltip="">
+					<template #default="scope">
+						<div @dblclick="openEdit(scope.row)">
+							<el-input :class="{ 'sku-input': scope.row.IssaStatus }" class="custom-input" v-if="scope.row.IsEdit" type="text" v-model="scope.row.saStatus" clearable="" />
+							<div v-else>{{ scope.row.saStatus }}</div>
+						</div>
+					</template>
+				</el-table-column>
 				<el-table-column
 					label="操作"
 					width="140"
